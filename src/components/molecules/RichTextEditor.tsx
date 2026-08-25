@@ -10,7 +10,6 @@ import {
   Quote,
   Sparkles,
   Link as LinkIcon,
-  Image as ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +20,57 @@ export interface RichTextEditorProps {
   rows?: number;
   className?: string;
 }
+
+const TOOLBAR_BUTTONS = [
+  {
+    label: "Tebal (Bold)",
+    icon: Bold,
+    prefix: "**",
+    suffix: "**",
+  },
+  {
+    label: "Miring (Italic)",
+    icon: Italic,
+    prefix: "*",
+    suffix: "*",
+  },
+  {
+    label: "Subjudul (H3)",
+    icon: Heading,
+    prefix: "\n\n### ",
+    suffix: "\n",
+  },
+  {
+    label: "Daftar Poin (Bullet List)",
+    icon: List,
+    prefix: "\n- ",
+    suffix: "\n- Item 2\n- Item 3",
+  },
+  {
+    label: "Daftar Nomor",
+    icon: ListOrdered,
+    prefix: "\n1. ",
+    suffix: "\n2. Item 2\n3. Item 3",
+  },
+  {
+    label: "Kutipan Estetika",
+    icon: Quote,
+    prefix: "\n> ",
+    suffix: "\n",
+  },
+  {
+    label: "Boks Tips Peru-Chan",
+    icon: Sparkles,
+    prefix: "\n> [Catatan Peru-Chan]: ",
+    suffix: "\nTuliskan tips studio atau pesan penting di sini.\n",
+  },
+  {
+    label: "Tautan Rujukan",
+    icon: LinkIcon,
+    prefix: "[",
+    suffix: "](https://)",
+  },
+];
 
 export function RichTextEditor({
   value,
@@ -53,53 +103,6 @@ export function RichTextEditor({
     }, 10);
   };
 
-  const toolbarActions = [
-    {
-      label: "Tebal (Bold)",
-      icon: Bold,
-      action: () => insertFormat("**", "**"),
-    },
-    {
-      label: "Miring (Italic)",
-      icon: Italic,
-      action: () => insertFormat("*", "*"),
-    },
-    {
-      label: "Subjudul (H3)",
-      icon: Heading,
-      action: () => insertFormat("\n\n### ", "\n"),
-    },
-    {
-      label: "Daftar Poin (Bullet List)",
-      icon: List,
-      action: () => insertFormat("\n- ", "\n- Item 2\n- Item 3"),
-    },
-    {
-      label: "Daftar Nomor",
-      icon: ListOrdered,
-      action: () => insertFormat("\n1. ", "\n2. Item 2\n3. Item 3"),
-    },
-    {
-      label: "Kutipan Estetika",
-      icon: Quote,
-      action: () => insertFormat("\n> ", "\n"),
-    },
-    {
-      label: "Boks Tips Peru-Chan",
-      icon: Sparkles,
-      action: () =>
-        insertFormat(
-          "\n> [Catatan Peru-Chan]: ",
-          "\nTuliskan tips studio atau pesan penting di sini.\n"
-        ),
-    },
-    {
-      label: "Tautan Rujukan",
-      icon: LinkIcon,
-      action: () => insertFormat("[", "](https://)"),
-    },
-  ];
-
   return (
     <div
       className={cn(
@@ -109,14 +112,14 @@ export function RichTextEditor({
     >
       {/* TOOLBAR */}
       <div className="flex flex-wrap items-center gap-1 border-b border-jp-gray-200 bg-jp-paper/80 p-2 text-jp-gray-700">
-        {toolbarActions.map((item, idx) => {
+        {TOOLBAR_BUTTONS.map((item, idx) => {
           const Icon = item.icon;
           return (
             <button
               key={idx}
               type="button"
               title={item.label}
-              onClick={item.action}
+              onClick={() => insertFormat(item.prefix, item.suffix)}
               className="flex h-7 w-7 items-center justify-center rounded-md text-jp-gray-600 hover:bg-white hover:text-jp-blue-900 hover:shadow-2xs transition-colors cursor-pointer"
             >
               <Icon className="h-3.5 w-3.5" />
@@ -128,11 +131,11 @@ export function RichTextEditor({
       {/* TEXTAREA INPUT */}
       <textarea
         ref={textareaRef}
-        rows={rows}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        rows={rows}
         placeholder={placeholder}
-        className="w-full resize-y bg-white p-3.5 text-sm text-jp-ink placeholder:text-jp-gray-400 focus:outline-none font-prose leading-relaxed"
+        className="w-full p-4 text-xs font-sans text-jp-ink placeholder:text-jp-gray-400 focus:outline-none resize-y leading-relaxed"
       />
     </div>
   );

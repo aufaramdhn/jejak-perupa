@@ -54,17 +54,6 @@ export function PeruChanTipBanner({
   const validIndex = currentIndex >= activeQuotes.length ? 0 : currentIndex;
   const currentQuote = activeQuotes[validIndex];
 
-  // Auto-play timer
-  useEffect(() => {
-    if (activeQuotes.length <= 1 || isPaused) return;
-
-    const timer = setInterval(() => {
-      handleNext();
-    }, autoPlayInterval);
-
-    return () => clearInterval(timer);
-  }, [activeQuotes.length, isPaused, autoPlayInterval, validIndex]);
-
   const changeSlide = (newIndex: number) => {
     if (isAnimating) return;
     setIsAnimating(true);
@@ -93,6 +82,18 @@ export function PeruChanTipBanner({
     }
     changeSlide(randomIdx);
   };
+
+  // Auto-play timer
+  useEffect(() => {
+    if (activeQuotes.length <= 1 || isPaused) return;
+
+    const timer = setInterval(() => {
+      const nextIdx = (validIndex + 1) % activeQuotes.length;
+      setCurrentIndex(nextIdx);
+    }, autoPlayInterval);
+
+    return () => clearInterval(timer);
+  }, [activeQuotes.length, isPaused, autoPlayInterval, validIndex]);
 
   return (
     <section

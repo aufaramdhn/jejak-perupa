@@ -3,11 +3,12 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { FeatureGuard } from "@/components/atoms/FeatureGuard";
 import * as featureFlagsModule from "@/lib/featureFlagsContext";
+import { FeatureFlagKey } from "@/lib/data/featureFlags";
 
 describe("FeatureGuard Component", () => {
   it("renders children when feature flag is enabled", () => {
     vi.spyOn(featureFlagsModule, "useFeatureFlags").mockReturnValue({
-      flags: {} as any,
+      flags: {} as Record<FeatureFlagKey, boolean>,
       activePreset: "v2.0.0",
       isFeatureEnabled: vi.fn().mockReturnValue(true),
       setFeatureEnabled: vi.fn(),
@@ -29,7 +30,7 @@ describe("FeatureGuard Component", () => {
 
   it("renders fallback when feature flag is disabled", () => {
     vi.spyOn(featureFlagsModule, "useFeatureFlags").mockReturnValue({
-      flags: {} as any,
+      flags: {} as Record<FeatureFlagKey, boolean>,
       activePreset: "v1.0.0",
       isFeatureEnabled: vi.fn().mockReturnValue(false),
       setFeatureEnabled: vi.fn(),
