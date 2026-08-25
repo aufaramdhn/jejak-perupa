@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
@@ -59,12 +59,21 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, isMounted, logout } = useAuth();
   const { confirm, alert } = useModal();
   const { settings } = useSiteSettings();
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  // Security Auth Guard: Redirect unauthenticated or non-admin users to /masuk
+  useEffect(() => {
+    if (isMounted) {
+      if (!currentUser || currentUser.role !== "ADMIN") {
+        router.push("/masuk");
+      }
+    }
+  }, [isMounted, currentUser, router]);
 
   const handleLogout = async () => {
     const confirmed = await confirm({
