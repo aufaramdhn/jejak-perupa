@@ -399,7 +399,7 @@ export default function AdminPengaturanPage() {
     >
       <div className="space-y-6 font-sans">
         {/* TOPBAR SUB-NAVIGATION TABS */}
-        <div className="flex items-center gap-1.5 overflow-x-auto border-b border-jp-gray-300 pb-2 scrollbar-none">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
