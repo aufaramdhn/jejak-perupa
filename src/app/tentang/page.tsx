@@ -3,6 +3,7 @@ import Link from "next/link";
 import { MainPublicLayout } from "@/components/templates/MainPublicLayout";
 import { Heading1, Heading2, Heading3, Paragraph, SectionLabel } from "@/components/atoms/Typography";
 import { Button } from "@/components/atoms/Button";
+import { PeruChanMascotSlider } from "@/components/organisms/PeruChanMascotSlider";
 import { Sparkles, BookOpen, Layers, HeartHandshake, ArrowRight } from "lucide-react";
 
 export const metadata = {
@@ -91,37 +92,30 @@ export default function TentangPage() {
         </div>
       </section>
 
-      {/* MASKOT PERU-CHAN SECTION */}
+      {/* MASKOT PERU-CHAN SECTION WITH DYNAMIC SLIDER */}
       <section className="border-t border-jp-gray-300 bg-white py-16 lg:py-24">
         <div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
-          <div className="grid gap-12 md:grid-cols-[260px_1fr] items-center">
-            <div className="flex flex-col items-center justify-center rounded-xl border border-jp-blue-200 bg-gradient-to-b from-jp-blue-50 to-white p-8 text-center shadow-xs">
-              <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-white text-jp-blue-900 border border-jp-blue-200 shadow-2xs">
-                <Sparkles className="h-10 w-10 text-jp-blue-700" />
-              </div>
-              <div className="mt-4 font-heading text-xl font-bold text-jp-blue-900">
-                Peru-Chan
-              </div>
-              <div className="text-[11px] font-semibold text-jp-gray-500 uppercase tracking-wider">
-                Maskot Resmi Jejak Perupa
-              </div>
-            </div>
-
+          <div className="grid gap-12 md:grid-cols-[1fr_1fr] items-center">
             <div className="space-y-5">
               <SectionLabel>Karakter Sahabat Belajar</SectionLabel>
               <Heading2 className="text-3xl sm:text-4xl text-jp-ink">
-                Siapa itu Peru-Chan?
+                Mengenal Karakter Peru-Chan
               </Heading2>
-              <Paragraph className="text-base text-jp-gray-700 leading-relaxed">
+              <Paragraph className="text-base text-jp-gray-700 leading-relaxed font-prose">
                 Peru-Chan hadir sebagai personifikasi dari antusiasme belajar
                 seni rupa yang ceria, penuh rasa ingin tahu, dan tidak kenal
                 menyerah. Nama &ldquo;Peru&rdquo; diambil dari kata &ldquo;Perupa&rdquo;.
               </Paragraph>
-              <Paragraph className="text-base text-jp-gray-700 leading-relaxed">
-                Di setiap bab artikel, Peru-Chan selalu menyisipkan boks tips
+              <Paragraph className="text-base text-jp-gray-700 leading-relaxed font-prose">
+                Di setiap bab materi, Peru-Chan selalu menyisipkan boks catatan kuratorial
                 khusus untuk menyederhanakan istilah-istilah seni yang rumit agar
-                dapat dipahami secara intuitif oleh siapa saja.
+                dapat dipahami secara intuitif oleh pembelajar.
               </Paragraph>
+            </div>
+
+            {/* DYNAMIC MASCOT SLIDER */}
+            <div>
+              <PeruChanMascotSlider className="shadow-lg" />
             </div>
           </div>
         </div>

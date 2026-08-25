@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { useSiteSettings } from "@/lib/siteContext";
 import { cn } from "@/lib/utils";
 
 export interface FooterSectionProps {
@@ -11,10 +14,12 @@ export function FooterSection({
   className,
   copyrightYear = 2026,
 }: FooterSectionProps) {
+  const { settings } = useSiteSettings();
+
   return (
     <footer
       className={cn(
-        "border-t border-jp-brown-700 bg-jp-brown-900 text-white",
+        "border-t border-jp-brown-700 bg-jp-brown-900 text-white font-sans",
         className
       )}
     >
@@ -23,20 +28,30 @@ export function FooterSection({
           {/* IDENTITAS */}
           <div className="lg:col-span-2 space-y-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-jp-lime font-heading font-extrabold text-jp-ink text-xs">
-                JP
-              </div>
+              {settings.logoImageUrl ? (
+                <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={settings.logoImageUrl}
+                    alt={settings.siteName}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-jp-lime font-heading font-extrabold text-jp-ink text-xs">
+                  {settings.logoInitials || "JP"}
+                </div>
+              )}
               <span className="font-heading text-xl font-bold tracking-tight text-white">
-                JEJAK PERUPA
+                {settings.siteName}
               </span>
             </div>
             {/* Natural Title Case without all-caps AI slop */}
             <p className="text-xs text-jp-brown-100/70 font-medium">
-              Catatan Perjalanan Pelajar Seni Rupa
+              {settings.siteTagline}
             </p>
-            <p className="max-w-md text-sm leading-relaxed text-jp-brown-100/90 pt-1">
-              Platform edukasi, dokumentasi arsip, dan apresiasi seni rupa Indonesia
-              yang menyajikan teori, teknik studio, dan biografi maestro secara terstruktur dan bersahabat.
+            <p className="max-w-md text-sm leading-relaxed text-jp-brown-100/90 pt-1 font-prose">
+              {settings.footerDescription}
             </p>
           </div>
 

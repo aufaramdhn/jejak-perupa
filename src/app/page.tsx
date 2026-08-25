@@ -6,6 +6,7 @@ import { ArticleGrid } from "@/components/organisms/ArticleGrid";
 import { CategorySection } from "@/components/organisms/CategorySection";
 import { ArtistHeroCard } from "@/components/organisms/ArtistHeroCard";
 import { PeruChanTipBanner } from "@/components/organisms/PeruChanTipBanner";
+import { PeruChanMascotSlider } from "@/components/organisms/PeruChanMascotSlider";
 import { Heading1, Heading2, Paragraph } from "@/components/atoms/Typography";
 import { Sparkles, ArrowRight } from "lucide-react";
 
@@ -43,10 +44,10 @@ export default function HomePage() {
   return (
     <MainPublicLayout>
       {/* HERO SECTION */}
-      <section className="overflow-hidden border-b border-jp-gray-300 bg-gradient-to-b from-jp-blue-50/90 via-jp-paper to-white py-20 lg:py-28">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:gap-16 px-6 sm:px-8 lg:px-12 lg:grid-cols-[1.25fr_380px]">
+      <section className="relative border-b border-jp-gray-300 bg-linear-to-b from-jp-blue-50/40 via-jp-paper to-jp-paper py-16 md:py-24">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 grid gap-12 lg:grid-cols-[1.2fr_0.8fr] items-center">
+          {/* HERO LEFT COPY */}
           <div>
-            {/* Clean editorial introduction without generic AI pill badge */}
             <div className="mb-4 inline-flex items-center gap-2 rounded-md border border-jp-blue-200 bg-white px-3 py-1 font-mono text-xs font-semibold text-jp-blue-900 shadow-2xs">
               Arsip & Wacana Seni Rupa Nusantara : Edisi 2026
             </div>
@@ -68,24 +69,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* PERU-CHAN MASCOT HERO CARD (ROUNDED-XL) */}
-          <div className="relative flex justify-center">
-            <div className="absolute -inset-1.5 rounded-xl bg-jp-blue-100/60 blur-md" />
-
-            <div className="relative z-10 w-full max-w-sm flex flex-col items-center justify-center rounded-xl border border-jp-blue-200 bg-white/95 p-8 text-center shadow-xs backdrop-blur">
-              <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-jp-blue-50 text-jp-blue-900 border border-jp-blue-200 shadow-2xs">
-                <Sparkles className="h-10 w-10 text-jp-blue-700" />
-              </div>
-              <span className="mt-4 font-heading text-2xl font-bold text-jp-blue-900">
-                Peru-Chan
-              </span>
-              <span className="mt-1 text-xs font-semibold text-jp-gray-500 uppercase tracking-wider font-sans">
-                Maskot Edukasi Jejak Perupa
-              </span>
-              <p className="mt-3 text-xs md:text-sm leading-relaxed text-jp-gray-700 font-prose">
-                Siap mendampingi catatan perjalanan belajarmu di setiap bab!
-              </p>
-            </div>
+          {/* PERU-CHAN DYNAMIC SLIDER (ROUNDED-XL) */}
+          <div className="flex justify-center lg:justify-end">
+            <PeruChanMascotSlider className="w-full max-w-md shadow-md" />
           </div>
         </div>
       </section>

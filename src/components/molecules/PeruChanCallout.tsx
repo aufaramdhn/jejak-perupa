@@ -19,7 +19,7 @@ export function PeruChanCallout({
   subtitle,
   theme = "blue",
   iconType = "sparkles",
-  imageSrc,
+  imageSrc = "/images/mascot/peruchan-excited.png",
   children,
   className,
 }: PeruChanCalloutProps) {

@@ -2,12 +2,12 @@ import React from "react";
 import Link from "next/link";
 import { MainPublicLayout } from "@/components/templates/MainPublicLayout";
 import { Heading2, Paragraph, SectionLabel } from "@/components/atoms/Typography";
-import { LayoutDashboard, FileText, Users, Eye } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Eye, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface AdminDashboardTemplateProps {
   children: React.ReactNode;
-  activeTab?: "overview" | "articles" | "artists" | "submissions";
+  activeTab?: "overview" | "articles" | "artists" | "submissions" | "settings";
   className?: string;
 }
 
@@ -18,9 +18,9 @@ export function AdminDashboardTemplate({
 }: AdminDashboardTemplateProps) {
   const navItems = [
     { id: "overview", label: "Ringkasan", icon: <LayoutDashboard className="h-4 w-4" />, href: "/admin" },
-    { id: "articles", label: "Kelola Artikel", icon: <FileText className="h-4 w-4" />, href: "/admin#artikel" },
-    { id: "artists", label: "Data Seniman", icon: <Users className="h-4 w-4" />, href: "/admin#seniman" },
-    { id: "submissions", label: "Kurasi Kontributor", icon: <Eye className="h-4 w-4" />, href: "/admin#kurasi" },
+    { id: "submissions", label: "Meja Kurasi Naskah", icon: <Eye className="h-4 w-4" />, href: "/admin#kurasi" },
+    { id: "articles", label: "Katalog Artikel", icon: <FileText className="h-4 w-4" />, href: "/admin#artikel" },
+    { id: "settings", label: "Pengaturan Situs & Peru-Chan", icon: <Sparkles className="h-4 w-4" />, href: "/admin/pengaturan" },
   ];
 
   return (

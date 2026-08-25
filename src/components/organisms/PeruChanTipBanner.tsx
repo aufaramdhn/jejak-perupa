@@ -14,7 +14,7 @@ export interface PeruChanTipBannerProps {
 export function PeruChanTipBanner({
   tipText,
   badgeText = "Catatan Santai Peru-Chan",
-  imageSrc,
+  imageSrc = "/images/mascot/peruchan-drawing.png",
   className,
 }: PeruChanTipBannerProps) {
   const [imageError, setImageError] = useState(false);

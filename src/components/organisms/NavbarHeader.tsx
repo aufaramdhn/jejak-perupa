@@ -17,6 +17,7 @@ import { Avatar } from "@/components/atoms/Avatar";
 import { Badge } from "@/components/atoms/Badge";
 import { useAuth } from "@/lib/auth";
 import { useModal } from "@/lib/modalContext";
+import { useSiteSettings } from "@/lib/siteContext";
 import { cn } from "@/lib/utils";
 
 export function NavbarHeader() {
@@ -33,6 +34,7 @@ export function NavbarHeader() {
 
   const { currentUser, isAuthenticated, logout } = useAuth();
   const { confirm, toast } = useModal();
+  const { settings } = useSiteSettings();
 
   const handleLogoutClick = async () => {
     setProfileDropdownOpen(false);
@@ -135,16 +137,27 @@ export function NavbarHeader() {
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
         {/* LOGO IDENTITAS */}
         <Link href="/" className="flex items-center gap-3.5 group shrink-0">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-jp-blue-900 font-heading text-sm font-extrabold text-white shadow-sm transition-transform duration-200 group-hover:scale-105">
-            JP
-          </div>
+          {settings.logoImageUrl ? (
+            <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl border border-jp-gray-300 bg-white shadow-sm transition-transform duration-200 group-hover:scale-105">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={settings.logoImageUrl}
+                alt={settings.siteName}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-jp-blue-900 font-heading text-sm font-extrabold text-white shadow-sm transition-transform duration-200 group-hover:scale-105">
+              {settings.logoInitials || "JP"}
+            </div>
+          )}
 
           <div>
             <div className="font-heading text-base font-extrabold tracking-tight text-jp-ink">
-              JEJAK PERUPA
+              {settings.siteName}
             </div>
             <div className="hidden text-[11px] font-medium text-jp-gray-500 sm:block">
-              Catatan Perjalanan Pelajar Seni Rupa
+              {settings.siteTagline}
             </div>
           </div>
         </Link>
