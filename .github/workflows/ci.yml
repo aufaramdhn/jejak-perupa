@@ -1,0 +1,47 @@
+name: CI Pipeline & Quality Gate
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - 'feat/**'
+      - 'fix/**'
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  quality-gate:
+    name: Typecheck, Lint, Test & Build Verification
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SITE_URL: https://jejak-perupa.vercel.app
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/jejak_perupa
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/jejak_perupa
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Prisma ORM Client
+        run: npx prisma generate
+
+      - name: Code Quality & Linting Check
+        run: npm run lint
+
+      - name: Automated Unit & Component Tests
+        run: npm run test
+
+      - name: Production Build Check (Next.js 44 Routes)
+        run: npm run build
