@@ -1,11 +1,16 @@
-"use client";
-
 import React from "react";
+import { Metadata } from "next";
 import { SpatialMapTemplate } from "@/components/templates/SpatialMapTemplate";
 import { SpatialArtMap } from "@/components/organisms/SpatialArtMap";
 import { FeatureGuard } from "@/components/atoms/FeatureGuard";
 import { FeatureComingSoonTemplate } from "@/components/templates/FeatureComingSoonTemplate";
 import { artService } from "@/lib/services/artService";
+
+export const metadata: Metadata = {
+  title: "Peta Geospasial Seni Nusantara : Jejak Perupa",
+  description:
+    "Eksplorasi titik sebaran museum seni, galeri independen, monumen bersejarah, dan ruang pameran seni rupa di seluruh Indonesia.",
+};
 
 export default function PetaSeniPage() {
   const locations = artService.getAllSpatialLocations();

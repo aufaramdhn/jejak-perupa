@@ -1,12 +1,15 @@
-"use client";
-
 import React from "react";
-import { MainPublicLayout } from "@/components/templates/MainPublicLayout";
-import { CommunityDirectory } from "@/components/organisms/CommunityDirectory";
-import { PeruChanTipBanner } from "@/components/organisms/PeruChanTipBanner";
+import { Metadata } from "next";
 import { FeatureGuard } from "@/components/atoms/FeatureGuard";
 import { FeatureComingSoonTemplate } from "@/components/templates/FeatureComingSoonTemplate";
+import { CommunitySection } from "@/components/organisms/CommunitySection";
 import { artService } from "@/lib/services/artService";
+
+export const metadata: Metadata = {
+  title: "Direktori Komunitas Seni Rupa : Jejak Perupa",
+  description:
+    "Jejaring kolektif seni rupa, sanggar daerah, ruang seni alternatif, dan perkumpulan pegiat visual di Indonesia.",
+};
 
 export default function KomunitasPage() {
   const communities = artService.getAllCommunities();
@@ -23,14 +26,7 @@ export default function KomunitasPage() {
         />
       }
     >
-      <MainPublicLayout>
-        <section className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-12 lg:py-16">
-          <div className="space-y-12">
-            <CommunityDirectory communities={communities} />
-            <PeruChanTipBanner tipText="Berjejaring dengan komunitas seni di kotamu membuka ruang kolaborasi, tukar gagasan, dan peluang pameran bersama." />
-          </div>
-        </section>
-      </MainPublicLayout>
+      <CommunitySection communities={communities} />
     </FeatureGuard>
   );
 }

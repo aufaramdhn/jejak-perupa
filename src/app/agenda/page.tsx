@@ -1,12 +1,15 @@
-"use client";
-
 import React from "react";
-import { AgendaTemplate } from "@/components/templates/AgendaTemplate";
-import { EventCalendarGrid } from "@/components/organisms/EventCalendarGrid";
-import { PeruChanTipBanner } from "@/components/organisms/PeruChanTipBanner";
+import { Metadata } from "next";
 import { FeatureGuard } from "@/components/atoms/FeatureGuard";
 import { FeatureComingSoonTemplate } from "@/components/templates/FeatureComingSoonTemplate";
+import { AgendaSection } from "@/components/organisms/AgendaSection";
 import { artService } from "@/lib/services/artService";
+
+export const metadata: Metadata = {
+  title: "Agenda & Pameran Seni Rupa : Jejak Perupa",
+  description:
+    "Kalender kurasi pameran seni rupa, lokakarya, diskusi kuratorial, dan agenda seni terkini di berbagai kota di Indonesia.",
+};
 
 export default function AgendaPage() {
   const events = artService.getAllEvents();
@@ -23,12 +26,7 @@ export default function AgendaPage() {
         />
       }
     >
-      <AgendaTemplate>
-        <div className="space-y-12">
-          <EventCalendarGrid events={events} />
-          <PeruChanTipBanner tipText="Mengunjungi pameran secara langsung memberikan pengalaman visual yang berbeda: kamu dapat mengamati tekstur material, skala ukuran nyata, dan tata pencahayaan ruang galeri." />
-        </div>
-      </AgendaTemplate>
+      <AgendaSection events={events} />
     </FeatureGuard>
   );
 }

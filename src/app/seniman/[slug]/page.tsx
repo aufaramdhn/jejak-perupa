@@ -10,8 +10,11 @@ import { TimelineStream } from "@/components/organisms/TimelineStream";
 import { ArtworkGalleryViewer } from "@/components/organisms/ArtworkGalleryViewer";
 import { PeruChanCallout } from "@/components/molecules/PeruChanCallout";
 import { BookmarkButton } from "@/components/molecules/BookmarkButton";
+import { JsonLd } from "@/components/atoms/JsonLd";
 import { MapPin, Layers, ArrowLeft, Users } from "lucide-react";
 import { artService } from "@/lib/services/artService";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://jejak-perupa.vercel.app";
 
 export function generateStaticParams() {
   const artists = artService.getAllArtists();
@@ -34,9 +37,37 @@ export async function generateMetadata({
     };
   }
 
+  const artistUrl = `${siteUrl}/seniman/${artist.slug}`;
+  const ogImage = artist.photoUrl || `${siteUrl}/images/mascot/peruchan-investigate.png`;
+
   return {
-    title: `Profil ${artist.name} : Jejak Perupa`,
-    description: artist.shortBio,
+    title: `Profil & Karya ${artist.name} : Jejak Perupa`,
+    description: `${artist.shortBio} Pelajari biografi, lini masa peristiwa, dan galeri karya maestro ${artist.name}.`,
+    alternates: {
+      canonical: artistUrl,
+    },
+    openGraph: {
+      type: "profile",
+      title: `Profil ${artist.name} (${artist.birthYear} - ${artist.deathYear || "Sekarang"}) : Jejak Perupa`,
+      description: artist.shortBio,
+      url: artistUrl,
+      siteName: "Jejak Perupa",
+      images: [
+        {
+          url: ogImage,
+          width: 800,
+          height: 800,
+          alt: `Potret Maestro ${artist.name}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Profil & Karya ${artist.name}`,
+      description: artist.shortBio,
+      images: [ogImage],
+      creator: "@jejakperupa",
+    },
   };
 }
 
@@ -184,13 +215,56 @@ export default async function ArtistProfilePage({
     </div>
   );
 
+  // Structured Data Schema (Person / VisualArtist & Breadcrumbs)
+  const artistSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: artist.name,
+    jobTitle: "Maestro Seni Rupa Indonesia",
+    description: artist.shortBio,
+    image: artist.photoUrl || `${siteUrl}/images/mascot/peruchan-investigate.png`,
+    birthDate: artist.birthYear,
+    deathDate: artist.deathYear,
+    birthPlace: artist.originCity,
+    nationality: "Indonesian",
+    url: `${siteUrl}/seniman/${artist.slug}`,
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Beranda",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Direktori Seniman",
+        item: `${siteUrl}/seniman`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: artist.name,
+        item: `${siteUrl}/seniman/${artist.slug}`,
+      },
+    ],
+  };
+
   return (
-    <ArtistProfileTemplate
-      hero={heroContent}
-      biography={biographyContent}
-      timeline={timelineContent}
-      gallery={galleryContent}
-      related={relatedContent}
-    />
+    <>
+      <JsonLd data={[artistSchema, breadcrumbSchema]} />
+      <ArtistProfileTemplate
+        hero={heroContent}
+        biography={biographyContent}
+        timeline={timelineContent}
+        gallery={galleryContent}
+        related={relatedContent}
+      />
+    </>
   );
 }
