@@ -26,6 +26,8 @@ import {
   ShieldCheck,
   Layers,
   SlidersHorizontal,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,8 +42,8 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
-  exact?: boolean;
   badge?: string;
+  exact?: boolean;
 }
 
 interface NavSection {
@@ -62,6 +64,7 @@ export function AdminLayout({
   const { settings } = useSiteSettings();
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleLogout = async () => {
     const confirmed = await confirm({
@@ -91,13 +94,13 @@ export function AdminLayout({
         {
           label: "Ringkasan & Analitik",
           href: "/admin",
-          icon: <LayoutDashboard className="h-4 w-4" />,
+          icon: <LayoutDashboard className="h-4 w-4 shrink-0" />,
           exact: true,
         },
         {
           label: "Meja Kurasi Naskah",
           href: "/admin/kurasi",
-          icon: <Eye className="h-4 w-4" />,
+          icon: <Eye className="h-4 w-4 shrink-0" />,
           badge: "2 Baru",
         },
       ],
@@ -108,12 +111,12 @@ export function AdminLayout({
         {
           label: "Katalog Artikel",
           href: "/admin/artikel",
-          icon: <FileText className="h-4 w-4" />,
+          icon: <FileText className="h-4 w-4 shrink-0" />,
         },
         {
           label: "Direktori Seniman",
           href: "/admin/seniman",
-          icon: <Users className="h-4 w-4" />,
+          icon: <Users className="h-4 w-4 shrink-0" />,
         },
       ],
     },
@@ -123,12 +126,12 @@ export function AdminLayout({
         {
           label: "Pengaturan & Peru-Chan",
           href: "/admin/pengaturan",
-          icon: <Sparkles className="h-4 w-4" />,
+          icon: <Sparkles className="h-4 w-4 shrink-0" />,
         },
         {
           label: "Manajemen Rilis",
           href: "/admin/rilis",
-          icon: <SlidersHorizontal className="h-4 w-4" />,
+          icon: <SlidersHorizontal className="h-4 w-4 shrink-0" />,
         },
       ],
     },
@@ -181,31 +184,60 @@ export function AdminLayout({
         />
       )}
 
-      {/* DEDICATED ADMIN SIDEBAR (FIXED TO VIEWPORT HEIGHT) */}
+      {/* DEDICATED ADMIN SIDEBAR (COLLAPSIBLE ON DESKTOP & FIXED TO VIEWPORT HEIGHT) */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 flex flex-col justify-between border-r border-jp-gray-300 bg-white transition-transform duration-200",
+          "fixed inset-y-0 left-0 z-50 flex flex-col justify-between border-r border-jp-gray-300 bg-white transition-all duration-200",
           "lg:static lg:h-screen lg:shrink-0 lg:translate-x-0",
-          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          mobileSidebarOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0",
+          isSidebarCollapsed ? "lg:w-20" : "lg:w-72"
         )}
       >
-        {/* SIDEBAR TOP: BRAND IDENTITY & STATUS */}
+        {/* SIDEBAR TOP: BRAND IDENTITY & STATUS (EXACT H-16 TO ALIGN WITH DESKTOP TOPBAR) */}
         <div className="flex flex-col shrink-0">
-          <div className="flex h-20 items-center justify-between border-b border-jp-gray-200 px-6">
-            <Link href="/admin" className="flex items-center gap-3 group">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-jp-blue-900 font-heading text-sm font-bold text-white shadow-xs transition group-hover:scale-105">
-                {settings.logoInitials || "JP"}
-              </div>
-              <div>
-                <div className="font-heading text-sm font-bold tracking-tight text-jp-ink">
-                  {settings.siteName || "JEJAK PERUPA"}
+          <div
+            className={cn(
+              "flex h-16 shrink-0 items-center border-b border-jp-gray-300 transition-all",
+              isSidebarCollapsed
+                ? "justify-center px-2"
+                : "justify-between px-5"
+            )}
+          >
+            <Link
+              href="/admin"
+              className={cn(
+                "flex items-center gap-3 group",
+                isSidebarCollapsed ? "justify-center" : ""
+              )}
+            >
+              {settings.logoImageUrl ? (
+                <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-jp-gray-200 bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={settings.logoImageUrl}
+                    alt={settings.siteName}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
-                <div className="text-[10px] font-mono font-medium text-jp-gray-500 uppercase tracking-wider">
-                  Panel Kurasi Redaksi
+              ) : (
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-jp-blue-900 font-heading text-xs font-bold text-white shadow-2xs transition group-hover:scale-105">
+                  {settings.logoInitials || "JP"}
                 </div>
-              </div>
+              )}
+
+              {!isSidebarCollapsed && (
+                <div className="min-w-0">
+                  <div className="font-heading text-sm font-bold tracking-tight text-jp-ink truncate">
+                    {settings.siteName || "JEJAK PERUPA"}
+                  </div>
+                  <div className="text-[10px] font-mono font-medium text-jp-gray-500 uppercase tracking-wider">
+                    Panel Kurasi Redaksi
+                  </div>
+                </div>
+              )}
             </Link>
 
+            {/* MOBILE CLOSE BUTTON */}
             <button
               type="button"
               onClick={() => setMobileSidebarOpen(false)}
@@ -216,55 +248,88 @@ export function AdminLayout({
           </div>
 
           {/* EDITORIAL STATUS STRIP */}
-          <div className="px-6 py-2.5 border-b border-jp-gray-100 bg-jp-paper/60 flex items-center justify-between">
+          <div
+            className={cn(
+              "border-b border-jp-gray-200 bg-jp-paper/60 flex items-center transition-all",
+              isSidebarCollapsed
+                ? "justify-center py-2 px-1"
+                : "justify-between px-5 py-2"
+            )}
+          >
             <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-green-600 animate-pulse" />
-              <span className="text-[11px] font-bold text-jp-gray-700">
-                Mode Editorial Aktif
-              </span>
+              <span
+                className="flex h-2 w-2 rounded-full bg-green-600 animate-pulse"
+                title="Mode Editorial Aktif"
+              />
+              {!isSidebarCollapsed && (
+                <span className="text-[11px] font-bold text-jp-gray-700">
+                  Mode Editorial Aktif
+                </span>
+              )}
             </div>
-            <Badge variant="blue" size="sm">
-              v1.2.0
-            </Badge>
+
+            {!isSidebarCollapsed && (
+              <Badge variant="blue" size="sm">
+                v1.2.0
+              </Badge>
+            )}
           </div>
         </div>
 
         {/* SIDEBAR SCROLLABLE NAVIGATION LIST */}
-        <nav className="flex-1 overflow-y-auto space-y-6 px-4 py-5">
+        <nav
+          className={cn(
+            "flex-1 overflow-y-auto py-4 scrollbar-none",
+            isSidebarCollapsed ? "px-2 space-y-4" : "px-4 space-y-5"
+          )}
+        >
           {navSections.map((section) => (
             <div key={section.group} className="space-y-1">
-              <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-jp-gray-400 font-mono">
-                {section.group}
-              </div>
+              {!isSidebarCollapsed ? (
+                <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-jp-gray-400 font-mono">
+                  {section.group}
+                </div>
+              ) : (
+                <div className="mx-auto h-[1px] w-8 bg-jp-gray-200 my-2" />
+              )}
 
-              <div className="space-y-1 pt-1">
+              <div className="space-y-1 pt-0.5">
                 {section.items.map((item) => {
                   const active = isLinkActive(item.href, item.exact);
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
+                      title={isSidebarCollapsed ? item.label : undefined}
                       onClick={() => setMobileSidebarOpen(false)}
                       className={cn(
-                        "flex items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-bold transition-all",
+                        "flex items-center rounded-lg text-xs font-bold transition-all",
+                        isSidebarCollapsed
+                          ? "justify-center h-10 w-full p-2"
+                          : "justify-between px-3.5 py-2.5",
                         active
                           ? "bg-jp-blue-900 text-white shadow-xs"
                           : "text-jp-gray-700 hover:bg-jp-blue-50 hover:text-jp-blue-900"
                       )}
                     >
-                      <div className="flex items-center gap-2.5">
+                      <div
+                        className={cn(
+                          "flex items-center gap-2.5",
+                          isSidebarCollapsed ? "justify-center" : ""
+                        )}
+                      >
                         <span className={cn(active ? "text-white" : "text-jp-gray-500")}>
                           {item.icon}
                         </span>
-                        <span>{item.label}</span>
+                        {!isSidebarCollapsed && <span>{item.label}</span>}
                       </div>
 
-                      {item.badge && (
+                      {!isSidebarCollapsed && item.badge && (
                         <span
                           className={cn(
-                            "rounded-md px-1.5 py-0.5 text-[10px] font-mono font-bold",
+                            "rounded-full px-2 py-0.5 text-[10px] font-bold font-mono",
                             active
-                              ? "bg-white text-jp-blue-900"
+                              ? "bg-white/20 text-white"
                               : "bg-jp-blue-100 text-jp-blue-900"
                           )}
                         >
@@ -279,37 +344,64 @@ export function AdminLayout({
           ))}
         </nav>
 
-        {/* SIDEBAR FOOTER: PINNED AT BOTTOM */}
-        <div className="shrink-0 border-t border-jp-gray-200 p-4 space-y-3 bg-white">
-          {/* QUICK PUBLIC LINK */}
+        {/* SIDEBAR FOOTER: PUBLIC LINK & USER PROFILE */}
+        <div
+          className={cn(
+            "shrink-0 border-t border-jp-gray-200 bg-jp-paper/40",
+            isSidebarCollapsed ? "p-2 space-y-2" : "p-4 space-y-3"
+          )}
+        >
+          {/* EXTERNAL VIEW WEB BUTTON */}
           <Link
             href="/"
             target="_blank"
-            className="flex items-center justify-between rounded-lg border border-jp-gray-200 bg-jp-paper/60 px-3 py-2 text-xs font-bold text-jp-gray-700 hover:bg-jp-blue-50 hover:text-jp-blue-900 transition"
+            title="Buka Website Publik"
+            className={cn(
+              "flex items-center rounded-lg border border-jp-gray-200 bg-white text-xs font-bold text-jp-gray-700 hover:bg-jp-blue-50 hover:text-jp-blue-900 transition",
+              isSidebarCollapsed
+                ? "justify-center h-9 w-full"
+                : "justify-between px-3 py-2"
+            )}
           >
             <div className="flex items-center gap-2">
-              <Compass className="h-3.5 w-3.5 text-jp-blue-700" />
-              <span>Buka Website Publik</span>
+              <Compass className="h-3.5 w-3.5 text-jp-blue-700 shrink-0" />
+              {!isSidebarCollapsed && <span>Buka Website Publik</span>}
             </div>
-            <ExternalLink className="h-3 w-3 text-jp-gray-400" />
+            {!isSidebarCollapsed && (
+              <ExternalLink className="h-3 w-3 text-jp-gray-400" />
+            )}
           </Link>
 
           {/* ADMIN PROFILE INFO & LOGOUT */}
-          <div className="flex items-center justify-between gap-2 pt-2 border-t border-jp-gray-100">
-            <div className="flex items-center gap-2.5 min-w-0">
+          <div
+            className={cn(
+              "flex items-center gap-2 pt-2 border-t border-jp-gray-200/60",
+              isSidebarCollapsed
+                ? "flex-col justify-center"
+                : "justify-between"
+            )}
+          >
+            <div
+              className={cn(
+                "flex items-center gap-2.5 min-w-0",
+                isSidebarCollapsed ? "justify-center" : ""
+              )}
+            >
               <Avatar
                 fallback="SN"
                 size="sm"
-                className="h-8 w-8 border border-jp-gray-300 ring-1 ring-jp-blue-200"
+                className="h-8 w-8 shrink-0 border border-jp-gray-300 ring-1 ring-jp-blue-200"
               />
-              <div className="min-w-0">
-                <div className="truncate text-xs font-bold text-jp-ink">
-                  {currentUser?.name || "Siti Nurhaliza"}
+              {!isSidebarCollapsed && (
+                <div className="min-w-0">
+                  <div className="truncate text-xs font-bold text-jp-ink">
+                    {currentUser?.name || "Siti Nurhaliza"}
+                  </div>
+                  <div className="text-[10px] font-mono text-jp-gray-500">
+                    Kurator Redaksi
+                  </div>
                 </div>
-                <div className="text-[10px] font-mono text-jp-gray-500">
-                  Kurator Redaksi
-                </div>
-              </div>
+              )}
             </div>
 
             <button
@@ -326,17 +418,28 @@ export function AdminLayout({
 
       {/* MAIN WORKSPACE CANVAS */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* DESKTOP WORKSPACE TOPBAR */}
-        <header className="hidden lg:flex h-16 shrink-0 items-center justify-between border-b border-jp-gray-300 bg-white px-8">
-          {/* BREADCRUMB TITLE */}
-          <div className="flex items-center gap-2 text-xs text-jp-gray-500">
-            <Link href="/admin" className="hover:text-jp-ink font-semibold">
-              Panel Admin
-            </Link>
-            <ChevronRight className="h-3.5 w-3.5 text-jp-gray-400" />
-            <span className="font-bold text-jp-ink">
-              {title || "Ringkasan & Analitik Platform"}
-            </span>
+        {/* DESKTOP WORKSPACE TOPBAR (EXACT H-16 AND BORDER-JP-GRAY-300 TO ALIGN SEAMLESSLY WITH SIDEBAR) */}
+        <header className="hidden lg:flex h-16 shrink-0 items-center justify-between border-b border-jp-gray-300 bg-white px-6 md:px-8">
+          {/* HAMBURGER TOGGLE & BREADCRUMB TITLE */}
+          <div className="flex items-center gap-3 text-xs text-jp-gray-500">
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+              title={isSidebarCollapsed ? "Buka Bilah Samping (Sidebar)" : "Tutup Bilah Samping (Sidebar)"}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-jp-gray-300 text-jp-ink hover:bg-jp-paper hover:border-jp-blue-900 transition cursor-pointer shrink-0"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <Link href="/admin" className="hover:text-jp-ink font-semibold">
+                Panel Admin
+              </Link>
+              <ChevronRight className="h-3.5 w-3.5 text-jp-gray-400" />
+              <span className="font-bold text-jp-ink">
+                {title || "Ringkasan & Analitik Platform"}
+              </span>
+            </div>
           </div>
         </header>
 
