@@ -1,9 +1,18 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# Engineering Guidelines and Coding Standards
 
-# This is NOT the Next.js you know
+## 1. Anti-AI Slop & Writing Style Rules
+- Do not use emojis anywhere in documentation, source code, comments, or communication.
+- Do not use em-dashes ("— "). Use colons, hyphens with standard spaces (" - "), or parentheses instead.
+- Maintain professional, concise, and structured technical documentation.
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+## 2. Frontend Component Architecture: Atomic Design
+All frontend components must be organized strictly following the Atomic Design methodology:
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
+```text
+src/components/
+├── atoms/        # Primitive, indivisible UI elements (Button, Badge, Input, Typography, IconWrapper, Avatar)
+├── molecules/    # Combinations of atoms acting as a single unit (SearchBar, PeruChanCallout, ArticleCard, AuthorMeta, BreadcrumbNav)
+├── organisms/    # Complex standalone UI sections (NavbarHeader, FooterSection, ArticleGrid, ArtworkViewer, TimelineStream)
+├── templates/    # Page layout structures and grid skeletons without hardcoded data bindings
+└── [app/ routes] # Next.js Server Components and route handlers delivering data to templates
+```

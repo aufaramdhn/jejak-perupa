@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Jejak Perupa — Catatan Pelajar Seni Rupa
+    </title>
+
+    <meta
+        name="description"
+        content="Ruang belajar dan berbagi pengetahuan seni rupa bagi pelajar, mahasiswa, dan siapa saja yang ingin mengenal dunia seni."
+    >
+
+    <!-- Tailwind CDN
+         Untuk prototype / development awal.
+         Nanti dipindahkan ke Tailwind build production.
+    -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+
+        tailwind.config = {
+
+            theme: {
+
+                extend: {
+
+                    colors: {
+
+                        jp: {
+
+                            blue: {
+                                900: "#304D86",
+                                700: "#5277B4",
+                                100: "#EAF0F8"
+                            },
+
+                            paper: "#FAFAF7",
+
+                            brown: {
+                                900: "#60483B",
+                                100: "#F3ECE8"
+                            },
+
+                            lime: "#C7D84A",
+
+                            ink: "#202124",
+
+                            gray: {
+                                700: "#555B63",
+                                500: "#777D86",
+                                300: "#DCDCDC"
+                            }
+
+                        }
+
+                    },
+
+                    fontFamily: {
+
+                        sans: [
+                            "Inter",
+                            "system-ui",
+                            "sans-serif"
+                        ],
+
+                        heading: [
+                            "Plus Jakarta Sans",
+                            "Inter",
+                            "sans-serif"
+                        ]
+
+                    },
+
+                    boxShadow: {
+
+                        "jp-card":
+                            "0 4px 20px rgba(32, 33, 36, 0.06)"
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    </script>
+
+
+    <style>
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #FAFAF7;
+            color: #202124;
+        }
+
+    </style>
+
+</head>
+
+
+<body class="bg-jp-paper text-jp-ink">
+
+
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
+
+<header
+    class="sticky top-0 z-50 border-b border-jp-gray-300 bg-jp-paper/95 backdrop-blur"
+>
+
+    <div
+        class="mx-auto flex h-16 max-w-6xl items-center justify-between px-5"
+    >
+
+        <!-- LOGO -->
+
+        <a
+            href="#"
+            class="flex items-center gap-3"
+        >
+
+            <!--
+                Ganti dengan logo Jejak Perupa
+            -->
+
+            <img
+                src="assets/logo/logo-jejak-perupa.png"
+                alt="Logo Jejak Perupa"
+                class="h-12 w-auto object-contain"
+                onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')"
+            >
+            <div class="hidden h-10 w-10 items-center justify-center rounded-full bg-jp-blue-900 text-xs font-bold text-white">JP</div>
+          
+            <div>
+
+                <div
+                    class="font-heading text-sm font-extrabold tracking-tight"
+                >
+                    JEJAK PERUPA
+                </div>
+
+                <div
+                    class="hidden text-[8.5px] uppercase tracking-[0.18em] text-jp-gray-500 sm:block"
+                >
+                    Catatan Perjalanan Pelajar Seni Rupa
+                </div>
+
+            </div>
+
+        </a>
+
+
+        <!-- NAVIGATION -->
+
+        <nav
+            class="hidden items-center gap-7 md:flex"
+        >
+
+            <a
+                href="#Beranda"
+                class="text-sm font-medium transition hover:text-jp-blue-900"
+            >
+                Beranda
+            </a>
+
+            <a
+                href="#artikel"
+                class="text-sm font-medium transition hover:text-jp-blue-700"
+            >
+                Artikel
+            </a>
+
+            <a
+                href="#seniman"
+                class="text-sm font-medium transition hover:text-jp-blue-700"
+            >
+                Seniman
+            </a>
+
+            <a
+                href="#tentang"
+                class="text-sm font-medium transition hover:text-jp-blue-700"
+            >
+                Tentang
+            </a>
+
+        </nav>
+
+
+        <!-- SEARCH -->
+
+        <button
+            aria-label="Cari"
+            class="flex h-9 w-9 items-center justify-center rounded-full border border-jp-gray-300 transition hover:border-jp-blue-700"
+        >
+
+            <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                viewBox="0 0 24 24"
+            >
+
+                <circle
+                    cx="11"
+                    cy="11"
+                    r="7"
+                />
+
+                <path
+                    d="m20 20-4-4"
+                />
+
+            </svg>
+
+        </button>
+
+    </div>
+
+</header>
+
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section
+    class="overflow-hidden border-b border-jp-gray-300 bg-jp-blue-100"
+>
+
+    <div
+        class="mx-auto grid max-w-6xl items-center gap-8 px-5 py-16 md:grid-cols-[1fr_320px] lg:py-20"
+    >
+
+
+        <!-- TEXT -->
+
+        <div>
+
+            <div
+                class="mb-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-jp-blue-700"
+            >
+
+                <span
+                    class="h-2 w-2 rounded-full bg-jp-lime"
+                ></span>
+
+                Jejak Perupa Aktif Kembali
+
+            </div>
+
+
+            <h1
+                class="max-w-2xl font-heading text-4xl font-extrabold leading-tight tracking-tight text-jp-blue-900 md:text-5xl"
+            >
+                Belajar seni,
+                <br>
+                meninggalkan jejak.
+            </h1>
+
+
+            <p
+                class="mt-5 max-w-xl text-base leading-7 text-jp-gray-700"
+            >
+                Ruang belajar dan berbagi pengetahuan seni rupa
+                bagi pelajar, mahasiswa, dan siapa saja yang
+                ingin mengenal dunia seni.
+            </p>
+
+
+            <!-- SEARCH -->
+
+            <div
+                class="mt-7 flex max-w-xl overflow-hidden rounded-lg border border-jp-gray-300 bg-white shadow-jp-card"
+            >
+
+                <input
+                    type="text"
+                    placeholder="Cari teori, teknik, atau seniman..."
+                    class="min-w-0 flex-1 px-4 py-3 text-sm outline-none"
+                >
+
+                <button
+                    class="bg-jp-blue-900 px-5 text-sm font-semibold text-white transition hover:bg-jp-blue-700"
+                >
+                    Cari
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- PERU-CHAN -->
+
+        <div
+            class="relative flex justify-center"
+        >
+
+            <div
+                class="absolute bottom-4 h-52 w-52 rounded-full bg-white/70"
+            ></div>
+
+
+            <!-- Peru-Chan placeholder / img -->
+
+            <img
+                src="assets/peruchan/0-peruprofil.png"
+                alt="Peru-Chan, maskot Jejak Perupa"
+                class="relative z-10 max-h-72 object-contain"
+                onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')"
+            >
+            <div class="relative z-10 hidden flex-col items-center justify-center rounded-2xl bg-white/90 p-6 text-center shadow-lg">
+                <span class="text-4xl">🎨</span>
+                <span class="mt-2 font-heading font-bold text-jp-blue-900">Peru-Chan</span>
+                <span class="text-xs text-jp-gray-500">Maskot Jejak Perupa</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     ARTIKEL TERBARU
+===================================================== -->
+
+<section
+    id="artikel"
+    class="mx-auto max-w-6xl px-5 py-16"
+>
+    
+    <div
+        class="flex items-end justify-between"
+    >
+    
+        <div>
+
+            <p
+                class="text-xs font-bold uppercase tracking-[0.18em] text-jp-blue-700"
+            >
+                Pengetahuan
+            </p>
+
+            <h2
+                class="mt-2 font-heading text-2xl font-bold md:text-3xl"
+            >
+                Artikel Terbaru
+            </h2>
+
+        </div>
+
+
+        <a
+            href="#"
+            class="text-sm font-semibold text-jp-blue-700"
+        >
+            Lihat semua →
+        </a>
+
+    </div>
+
+
+    <!-- ARTICLE GRID -->
+    
+    <div
+        class="mt-8 grid gap-6 md:grid-cols-3"
+    >
+
+
+        <!-- ARTICLE 1 -->
+
+        <a
+    href="artikel/seni-rupa-murni.html"
+    class="group block overflow-hidden rounded-2xl border border-jp-gray-300 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+>
+    <article>
+
+        <img
+            src="assets/peruchan/Stiker4 peruchan.png"
+            alt="Mengenal Program Studi Seni Rupa Murni"
+            class="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-105"
+            onerror="this.src='https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600&auto=format&fit=crop&q=80'"
+        >
+
+        <div class="p-5">
+
+            <span
+                class="inline-block rounded-full bg-jp-lime px-2.5 py-1 text-[10px] font-bold uppercase"
+            >
+                Pendidikan
+            </span>
+
+            <h3
+                class="mt-3 font-heading text-lg font-bold leading-snug group-hover:text-jp-blue-700"
+            >
+                Mengenal Program Studi Seni Rupa Murni
+            </h3>
+
+            <p
+                class="mt-2 text-sm leading-6 text-jp-gray-700"
+            >
+                Mengenal Seni Rupa Murni, kehidupan perkuliahannya,
+                studio, hingga berbagai kemungkinan profesinya.
+            </p>
+
+            <p
+                class="mt-4 text-xs text-jp-gray-500"
+            >
+                8 menit membaca
+            </p>
+
+        </div>
+
+    </article>
+</a>
+
+        <!-- ARTICLE 2 -->
+
+        <article
+            class="overflow-hidden rounded-xl border border-jp-gray-300 bg-white shadow-jp-card"
+        >
+
+            <img
+                src="assets/peruchan/Stiker3 peruchan.png"
+                alt=""
+                class="aspect-[16/10] w-full object-cover"
+                onerror="this.src='https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&auto=format&fit=crop&q=80'"
+            >
+
+
+            <div class="p-5">
+
+                <span
+                    class="inline-block rounded-full bg-jp-blue-100 px-2.5 py-1 text-[10px] font-bold uppercase text-jp-blue-900"
+                >
+                    Teknik
+                </span>
+
+
+                <h3
+                    class="mt-3 font-heading text-lg font-bold leading-snug"
+                >
+                    Mengenal Dasar Teknik Cat Air
+                </h3>
+
+
+                <p
+                    class="mt-2 text-sm leading-6 text-jp-gray-700"
+                >
+                    Beberapa prinsip dasar yang bisa
+                    dipelajari sebelum mulai bereksperimen.
+                </p>
+
+
+                <p
+                    class="mt-4 text-xs text-jp-gray-500"
+                >
+                    6 menit membaca
+                </p>
+
+            </div>
+
+        </article>
+
+
+
+        <!-- ARTICLE 3 -->
+
+        <article
+            class="overflow-hidden rounded-xl border border-jp-gray-300 bg-white shadow-jp-card"
+        >
+
+            <img
+                src="assets/peruchan/Stiker2 peruchan.png"
+                alt=""
+                class="aspect-[16/10] w-full object-cover"
+                onerror="this.src='https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=600&auto=format&fit=crop&q=80'"
+            >
+
+
+            <div class="p-5">
+
+                <span
+                    class="inline-block rounded-full bg-jp-brown-100 px-2.5 py-1 text-[10px] font-bold uppercase text-jp-brown-900"
+                >
+                    Sejarah
+                </span>
+
+
+                <h3
+                    class="mt-3 font-heading text-lg font-bold leading-snug"
+                >
+                    Mengapa Kita Perlu Belajar Sejarah Seni?
+                </h3>
+
+
+                <p
+                    class="mt-2 text-sm leading-6 text-jp-gray-700"
+                >
+                    Sejarah bukan hanya tentang menghafal nama
+                    dan tahun, tetapi memahami perubahan gagasan.
+                </p>
+
+
+                <p
+                    class="mt-4 text-xs text-jp-gray-500"
+                >
+                    7 menit membaca
+                </p>
+
+            </div>
+
+        </article>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     KATEGORI BELAJAR
+===================================================== -->
+
+<section
+    class="border-y border-jp-gray-300 bg-white"
+>
+
+    <div
+        class="mx-auto max-w-6xl px-5 py-14"
+    >
+
+        <div class="max-w-xl">
+
+            <p
+                class="text-xs font-bold uppercase tracking-[0.18em] text-jp-blue-700"
+            >
+                Jelajahi
+            </p>
+
+            <h2
+                class="mt-2 font-heading text-2xl font-bold"
+            >
+                Mau belajar apa hari ini?
+            </h2>
+
+        </div>
+
+
+        <div
+            class="mt-7 grid gap-4 sm:grid-cols-3"
+        >
+
+            <a
+                href="#"
+                class="group rounded-xl border border-jp-gray-300 p-6 transition hover:-translate-y-1 hover:border-jp-blue-700 hover:bg-jp-blue-100"
+            >
+
+                <div class="text-2xl">
+                    📚
+                </div>
+
+                <h3
+                    class="mt-4 font-heading font-bold"
+                >
+                    Teori Seni
+                </h3>
+
+                <p
+                    class="mt-2 text-sm leading-6 text-jp-gray-700"
+                >
+                    Estetika, kritik, filsafat, dan pemikiran seni.
+                </p>
+
+            </a>
+
+
+            <a
+                href="#"
+                class="group rounded-xl border border-jp-gray-300 p-6 transition hover:-translate-y-1 hover:border-jp-blue-700 hover:bg-jp-blue-100"
+            >
+
+                <div class="text-2xl">
+                    🎨
+                </div>
+
+                <h3
+                    class="mt-4 font-heading font-bold"
+                >
+                    Teknik Seni
+                </h3>
+
+                <p
+                    class="mt-2 text-sm leading-6 text-jp-gray-700"
+                >
+                    Mengenal medium, teknik, material, dan proses berkarya.
+                </p>
+
+            </a>
+
+
+            <a
+                href="#"
+                class="group rounded-xl border border-jp-gray-300 p-6 transition hover:-translate-y-1 hover:border-jp-blue-700 hover:bg-jp-blue-100"
+            >
+
+                <div class="text-2xl">
+                    🏛️
+                </div>
+
+                <h3
+                    class="mt-4 font-heading font-bold"
+                >
+                    Sejarah Seni
+                </h3>
+
+                <p
+                    class="mt-2 text-sm leading-6 text-jp-gray-700"
+                >
+                    Perjalanan gagasan, gerakan, dan perkembangan seni.
+                </p>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     SENIMAN UNGGULAN
+===================================================== -->
+
+<section
+    id="seniman"
+    class="mx-auto max-w-6xl px-5 py-16"
+>
+
+    <div
+        class="flex items-end justify-between"
+    >
+
+        <div>
+
+            <p
+                class="text-xs font-bold uppercase tracking-[0.18em] text-jp-brown-900"
+            >
+                Mengenal Perupa
+            </p>
+
+            <h2
+                class="mt-2 font-heading text-2xl font-bold md:text-3xl"
+            >
+                Seniman Pilihan
+            </h2>
+
+        </div>
+
+
+        <a
+            href="#"
+            class="text-sm font-semibold text-jp-blue-700"
+        >
+            Lihat semua →
+        </a>
+
+    </div>
+
+
+    <div
+        class="mt-8 grid gap-6 md:grid-cols-[280px_1fr]"
+    >
+
+
+        <!-- FOTO -->
+
+        <div
+            class="overflow-hidden rounded-xl bg-jp-brown-100"
+        >
+
+            <img
+                src="assets/peruchan/Stiker1 peruchan.png"
+                alt="Profil seniman"
+                class="h-full min-h-[280px] w-full object-cover"
+                onerror="this.src='https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&auto=format&fit=crop&q=80'"
+            >
+
+        </div>
+
+
+        <!-- INFO -->
+
+        <div
+            class="flex flex-col justify-center rounded-xl border border-jp-gray-300 bg-jp-brown-100 p-7"
+        >
+
+            <p
+                class="text-xs font-bold uppercase tracking-[0.15em] text-jp-brown-900"
+            >
+                Jejak Perupa
+            </p>
+
+
+            <h3
+                class="mt-3 font-heading text-2xl font-bold"
+            >
+                Raden Saleh (1811 - 1880)
+            </h3>
+
+
+            <p
+                class="mt-4 max-w-2xl leading-7 text-jp-gray-700"
+            >
+                Pelopor seni lukis modern Indonesia dengan gaya Romantisisme dramatis. Perjalanan panjangnya di Eropa dan dedikasinya pada identitas nusantara meninggalkan jejak abadi dalam sejarah seni dunia.
+            </p>
+
+
+            <a
+                href="#"
+                class="mt-6 inline-flex w-fit rounded-lg bg-jp-brown-900 px-5 py-3 text-sm font-semibold text-white hover:bg-jp-brown-700"
+            >
+                Baca profil →
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     PERU-CHAN TIPS
+===================================================== -->
+
+<section
+    class="mx-auto max-w-4xl px-5 pb-16"
+>
+
+    <div
+        class="relative overflow-hidden rounded-xl border border-jp-blue-300 bg-jp-blue-100"
+    >
+
+        <div
+            class="grid items-center gap-5 p-6 sm:grid-cols-[130px_1fr] sm:p-8"
+        >
+
+
+            <!-- MASKOT -->
+
+            <div
+                class="flex justify-center"
+            >
+
+                <img
+                    src="assets/peruchan/Stiker5 peruchan.png"
+                    alt="Peru-Chan"
+                    class="max-h-32 object-contain"
+                    onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')"
+                >
+                <div class="hidden text-5xl">🎨✨</div>
+
+            </div>
+
+
+            <!-- TIP -->
+
+            <div>
+
+                <div
+                    class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-jp-blue-700"
+                >
+
+                    <span
+                        class="h-2 w-2 rounded-full bg-jp-lime"
+                    ></span>
+
+                    Tips dari Peru-Chan
+
+                </div>
+
+
+                <p
+                    class="mt-3 text-lg font-medium leading-7"
+                >
+                    "Jangan takut kalau karya pertamamu
+                    belum terlihat bagus. Dalam seni,
+                    proses juga merupakan bagian dari karya."
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     TENTANG
+===================================================== -->
+
+<section
+    id="tentang"
+    class="border-t border-jp-gray-300 bg-white"
+>
+
+    <div
+        class="mx-auto max-w-3xl px-5 py-16 text-center"
+    >
+
+        <p
+            class="text-xs font-bold uppercase tracking-[0.18em] text-jp-blue-700"
+        >
+            Tentang Jejak Perupa
+        </p>
+
+
+        <h2
+            class="mt-3 font-heading text-2xl font-bold md:text-3xl"
+        >
+            Sebuah ruang kecil untuk belajar seni.
+        </h2>
+
+
+        <p
+            class="mt-5 leading-8 text-jp-gray-700"
+        >
+            Jejak Perupa hadir sebagai ruang berbagi pengetahuan
+            seni rupa yang dapat diakses oleh pelajar, mahasiswa,
+            komunitas, maupun siapa saja yang ingin mengenal
+            dunia seni.
+        </p>
+
+
+        <a
+            href="#"
+            class="mt-6 inline-block text-sm font-semibold text-jp-blue-700"
+        >
+            Selengkapnya tentang Jejak Perupa →
+        </a>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer
+    class="bg-jp-brown-900 text-white"
+>
+
+    <div
+        class="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-10 sm:flex-row sm:items-center sm:justify-between"
+    >
+
+        <div>
+
+            <div
+                class="font-heading font-bold"
+            >
+                JEJAK PERUPA
+            </div>
+
+            <p
+                class="mt-1 text-sm text-jp-brown-100"
+            >
+                Ruang belajar dan berbagi pengetahuan seni rupa.
+            </p>
+
+        </div>
+
+
+        <div
+            class="text-sm text-jp-brown-100"
+        >
+            © 2026 Jejak Perupa
+        </div>
+
+    </div>
+
+</footer>
+
+
+</body>
+
+</html>

@@ -1,0 +1,389 @@
+// Skema Basis Data Jejak Perupa
+// Merujuk pada System Design Document (docs/system-design.md)
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  CONTRIBUTOR
+  READER
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SourceType {
+  BOOK
+  JOURNAL
+  MUSEUM
+  INTERVIEW
+  WEBSITE
+}
+
+enum PeruChanSticker {
+  PROFILE
+  THINKING
+  HAPPY
+  PAINTING
+  SHOCKED
+}
+
+enum TargetLevel {
+  PEMULA
+  MENENGAH
+  LANJUTAN
+}
+
+enum EventType {
+  PAMERAN
+  WORKSHOP
+  DISKUSI
+  OPEN_CALL
+}
+
+enum RelationType {
+  GURU_MURID
+  PENGARUH
+  KONTEMPORER
+  ANGGOTA_KOLEKTIF
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// 1. PENGGUNA DAN AUTENTIKASI
+model User {
+  id            String          @id @default(uuid())
+  name          String
+  email         String          @unique
+  avatarUrl     String?
+  role          Role            @default(READER)
+  bio           String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  bookmarks     UserBookmark[]
+  progress      UserProgress[]
+  comments      Comment[]
+}
+
+// 2. KATEGORI DAN TAKSONOMI
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  iconName    String?
+  colorHex    String?
+  orderIndex  Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  articles    Article[]
+}
+
+model Tag {
+  id        String       @id @default(uuid())
+  name      String
+  slug      String       @unique
+  createdAt DateTime     @default(now())
+
+  articles  ArticleTag[]
+}
+
+// 3. ARTIKEL EDUKASI
+model Article {
+  id                  String             @id @default(uuid())
+  title               String
+  slug                String             @unique
+  excerpt             String
+  contentMarkdown     String
+  coverImageUrl       String?
+  readTimeMinutes     Int                @default(5)
+  peruChanTip         String?
+  peruChanStickerType PeruChanSticker    @default(PROFILE)
+  status              ArticleStatus      @default(PUBLISHED)
+  viewCount           Int                @default(0)
+  publishedAt         DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  categoryId          String
+  category            Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  featuredArtistId    String?
+  featuredArtist      Artist?            @relation(fields: [featuredArtistId], references: [id], onDelete: SetNull)
+
+  references          ArticleReference[]
+  tags                ArticleTag[]
+  bookmarks           UserBookmark[]
+  quizzes             Quiz[]
+  comments            Comment[]
+  learningNodes       LearningNode[]
+  glossaryTerms       GlossaryTerm[]
+
+  @@index([slug])
+  @@index([categoryId])
+}
+
+model ArticleReference {
+  id          String     @id @default(uuid())
+  articleId   String
+  article     Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  citation    String
+  sourceType  SourceType @default(BOOK)
+  externalUrl String?
+  orderIndex  Int        @default(0)
+
+  @@index([articleId])
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+}
+
+// 4. SENIMAN DAN KARYA SENI
+model Artist {
+  id                   String           @id @default(uuid())
+  name                 String
+  slug                 String           @unique
+  birthYear            Int
+  deathYear            Int?
+  originCity           String
+  artMovement          String
+  studioDiscipline     String
+  shortBio             String
+  fullBiographyMarkdown String
+  photoUrl             String?
+  isFeatured           Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  artworks             Artwork[]
+  timelines            ArtistTimeline[]
+  articles             Article[]
+  outgoingRelations    ArtistRelation[] @relation("FromArtist")
+  incomingRelations    ArtistRelation[] @relation("ToArtist")
+
+  @@index([slug])
+}
+
+model ArtistTimeline {
+  id          String   @id @default(uuid())
+  artistId    String
+  artist      Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  year        Int
+  title       String
+  description String
+  imageUrl    String?
+  orderIndex  Int      @default(0)
+
+  @@index([artistId])
+}
+
+model ArtistRelation {
+  id           String       @id @default(uuid())
+  fromArtistId String
+  toArtistId   String
+  fromArtist   Artist       @relation("FromArtist", fields: [fromArtistId], references: [id], onDelete: Cascade)
+  toArtist     Artist       @relation("ToArtist", fields: [toArtistId], references: [id], onDelete: Cascade)
+  relationType RelationType @default(PENGARUH)
+  description  String
+
+  @@index([fromArtistId])
+  @@index([toArtistId])
+}
+
+model Artwork {
+  id               String         @id @default(uuid())
+  artistId         String
+  artist           Artist         @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  title            String
+  slug             String         @unique
+  yearCreated      Int
+  mediumMaterial   String
+  dimensions       String?
+  currentLocation  String
+  highResImageUrl  String
+  thumbnailUrl     String?
+  closeLookingData Json?          // Berisi focal points, color palette, composition notes
+  isFeatured       Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+
+  glossaryTerms    GlossaryTerm[]
+
+  @@index([artistId])
+}
+
+// 5. KAMUS DAN GLOSARIUM SENI
+model GlossaryTerm {
+  id                     String    @id @default(uuid())
+  term                   String
+  slug                   String    @unique
+  phoneticSpelling       String?
+  letterGroup            String    // A-Z
+  category               String
+  definitionShort        String
+  definitionFullMarkdown String
+  createdAt              DateTime  @default(now())
+
+  exampleArtworkId       String?
+  exampleArtwork         Artwork?  @relation(fields: [exampleArtworkId], references: [id], onDelete: SetNull)
+
+  relatedArticleId       String?
+  relatedArticle         Article?  @relation(fields: [relatedArticleId], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([letterGroup])
+}
+
+// 6. KURIKULUM JALUR BELAJAR
+model LearningPath {
+  id          String         @id @default(uuid())
+  title       String
+  slug        String         @unique
+  targetLevel TargetLevel    @default(PEMULA)
+  description String
+  iconName    String?
+  orderIndex  Int            @default(0)
+  createdAt   DateTime       @default(now())
+
+  nodes       LearningNode[]
+}
+
+model LearningNode {
+  id          String         @id @default(uuid())
+  pathId      String
+  path        LearningPath   @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  articleId   String
+  article     Article        @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  orderIndex  Int            @default(0)
+  isMandatory Boolean        @default(true)
+
+  userProgress UserProgress[]
+
+  @@index([pathId])
+}
+
+// 7. KUIS DAN INTERAKSI PENGGUNA
+model Quiz {
+  id        String         @id @default(uuid())
+  articleId String
+  article   Article        @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  title     String
+  createdAt DateTime       @default(now())
+
+  questions QuizQuestion[]
+
+  @@index([articleId])
+}
+
+model QuizQuestion {
+  id                     String          @id @default(uuid())
+  quizId                 String
+  quiz                   Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questionText           String
+  optionsJson            Json            // Array opsi jawaban string
+  correctIndex           Int
+  explanationText        String
+  peruChanReactionSticker PeruChanSticker @default(HAPPY)
+
+  @@index([quizId])
+}
+
+model UserProgress {
+  id             String       @id @default(uuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  learningNodeId String
+  learningNode   LearningNode @relation(fields: [learningNodeId], references: [id], onDelete: Cascade)
+  completedAt    DateTime     @default(now())
+
+  @@unique([userId, learningNodeId])
+}
+
+model UserBookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, articleId])
+}
+
+model Comment {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId   String
+  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  content     String
+  isApproved  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([articleId])
+}
+
+// 8. ACARA, KOMUNITAS, DAN KONTRIBUSI
+model ArtEvent {
+  id              String    @id @default(uuid())
+  title           String
+  slug            String    @unique
+  eventType       EventType @default(PAMERAN)
+  organizer       String
+  startDate       DateTime
+  endDate         DateTime
+  venueName       String
+  city            String
+  coverUrl        String?
+  registrationUrl String?
+  createdAt       DateTime  @default(now())
+
+  @@index([slug])
+}
+
+model ArtCommunity {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  city        String
+  province    String
+  description String
+  logoUrl     String?
+  websiteUrl  String?
+  createdAt   DateTime @default(now())
+
+  @@index([slug])
+}
+
+model ArtSubmission {
+  id               String           @id @default(uuid())
+  contributorName  String
+  contributorEmail String
+  title            String
+  contentMarkdown  String
+  status           SubmissionStatus @default(PENDING)
+  reviewerNotes    String?
+  createdAt        DateTime         @default(now())
+}

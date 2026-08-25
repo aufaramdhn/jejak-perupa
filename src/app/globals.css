@@ -1,26 +1,92 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand Primary Colors */
+  --jp-blue-900: #173B63;
+  --jp-blue-700: #285A91;
+  --jp-blue-500: #4B82C3;
+  --jp-blue-100: #DCEBFF;
+  --jp-blue-50: #EEF5FF;
+
+  /* Earth / Studio Brown Colors */
+  --jp-brown-900: #3D2A20;
+  --jp-brown-700: #624431;
+  --jp-brown-500: #8A6248;
+  --jp-brown-100: #EADBCB;
+  --jp-brown-50: #F8F3EE;
+
+  /* Lime Accent Colors */
+  --jp-lime: #C9E64A;
+  --jp-lime-muted: #F2F9CF;
+
+  /* Paper Background and Ink Text */
+  --jp-paper: #FAFAF7;
+  --jp-ink: #191918;
+
+  /* Neutral Gray Shades */
+  --jp-gray-900: #191918;
+  --jp-gray-700: #3F3F3A;
+  --jp-gray-500: #73736D;
+  --jp-gray-300: #D6D6D1;
+  --jp-gray-100: #F3F3F1;
+  --jp-gray-50: #FAFAF9;
+
+  /* Shadows and Effects */
+  --shadow-jp-card: 0 4px 20px rgba(32, 33, 36, 0.06);
+  --shadow-jp-hover: 0 10px 30px rgba(32, 33, 36, 0.1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  --color-jp-blue-900: var(--jp-blue-900);
+  --color-jp-blue-700: var(--jp-blue-700);
+  --color-jp-blue-500: var(--jp-blue-500);
+  --color-jp-blue-100: var(--jp-blue-100);
+  --color-jp-blue-50: var(--jp-blue-50);
+
+  --color-jp-brown-900: var(--jp-brown-900);
+  --color-jp-brown-700: var(--jp-brown-700);
+  --color-jp-brown-500: var(--jp-brown-500);
+  --color-jp-brown-100: var(--jp-brown-100);
+  --color-jp-brown-50: var(--jp-brown-50);
+
+  --color-jp-lime: var(--jp-lime);
+  --color-jp-lime-muted: var(--jp-lime-muted);
+
+  --color-jp-paper: var(--jp-paper);
+  --color-jp-ink: var(--jp-ink);
+
+  --color-jp-gray-900: var(--jp-gray-900);
+  --color-jp-gray-700: var(--jp-gray-700);
+  --color-jp-gray-500: var(--jp-gray-500);
+  --color-jp-gray-300: var(--jp-gray-300);
+  --color-jp-gray-100: var(--jp-gray-100);
+  --color-jp-gray-50: var(--jp-gray-50);
+
+  --font-heading: var(--font-heading), "Newsreader", "Playfair Display", Georgia, serif;
+  --font-prose: var(--font-prose), "Lora", Georgia, serif;
+  --font-sans: var(--font-sans), "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", monospace;
+
+  --shadow-jp-card: var(--shadow-jp-card);
+  --shadow-jp-hover: var(--shadow-jp-hover);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--jp-paper);
+  color: var(--jp-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-prose, article p, article li {
+  font-family: var(--font-prose);
 }
