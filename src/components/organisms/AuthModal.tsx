@@ -243,26 +243,16 @@ export function AuthModal() {
           {/* DEMO ACCOUNTS QUICK SHORTCUT */}
           <div className="pt-4 border-t border-jp-gray-200 space-y-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-jp-gray-500 text-center">
-              Atau Uji Coba Cepat dengan Akun Demo:
+              Akses Uji Coba Cepat:
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => loginWithDemo("pelajar")}
-                className="flex items-center justify-center gap-1 rounded-lg border border-jp-blue-200 bg-jp-blue-50/70 p-2 text-xs font-bold text-jp-blue-900 hover:bg-jp-blue-100 transition cursor-pointer"
-              >
-                <User className="h-3.5 w-3.5 text-jp-blue-700" />
-                Demo Pelajar
-              </button>
-              <button
-                type="button"
-                onClick={() => loginWithDemo("kurator")}
-                className="flex items-center justify-center gap-1 rounded-lg border border-jp-brown-200 bg-jp-brown-50/70 p-2 text-xs font-bold text-jp-brown-900 hover:bg-jp-brown-100 transition cursor-pointer"
-              >
-                <Building className="h-3.5 w-3.5 text-jp-brown-700" />
-                Demo Kurator
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => loginWithDemo("pelajar")}
+              className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-jp-blue-200 bg-jp-blue-50/70 p-2.5 text-xs font-bold text-jp-blue-900 hover:bg-jp-blue-100 transition cursor-pointer"
+            >
+              <User className="h-3.5 w-3.5 text-jp-blue-700" />
+              Coba Masuk sebagai Pelajar (Raden Wijaya)
+            </button>
           </div>
         </div>
       </div>

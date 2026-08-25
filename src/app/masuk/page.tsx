@@ -289,48 +289,27 @@ export default function LoginPage() {
             {/* QUICK DEMO SWITCHER */}
             <div className="space-y-2 rounded-lg border border-jp-blue-100 bg-jp-blue-50/60 p-4">
               <span className="text-[11px] font-bold uppercase tracking-wider text-jp-blue-700">
-                1-Klik Akun Uji Coba (Demo):
+                1-Klik Akun Uji Coba Pembelajar:
               </span>
 
-              <div className="grid gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleDemoLogin("pelajar")}
-                  className="flex items-center justify-between rounded-lg bg-white p-3 text-left border border-jp-blue-200 hover:border-jp-blue-700 hover:shadow-xs transition cursor-pointer group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <UserCheck className="h-4 w-4 text-jp-blue-700" />
-                    <div>
-                      <div className="text-xs font-bold text-jp-ink group-hover:text-jp-blue-900">
-                        Raden Wijaya
-                      </div>
-                      <div className="text-[10px] text-jp-gray-500">
-                        Pelajar Seni Murni (ISI)
-                      </div>
+              <button
+                type="button"
+                onClick={() => handleDemoLogin("pelajar")}
+                className="w-full flex items-center justify-between rounded-lg bg-white p-3 text-left border border-jp-blue-200 hover:border-jp-blue-700 hover:shadow-xs transition cursor-pointer group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <UserCheck className="h-4 w-4 text-jp-blue-700" />
+                  <div>
+                    <div className="text-xs font-bold text-jp-ink group-hover:text-jp-blue-900">
+                      Raden Wijaya
+                    </div>
+                    <div className="text-[10px] text-jp-gray-500">
+                      Pelajar Seni Murni (ISI)
                     </div>
                   </div>
-                  <Badge variant="blue" size="sm">Masuk →</Badge>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleDemoLogin("kurator")}
-                  className="flex items-center justify-between rounded-lg bg-white p-3 text-left border border-jp-brown-200 hover:border-jp-brown-700 hover:shadow-xs transition cursor-pointer group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <ShieldCheck className="h-4 w-4 text-jp-brown-700" />
-                    <div>
-                      <div className="text-xs font-bold text-jp-ink group-hover:text-jp-brown-900">
-                        Siti Nurhaliza
-                      </div>
-                      <div className="text-[10px] text-jp-gray-500">
-                        Kurator Editorial (Admin)
-                      </div>
-                    </div>
-                  </div>
-                  <Badge variant="brown" size="sm">Masuk →</Badge>
-                </button>
-              </div>
+                </div>
+                <Badge variant="blue" size="sm">Coba Masuk →</Badge>
+              </button>
             </div>
           </div>
         </div>
