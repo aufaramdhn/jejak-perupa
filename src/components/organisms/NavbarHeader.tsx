@@ -32,7 +32,7 @@ export function NavbarHeader() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const { currentUser, isAuthenticated, logout } = useAuth();
+  const { currentUser, isAuthenticated, isMounted, logout } = useAuth();
   const { confirm, toast } = useModal();
   const { settings } = useSiteSettings();
 
@@ -278,7 +278,7 @@ export function NavbarHeader() {
           </Button>
 
           {/* CIRCULAR PROFILE AVATAR WITH DROPDOWN (FLUSH AT BOTTOM OF NAVBAR, NO ROUNDED) */}
-          {isAuthenticated && currentUser ? (
+          {isMounted && isAuthenticated && currentUser ? (
             <div className="relative flex h-full items-center" ref={profileRef}>
               <button
                 type="button"
@@ -499,7 +499,7 @@ export function NavbarHeader() {
             >
               Tentang Kami & Peru-Chan
             </Link>
-            {isAuthenticated ? (
+            {isMounted && isAuthenticated && currentUser ? (
               <div className="flex flex-col gap-2 pt-2 border-t border-jp-gray-100">
                 <Link
                   href="/dashboard"

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AdminDashboardTemplate } from "@/components/templates/AdminDashboardTemplate";
+import { AdminLayout } from "@/components/templates/AdminLayout";
 import { Heading2, Heading3, Paragraph } from "@/components/atoms/Typography";
 import { Input } from "@/components/atoms/Input";
 import { Button } from "@/components/atoms/Button";
@@ -201,45 +201,35 @@ export default function AdminPengaturanPage() {
   };
 
   return (
-    <AdminDashboardTemplate activeTab="settings">
-      <div className="space-y-12 font-sans">
-        {/* HEADER SUMMARY */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-jp-gray-300 pb-6">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-jp-blue-700">
-              Konfigurasi Platform & Visual
-            </span>
-            <Heading2 className="text-2xl text-jp-ink mt-1">
-              Pengaturan Identitas Situs & Slideshow Peru-Chan
-            </Heading2>
-            <p className="text-xs text-jp-gray-600 mt-1 font-prose">
-              Kustomisasi logo, nama platform, narasi beranda, dan kelola galeri ilustrasi karakter secara langsung.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleResetSettings}
-              className="rounded-lg"
-            >
-              <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-              Reset Bawaan
-            </Button>
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={handleSaveGeneralSettings}
-              className="rounded-lg"
-            >
-              <Save className="h-3.5 w-3.5 mr-1.5" />
-              Simpan Semua Perubahan
-            </Button>
-          </div>
+    <AdminLayout
+      title="Pengaturan Identitas Situs & Peru-Chan"
+      subtitle="Kustomisasi logo, nama platform, narasi beranda, dan kelola galeri ilustrasi karakter secara langsung."
+      actionButton={
+        <div className="flex items-center gap-2.5">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleResetSettings}
+            className="rounded-lg"
+          >
+            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+            Reset Bawaan
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={handleSaveGeneralSettings}
+            className="rounded-lg"
+          >
+            <Save className="h-3.5 w-3.5 mr-1.5" />
+            Simpan Perubahan
+          </Button>
         </div>
+      }
+    >
+      <div className="space-y-10 font-sans">
 
         {/* 1. KELOLA SLIDESHOW KARAKTER PERU-CHAN */}
         <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-8 shadow-2xs space-y-6">
@@ -654,6 +644,6 @@ export default function AdminPengaturanPage() {
           </div>
         )}
       </div>
-    </AdminDashboardTemplate>
+    </AdminLayout>
   );
 }

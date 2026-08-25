@@ -34,7 +34,7 @@ export const DEMO_USERS: Record<string, UserProfile> = {
   },
 };
 
-// Global state in memory
+// Global state in memory (starts null to match SSR initial render)
 let globalUser: UserProfile | null = null;
 let isAuthModalOpen = false;
 let authModalMessage = "Masuk atau buat akun gratis untuk melanjutkan aksi ini.";
@@ -42,21 +42,6 @@ let pendingActionCallback: (() => void) | null = null;
 
 const userListeners = new Set<(user: UserProfile | null) => void>();
 const modalListeners = new Set<(open: boolean, msg: string) => void>();
-
-// Read initial session from localStorage if available in browser
-if (typeof window !== "undefined") {
-  try {
-    const saved = localStorage.getItem("jejak_perupa_auth_user");
-    if (saved) {
-      globalUser = JSON.parse(saved);
-    } else {
-      // Default to guest (null)
-      globalUser = null;
-    }
-  } catch (e) {
-    globalUser = null;
-  }
-}
 
 export function setAuthState(user: UserProfile | null) {
   globalUser = user;
@@ -94,10 +79,26 @@ export function triggerPendingAction() {
 
 export function useAuth() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(globalUser);
+  const [isMounted, setIsMounted] = useState(false);
   const [modalOpen, setModalOpen] = useState(isAuthModalOpen);
   const [modalMsg, setModalMsg] = useState(authModalMessage);
 
   useEffect(() => {
+    // Read from localStorage only after client-side hydration mount
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("jejak_perupa_auth_user");
+        if (saved && !globalUser) {
+          globalUser = JSON.parse(saved);
+        }
+      } catch (e) {
+        globalUser = null;
+      }
+    }
+
+    setCurrentUser(globalUser);
+    setIsMounted(true);
+
     const handleUserChange = (user: UserProfile | null) => {
       setCurrentUser(user);
     };
@@ -168,19 +169,20 @@ export function useAuth() {
     setAuthState(null);
   };
 
-  const requireAuth = (action: () => void, customMsg?: string) => {
-    if (currentUser) {
-      action();
-    } else {
-      openAuthModal(customMsg, action);
+  const requireAuth = (actionCallback?: () => void, message?: string) => {
+    if (isMounted && currentUser) {
+      if (actionCallback) actionCallback();
+      return true;
     }
+    openAuthModal(message, actionCallback);
+    return false;
   };
 
   return {
     currentUser,
-    isAuthenticated: currentUser !== null,
-    isGuest: currentUser === null,
-    isCurator: currentUser?.role === "ADMIN" || currentUser?.role === "EDITOR",
+    isAuthenticated: isMounted && !!currentUser,
+    isMounted,
+    isGuest: !isMounted || !currentUser,
     loginWithDemo,
     login,
     register,
@@ -188,6 +190,9 @@ export function useAuth() {
     requireAuth,
     modalOpen,
     modalMsg,
+    isAuthModalOpen: modalOpen,
+    authModalMessage: modalMsg,
+    openAuthModal,
     closeAuthModal,
   };
 }
