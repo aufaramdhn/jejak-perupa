@@ -250,7 +250,7 @@ export function NavbarHeader() {
                 aria-label="Buka menu profil"
               >
                 <Avatar
-                  src={currentUser.avatarUrl}
+                  src={currentUser.avatarUrl || undefined}
                   fallback={currentUser.name.slice(0, 2).toUpperCase()}
                   size="md"
                   className="h-10 w-10 border-2 border-white shadow-sm ring-1 ring-jp-gray-300"

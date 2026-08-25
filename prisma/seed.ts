@@ -1,17 +1,26 @@
 import { PrismaClient, Role, ArticleStatus, SourceType, TargetLevel, EventType } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("Memulai proses seeding data Jejak Perupa...");
 
-  // 1. SEED USERS
+  const studentPasswordHash = bcrypt.hashSync("PelajarSeni123!", 10);
+  const curatorPasswordHash = bcrypt.hashSync("KuratorSeni123!", 10);
+
+  // 1. SEED USERS WITH REAL HASHED PASSWORDS
   const userStudent = await prisma.user.upsert({
     where: { email: "raden.wijaya@student.ac.id" },
-    update: {},
+    update: {
+      passwordHash: studentPasswordHash,
+      institution: "Mahasiswa Seni Rupa Murni ISI",
+    },
     create: {
       name: "Raden Wijaya",
       email: "raden.wijaya@student.ac.id",
+      passwordHash: studentPasswordHash,
+      institution: "Mahasiswa Seni Rupa Murni ISI",
       role: Role.READER,
       avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
       bio: "Mahasiswa Seni Rupa Murni tingkat akhir yang mendalami bahasa rupa dan sejarah seni modern nusantara.",
@@ -20,10 +29,15 @@ async function main() {
 
   const userCurator = await prisma.user.upsert({
     where: { email: "siti.kurator@jejakperupa.id" },
-    update: {},
+    update: {
+      passwordHash: curatorPasswordHash,
+      institution: "Kurator Redaksi Jejak Perupa",
+    },
     create: {
       name: "Siti Nurhaliza",
       email: "siti.kurator@jejakperupa.id",
+      passwordHash: curatorPasswordHash,
+      institution: "Kurator Redaksi Jejak Perupa",
       role: Role.ADMIN,
       avatarUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
       bio: "Kurator editorial dan pengkaji seni rupa nusantara di Jejak Perupa.",

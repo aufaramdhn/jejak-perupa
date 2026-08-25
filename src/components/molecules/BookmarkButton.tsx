@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Bookmark } from "lucide-react";
 import { Button } from "@/components/atoms/Button";
+import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 export interface BookmarkButtonProps {
@@ -18,10 +19,13 @@ export function BookmarkButton({
   initialSaved = false,
   className,
 }: BookmarkButtonProps) {
+  const { requireAuth } = useAuth();
   const [saved, setSaved] = useState(initialSaved);
 
   const toggleBookmark = () => {
-    setSaved(!saved);
+    requireAuth(() => {
+      setSaved((prev) => !prev);
+    }, "Masuk atau daftar akun terlebih dahulu untuk menyimpan materi ini ke ruang belajarmu.");
   };
 
   return (
@@ -29,7 +33,7 @@ export function BookmarkButton({
       variant={saved ? "primary" : "outline"}
       size="sm"
       onClick={toggleBookmark}
-      className={cn("transition-all duration-200", className)}
+      className={cn("transition-all duration-200 rounded-lg", className)}
       aria-label={saved ? "Hapus dari simpanan" : "Simpan materi"}
     >
       <Bookmark

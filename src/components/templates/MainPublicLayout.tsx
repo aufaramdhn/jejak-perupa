@@ -1,6 +1,7 @@
 import React from "react";
 import { NavbarHeader } from "@/components/organisms/NavbarHeader";
 import { FooterSection } from "@/components/organisms/FooterSection";
+import { AuthModal } from "@/components/organisms/AuthModal";
 import { cn } from "@/lib/utils";
 
 export interface MainPublicLayoutProps {
@@ -17,6 +18,7 @@ export function MainPublicLayout({
       <NavbarHeader />
       <main className={cn("flex-1", className)}>{children}</main>
       <FooterSection />
+      <AuthModal />
     </div>
   );
 }

@@ -71,6 +71,8 @@ model User {
   id            String          @id @default(uuid())
   name          String
   email         String          @unique
+  passwordHash  String?
+  institution   String?
   avatarUrl     String?
   role          Role            @default(READER)
   bio           String?
