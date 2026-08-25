@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { ConfirmationModal } from "@/components/molecules/ConfirmationModal";
-import { AlertModal } from "@/components/molecules/AlertModal";
+import { ConfirmationModal } from "@/components/molecules/modals/ConfirmationModal";
+import { AlertModal } from "@/components/molecules/modals/AlertModal";
 
 export interface ConfirmOptions {
   title: string;

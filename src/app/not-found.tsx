@@ -1,9 +1,9 @@
 import React from "react";
 import Link from "next/link";
-import { MainPublicLayout } from "@/components/templates/MainPublicLayout";
-import { Heading1, Paragraph, SectionLabel } from "@/components/atoms/Typography";
-import { Button } from "@/components/atoms/Button";
-import { PeruChanCallout } from "@/components/molecules/PeruChanCallout";
+import { MainPublicLayout } from "@/components/templates/public/MainPublicLayout";
+import { Heading1, Paragraph, SectionLabel } from "@/components/atoms/typography/Typography";
+import { Button } from "@/components/atoms/form/Button";
+import { PeruChanCallout } from "@/components/molecules/peruchan/PeruChanCallout";
 import { Compass, Home, BookOpen } from "lucide-react";
 
 export const metadata = {

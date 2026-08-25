@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
-import { AdminLayout } from "@/components/templates/AdminLayout";
-import { Heading2, Heading3, Paragraph } from "@/components/atoms/Typography";
-import { Badge } from "@/components/atoms/Badge";
-import { Button } from "@/components/atoms/Button";
-import { PeruChanCallout } from "@/components/molecules/PeruChanCallout";
+import React, { useState, useTransition } from "react";
+import { AdminLayout } from "@/components/templates/admin/AdminLayout";
+import { Heading2, Heading3, Paragraph } from "@/components/atoms/typography/Typography";
+import { Badge } from "@/components/atoms/typography/Badge";
+import { Button } from "@/components/atoms/form/Button";
+import { PeruChanCallout } from "@/components/molecules/peruchan/PeruChanCallout";
+import { CurationCardSkeleton } from "@/components/organisms/admin/CurationCardSkeleton";
 import { useCategories } from "@/lib/categoryContext";
 import { useModal } from "@/lib/modalContext";
 import {
@@ -174,70 +175,135 @@ export default function AdminKurasiPage() {
     }
   };
 
+  const [statusFilter, setStatusFilter] = useState<string>("Semua");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleStatusChange = (status: string) => {
+    startTransition(() => {
+      setStatusFilter(status);
+    });
+  };
+
+  const filteredSubmissions = submissions.filter((sub) => {
+    if (statusFilter === "Semua") return true;
+    return sub.status === statusFilter;
+  });
+
   return (
     <AdminLayout
       title="Meja Kurasi Editorial Naskah"
       subtitle="Evaluasi naskah kiriman kontributor, telaah rujukan akademik, dan sematkan catatan kuratorial resmi Peru-Chan."
     >
       <div className="space-y-6 font-sans">
-        {/* SUBMISSIONS LIST CARDS */}
-        <div className="grid gap-6">
-          {submissions.map((sub) => (
-            <div
-              key={sub.id}
-              className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-7 shadow-2xs space-y-4 hover:border-jp-blue-300 transition"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-jp-ink">
-                      {sub.title}
-                    </span>
-                    <Badge
-                      variant={
-                        sub.status === "Disetujui"
-                          ? "lime"
-                          : sub.status === "Perlu Revisi"
-                          ? "brown"
-                          : "blue"
-                      }
-                      size="sm"
-                    >
-                      {sub.status}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-jp-gray-500 font-mono">
-                    <span>Penulis: {sub.author}</span>
-                    <span>·</span>
-                    <span>Kategori: {sub.category}</span>
-                    <span>·</span>
-                    <span>Diterima: {sub.date}</span>
-                  </div>
-                </div>
+        {/* STATUS FILTER TABS */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-jp-gray-200 pb-4">
+          {["Semua", "Menunggu Kurasi", "Disetujui", "Perlu Revisi"].map((status) => {
+            const count =
+              status === "Semua"
+                ? submissions.length
+                : submissions.filter((s) => s.status === status).length;
+            const isSelected = statusFilter === status;
 
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => handleOpenReview(sub)}
-                  className="rounded-lg"
+            return (
+              <button
+                key={status}
+                type="button"
+                onClick={() => handleStatusChange(status)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition cursor-pointer",
+                  isSelected
+                    ? "bg-jp-blue-900 text-white shadow-2xs"
+                    : "bg-white text-jp-gray-700 hover:bg-jp-blue-50 hover:text-jp-blue-900 border border-jp-gray-300"
+                )}
+              >
+                <span>{status}</span>
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 py-0.2 text-[10px] font-mono",
+                    isSelected ? "bg-white/20 text-white" : "bg-jp-gray-100 text-jp-gray-600"
+                  )}
                 >
-                  <Eye className="h-4 w-4 mr-1.5" />
-                  Buka Lembar Kurasi
-                </Button>
-              </div>
-
-              <p className="text-xs text-jp-gray-700 font-prose leading-relaxed border-l-2 border-jp-gray-200 pl-3">
-                {sub.excerpt}
-              </p>
-
-              {sub.peruChanTip && (
-                <div className="rounded-lg border border-jp-blue-100 bg-jp-blue-50/50 p-3 text-xs text-jp-blue-900 font-prose italic">
-                  <strong>Catatan Peru-Chan Tersemat:</strong> &ldquo;{sub.peruChanTip}&rdquo;
-                </div>
-              )}
-            </div>
-          ))}
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
+
+        {/* SUBMISSIONS LIST WITH IN-SITU SKELETON */}
+        {(isLoading || isPending) ? (
+          <CurationCardSkeleton count={3} />
+        ) : filteredSubmissions.length > 0 ? (
+          <div className="grid gap-6">
+            {filteredSubmissions.map((sub) => (
+              <div
+                key={sub.id}
+                className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-7 shadow-2xs space-y-4 hover:border-jp-blue-300 transition"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-jp-ink">
+                        {sub.title}
+                      </span>
+                      <Badge
+                        variant={
+                          sub.status === "Disetujui"
+                            ? "lime"
+                            : sub.status === "Perlu Revisi"
+                            ? "brown"
+                            : "blue"
+                        }
+                        size="sm"
+                      >
+                        {sub.status}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-jp-gray-500 font-mono">
+                      <span>Penulis: {sub.author}</span>
+                      <span>·</span>
+                      <span>Kategori: {sub.category}</span>
+                      <span>·</span>
+                      <span>Diterima: {sub.date}</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleOpenReview(sub)}
+                    className="rounded-lg"
+                  >
+                    <Eye className="h-4 w-4 mr-1.5" />
+                    Buka Lembar Kurasi
+                  </Button>
+                </div>
+
+                <p className="text-xs text-jp-gray-700 font-prose leading-relaxed border-l-2 border-jp-gray-200 pl-3">
+                  {sub.excerpt}
+                </p>
+
+                {sub.peruChanTip && (
+                  <div className="rounded-lg border border-jp-blue-100 bg-jp-blue-50/50 p-3 text-xs text-jp-blue-900 font-prose italic">
+                    <strong>Catatan Peru-Chan Tersemat:</strong> &ldquo;{sub.peruChanTip}&rdquo;
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-jp-gray-300 bg-white p-12 text-center text-jp-gray-500">
+            Tidak ada naskah dengan status &ldquo;{statusFilter}&rdquo;.
+          </div>
+        )}
 
         {/* CURATION MODAL DRAWER */}
         {selectedSub && (

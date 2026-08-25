@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useTransition, useEffect } from "react";
 import Link from "next/link";
-import { AdminLayout } from "@/components/templates/AdminLayout";
-import { Heading2, Heading3, Paragraph } from "@/components/atoms/Typography";
-import { Badge } from "@/components/atoms/Badge";
-import { Button } from "@/components/atoms/Button";
-import { Modal } from "@/components/atoms/Modal";
-import { QuickAddCategoryModal } from "@/components/molecules/QuickAddCategoryModal";
+import { AdminLayout } from "@/components/templates/admin/AdminLayout";
+import { Heading2, Heading3, Paragraph } from "@/components/atoms/typography/Typography";
+import { Badge } from "@/components/atoms/typography/Badge";
+import { Button } from "@/components/atoms/form/Button";
+import { Modal } from "@/components/atoms/feedback/Modal";
+import { QuickAddCategoryModal } from "@/components/molecules/modals/QuickAddCategoryModal";
+import { AdminTableSkeleton } from "@/components/organisms/admin/AdminTableSkeleton";
 import { useCategories, type CategoryItem } from "@/lib/categoryContext";
 import { useModal } from "@/lib/modalContext";
 import {
@@ -33,12 +34,27 @@ export default function AdminKategoriPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Edit Modal State
   const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editColor, setEditColor] = useState("#182C4A");
+
+  const handleSearchChange = (q: string) => {
+    startTransition(() => {
+      setSearchQuery(q);
+    });
+  };
 
   const filteredCategories = useMemo(() => {
     return categories.filter((cat) => {
@@ -165,7 +181,7 @@ export default function AdminKategoriPage() {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Cari nama kategori atau deskripsi..."
               className="w-full rounded-lg border border-jp-gray-300 bg-white pl-9 pr-4 py-2 text-xs text-jp-ink focus:border-jp-blue-700 outline-none"
             />
@@ -176,8 +192,11 @@ export default function AdminKategoriPage() {
           </div>
         </div>
 
-        {/* CATEGORIES DATA TABLE */}
-        <div className="overflow-hidden rounded-xl border border-jp-gray-300 bg-white shadow-2xs">
+        {/* CATEGORIES DATA TABLE WITH GRANULAR IN-SITU SKELETON */}
+        {(isLoading || isPending) ? (
+          <AdminTableSkeleton rows={5} columns={7} />
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-jp-gray-300 bg-white shadow-2xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -274,13 +293,14 @@ export default function AdminKategoriPage() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between border-t border-jp-gray-200 bg-jp-paper/40 px-4 py-3 text-xs text-jp-gray-500 font-mono">
-            <span>
-              Menampilkan {filteredCategories.length} dari {categories.length} kategori wacana
-            </span>
-            <span>Platform Arsip Jejak Perupa</span>
+            <div className="flex items-center justify-between border-t border-jp-gray-200 bg-jp-paper/40 px-4 py-3 text-xs text-jp-gray-500 font-mono">
+              <span>
+                Menampilkan {filteredCategories.length} dari {categories.length} kategori wacana
+              </span>
+              <span>Platform Arsip Jejak Perupa</span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* QUICK ADD MODAL */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import { loginUserAction, registerUserAction } from "./actions/authActions";
 
 export interface UserProfile {
@@ -19,7 +19,7 @@ export const DEMO_USERS: Record<string, UserProfile> = {
     name: "Raden Wijaya",
     email: "raden.wijaya@student.ac.id",
     role: "READER",
-    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    avatarUrl: null,
     roleLabel: "Pelajar Seni Murni",
     institution: "Institut Seni Indonesia",
   },
@@ -28,20 +28,44 @@ export const DEMO_USERS: Record<string, UserProfile> = {
     name: "Siti Nurhaliza",
     email: "siti.kurator@jejakperupa.id",
     role: "ADMIN",
-    avatarUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
+    avatarUrl: null,
     roleLabel: "Kurator Editorial",
     institution: "Dewan Kesenian Nasional",
   },
 };
 
-// Global state in memory (starts null to match SSR initial render)
-let globalUser: UserProfile | null = null;
+function getStoredUser(): UserProfile | null {
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("jejak_perupa_auth_user");
+      if (saved) return JSON.parse(saved);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+let globalUser: UserProfile | null = getStoredUser();
 let isAuthModalOpen = false;
 let authModalMessage = "Masuk atau buat akun gratis untuk melanjutkan aksi ini.";
 let pendingActionCallback: (() => void) | null = null;
 
-const userListeners = new Set<(user: UserProfile | null) => void>();
-const modalListeners = new Set<(open: boolean, msg: string) => void>();
+const userListeners = new Set<() => void>();
+const modalListeners = new Set<() => void>();
+
+function subscribeUser(callback: () => void) {
+  userListeners.add(callback);
+  return () => userListeners.delete(callback);
+}
+
+function getUserSnapshot(): UserProfile | null {
+  return globalUser;
+}
+
+function getServerUserSnapshot(): UserProfile | null {
+  return null;
+}
 
 export function setAuthState(user: UserProfile | null) {
   globalUser = user;
@@ -52,20 +76,20 @@ export function setAuthState(user: UserProfile | null) {
       localStorage.removeItem("jejak_perupa_auth_user");
     }
   }
-  userListeners.forEach((listener) => listener(globalUser));
+  userListeners.forEach((l) => l());
 }
 
 export function openAuthModal(message?: string, onAuthenticated?: () => void) {
   isAuthModalOpen = true;
   if (message) authModalMessage = message;
   if (onAuthenticated) pendingActionCallback = onAuthenticated;
-  modalListeners.forEach((l) => l(isAuthModalOpen, authModalMessage));
+  modalListeners.forEach((l) => l());
 }
 
 export function closeAuthModal() {
   isAuthModalOpen = false;
   pendingActionCallback = null;
-  modalListeners.forEach((l) => l(isAuthModalOpen, authModalMessage));
+  modalListeners.forEach((l) => l());
 }
 
 export function triggerPendingAction() {
@@ -78,41 +102,28 @@ export function triggerPendingAction() {
 }
 
 export function useAuth() {
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(globalUser);
-  const [isMounted, setIsMounted] = useState(false);
+  const currentUser = useSyncExternalStore(
+    subscribeUser,
+    getUserSnapshot,
+    getServerUserSnapshot
+  );
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [modalOpen, setModalOpen] = useState(isAuthModalOpen);
   const [modalMsg, setModalMsg] = useState(authModalMessage);
 
   useEffect(() => {
-    // Read from localStorage only after client-side hydration mount
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("jejak_perupa_auth_user");
-        if (saved && !globalUser) {
-          globalUser = JSON.parse(saved);
-        }
-      } catch (e) {
-        globalUser = null;
-      }
-    }
-
-    setCurrentUser(globalUser);
-    setIsMounted(true);
-
-    const handleUserChange = (user: UserProfile | null) => {
-      setCurrentUser(user);
+    const handleModal = () => {
+      setModalOpen(isAuthModalOpen);
+      setModalMsg(authModalMessage);
     };
-    const handleModalChange = (open: boolean, msg: string) => {
-      setModalOpen(open);
-      setModalMsg(msg);
-    };
-
-    userListeners.add(handleUserChange);
-    modalListeners.add(handleModalChange);
-
+    modalListeners.add(handleModal);
     return () => {
-      userListeners.delete(handleUserChange);
-      modalListeners.delete(handleModalChange);
+      modalListeners.delete(handleModal);
     };
   }, []);
 
@@ -170,7 +181,7 @@ export function useAuth() {
   };
 
   const requireAuth = (actionCallback?: () => void, message?: string) => {
-    if (isMounted && currentUser) {
+    if (currentUser) {
       if (actionCallback) actionCallback();
       return true;
     }
@@ -180,9 +191,9 @@ export function useAuth() {
 
   return {
     currentUser,
-    isAuthenticated: isMounted && !!currentUser,
-    isMounted,
-    isGuest: !isMounted || !currentUser,
+    isAuthenticated: Boolean(currentUser),
+    isMounted: mounted,
+    isGuest: !currentUser,
     loginWithDemo,
     login,
     register,

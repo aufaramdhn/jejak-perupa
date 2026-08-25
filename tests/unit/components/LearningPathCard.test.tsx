@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { LearningPathCard } from "@/components/molecules/LearningPathCard";
+import { LearningPathCard } from "@/components/molecules/exploration/LearningPathCard";
 import { LearningPathData } from "@/lib/data/learningPaths";
 
 const mockPath: LearningPathData = {

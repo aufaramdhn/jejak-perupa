@@ -2,10 +2,10 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { AdminLayout } from "@/components/templates/AdminLayout";
-import { Heading2, Heading3, Paragraph } from "@/components/atoms/Typography";
-import { Badge } from "@/components/atoms/Badge";
-import { Button } from "@/components/atoms/Button";
+import { AdminLayout } from "@/components/templates/admin/AdminLayout";
+import { Heading2, Heading3, Paragraph } from "@/components/atoms/typography/Typography";
+import { Badge } from "@/components/atoms/typography/Badge";
+import { Button } from "@/components/atoms/form/Button";
 import {
   featureFlagDefinitions,
   releasePresets,

@@ -1,7 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { AdminLayout } from "@/components/templates/AdminLayout";
-import { ArticleEditorForm, ChapterItem, ReferenceItem } from "@/components/organisms/ArticleEditorForm";
+import { AdminLayout } from "@/components/templates/admin/AdminLayout";
+import { ArticleEditorForm, ChapterItem, ReferenceItem } from "@/components/organisms/admin/ArticleEditorForm";
 import { artService } from "@/lib/services/artService";
 
 export function generateStaticParams() {

@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { ImageDualInput } from "@/components/molecules/ImageDualInput";
+import { ImageDualInput } from "@/components/molecules/editor/ImageDualInput";
 
 describe("ImageDualInput Component", () => {
   it("renders with label and switches between File and URL modes", () => {

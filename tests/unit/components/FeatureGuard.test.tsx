@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { FeatureGuard } from "@/components/atoms/FeatureGuard";
+import { FeatureGuard } from "@/components/atoms/meta/FeatureGuard";
 import * as featureFlagsModule from "@/lib/featureFlagsContext";
 import { FeatureFlagKey } from "@/lib/data/featureFlags";
 

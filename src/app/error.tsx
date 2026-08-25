@@ -2,9 +2,9 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { Heading1, Paragraph, SectionLabel } from "@/components/atoms/Typography";
-import { Button } from "@/components/atoms/Button";
-import { PeruChanCallout } from "@/components/molecules/PeruChanCallout";
+import { Heading1, Paragraph, SectionLabel } from "@/components/atoms/typography/Typography";
+import { Button } from "@/components/atoms/form/Button";
+import { PeruChanCallout } from "@/components/molecules/peruchan/PeruChanCallout";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
 export default function ErrorPage({

@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AdminLayout } from "@/components/templates/AdminLayout";
-import { Heading2, Heading3, Paragraph } from "@/components/atoms/Typography";
-import { Input } from "@/components/atoms/Input";
-import { Button } from "@/components/atoms/Button";
-import { Badge } from "@/components/atoms/Badge";
-import { Modal } from "@/components/atoms/Modal";
-import { ImageDualInput } from "@/components/molecules/ImageDualInput";
-import { PeruChanMascotSlider } from "@/components/organisms/PeruChanMascotSlider";
-import { PeruChanTipBanner } from "@/components/organisms/PeruChanTipBanner";
+import { AdminLayout } from "@/components/templates/admin/AdminLayout";
+import { Heading2, Heading3, Paragraph } from "@/components/atoms/typography/Typography";
+import { Input } from "@/components/atoms/form/Input";
+import { Button } from "@/components/atoms/form/Button";
+import { Badge } from "@/components/atoms/typography/Badge";
+import { Modal } from "@/components/atoms/feedback/Modal";
+import { ImageDualInput } from "@/components/molecules/editor/ImageDualInput";
+import { PeruChanMascotSlider } from "@/components/organisms/peruchan/PeruChanMascotSlider";
+import { PeruChanTipBanner } from "@/components/organisms/peruchan/PeruChanTipBanner";
 import { useSiteSettings } from "@/lib/siteContext";
 import { useModal } from "@/lib/modalContext";
 import { MascotSlideItem, PeruChanQuoteItem } from "@/lib/data/siteSettings";
@@ -472,6 +472,10 @@ export default function AdminPengaturanPage() {
                         <img
                           src={slide.imageUrl}
                           alt={slide.title}
+                          width={128}
+                          height={128}
+                          loading="lazy"
+                          decoding="async"
                           className="max-h-32 object-contain transition duration-300 group-hover:scale-105"
                         />
                       ) : (
@@ -611,6 +615,10 @@ export default function AdminPengaturanPage() {
                         <img
                           src={q.imageSrc || "/images/mascot/peruchan-drawing.png"}
                           alt="Peru-Chan"
+                          width={56}
+                          height={56}
+                          loading="lazy"
+                          decoding="async"
                           className="max-h-14 object-contain"
                         />
                       </div>
@@ -935,6 +943,10 @@ export default function AdminPengaturanPage() {
                           <img
                             src={pose.src}
                             alt={pose.shortLabel}
+                            width={64}
+                            height={64}
+                            loading="lazy"
+                            decoding="async"
                             className="h-16 object-contain"
                           />
                           <span className="text-[10px] font-bold text-jp-ink font-mono">
@@ -1128,6 +1140,10 @@ export default function AdminPengaturanPage() {
                           <img
                             src={pose.src}
                             alt={pose.shortLabel}
+                            width={56}
+                            height={56}
+                            loading="lazy"
+                            decoding="async"
                             className="h-14 object-contain"
                           />
                           <span className="text-[10px] font-bold text-jp-ink font-mono">

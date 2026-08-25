@@ -4,8 +4,8 @@ import { ModalProvider } from "@/lib/modalContext";
 import { SiteProvider } from "@/lib/siteContext";
 import { CategoryProvider } from "@/lib/categoryContext";
 import { FeatureFlagsProvider } from "@/lib/featureFlagsContext";
-import { DynamicFavicon } from "@/components/atoms/DynamicFavicon";
-import { JsonLd } from "@/components/atoms/JsonLd";
+import { DynamicFavicon } from "@/components/atoms/meta/DynamicFavicon";
+import { JsonLd } from "@/components/atoms/meta/JsonLd";
 import "./globals.css";
 
 const newsreader = Newsreader({

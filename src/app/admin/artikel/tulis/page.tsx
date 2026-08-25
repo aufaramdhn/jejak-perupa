@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { AdminLayout } from "@/components/templates/AdminLayout";
-import { ArticleEditorForm } from "@/components/organisms/ArticleEditorForm";
+import { AdminLayout } from "@/components/templates/admin/AdminLayout";
+import { ArticleEditorForm } from "@/components/organisms/admin/ArticleEditorForm";
 
 export default function AdminTulisArtikelPage() {
   return (
