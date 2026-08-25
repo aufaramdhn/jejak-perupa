@@ -1,11 +1,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { ConfirmationModal, ConfirmationModalProps } from "@/components/molecules/ConfirmationModal";
-import { AlertModal, AlertModalProps } from "@/components/molecules/AlertModal";
-import { ToastContainer, ToastItem } from "@/components/molecules/Toast";
+import { ConfirmationModal } from "@/components/molecules/ConfirmationModal";
+import { AlertModal } from "@/components/molecules/AlertModal";
 
-interface ConfirmOptions {
+export interface ConfirmOptions {
   title: string;
   message: string;
   confirmLabel?: string;
@@ -14,18 +13,17 @@ interface ConfirmOptions {
   iconType?: "alert" | "logout" | "trash" | "help";
 }
 
-interface AlertOptions {
+export interface AlertOptions {
   title: string;
   message: string;
   type?: "success" | "info" | "warning" | "error";
   buttonLabel?: string;
 }
 
-interface ToastOptions {
+export interface ToastOptions {
   title: string;
   message?: string;
   type?: "success" | "info" | "warning" | "error";
-  duration?: number;
 }
 
 interface ModalContextType {
@@ -47,7 +45,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
     options: { title: "", message: "" },
   });
 
-  // Alert Modal State
+  // Alert Modal State (Centered Modal Dialog)
   const [alertState, setAlertState] = useState<{
     isOpen: boolean;
     options: AlertOptions;
@@ -56,9 +54,6 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
     isOpen: false,
     options: { title: "", message: "" },
   });
-
-  // Toast Items State
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   // Confirm method returning a Promise
   const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
@@ -81,7 +76,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
     setConfirmState((prev) => ({ ...prev, isOpen: false }));
   };
 
-  // Alert method returning a Promise
+  // Alert method returning a Promise (Centered Modal)
   const alert = useCallback((options: AlertOptions): Promise<void> => {
     return new Promise<void>((resolve) => {
       setAlertState({
@@ -97,27 +92,24 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
     setAlertState((prev) => ({ ...prev, isOpen: false }));
   };
 
-  // Toast method
-  const toast = useCallback((options: ToastOptions) => {
-    const newToast: ToastItem = {
-      id: `toast-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      title: options.title,
-      message: options.message,
-      type: options.type || "info",
-      duration: options.duration || 4000,
-    };
-    setToasts((prev) => [...prev, newToast]);
-  }, []);
-
-  const handleDismissToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+  // Toast mapped directly to centered alert modal
+  const toast = useCallback(
+    (options: ToastOptions) => {
+      alert({
+        title: options.title,
+        message: options.message || "",
+        type: options.type || "info",
+        buttonLabel: "Mengerti",
+      });
+    },
+    [alert]
+  );
 
   return (
     <ModalContext.Provider value={{ confirm, alert, toast }}>
       {children}
 
-      {/* GLOBAL CONFIRMATION MODAL */}
+      {/* GLOBAL CENTERED CONFIRMATION MODAL */}
       <ConfirmationModal
         isOpen={confirmState.isOpen}
         title={confirmState.options.title}
@@ -130,7 +122,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
         onCancel={handleConfirmCancel}
       />
 
-      {/* GLOBAL ALERT MODAL */}
+      {/* GLOBAL CENTERED ALERT MODAL */}
       <AlertModal
         isOpen={alertState.isOpen}
         title={alertState.options.title}
@@ -139,9 +131,6 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
         buttonLabel={alertState.options.buttonLabel}
         onClose={handleAlertClose}
       />
-
-      {/* GLOBAL TOAST CONTAINER */}
-      <ToastContainer toasts={toasts} onDismiss={handleDismissToast} />
     </ModalContext.Provider>
   );
 }
