@@ -25,6 +25,7 @@ export interface SiteSettingsData {
   siteTagline: string;
   logoInitials: string;
   logoImageUrl: string;
+  faviconUrl: string;
   heroEditionBadge: string;
   heroHeadline: string;
   heroDescription: string;
@@ -45,6 +46,7 @@ export const defaultSiteSettings: SiteSettingsData = {
   siteTagline: "Catatan Perjalanan Pelajar Seni Rupa",
   logoInitials: "JP",
   logoImageUrl: "",
+  faviconUrl: "",
   heroEditionBadge: "Arsip & Wacana Seni Rupa Nusantara : Edisi 2026",
   heroHeadline: "Catatan Perjalanan & Arsip Seni Rupa Nusantara",
   heroDescription:

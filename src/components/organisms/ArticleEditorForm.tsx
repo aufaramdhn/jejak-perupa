@@ -11,6 +11,7 @@ import { Badge } from "@/components/atoms/Badge";
 import { RichTextEditor } from "@/components/molecules/RichTextEditor";
 import { PeruChanCallout } from "@/components/molecules/PeruChanCallout";
 import { QuickAddCategoryModal } from "@/components/molecules/QuickAddCategoryModal";
+import { ImageDualInput } from "@/components/molecules/ImageDualInput";
 import { useCategories } from "@/lib/categoryContext";
 import { useModal } from "@/lib/modalContext";
 import { useAuth } from "@/lib/auth";
@@ -729,17 +730,19 @@ export function ArticleEditorForm({
                 )}
               </div>
 
-              {/* COVER IMAGE URL */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  URL Sampul Gambar (Opsional)
-                </label>
-                <input
-                  type="url"
+              {/* COVER IMAGE DUAL INPUT */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <ImageDualInput
+                  label="Gambar Sampul Artikel (Opsional)"
                   value={coverImageUrl}
-                  onChange={(e) => setCoverImageUrl(e.target.value)}
-                  placeholder="https://domain.com/gambar-sampul.jpg"
-                  className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none"
+                  onChange={setCoverImageUrl}
+                  placeholderUrl="https://domain.com/gambar-sampul.jpg"
+                  helperGuideline="Rekomendasi rasio 16:9 (minimal 1200×675 px), format JPG, PNG, atau WebP, ukuran maksimal 3 MB."
+                  minWidth={600}
+                  minHeight={338}
+                  maxSizeBytes={3 * 1024 * 1024}
+                  maxSizeLabel="3 MB"
+                  previewClassName="h-20 w-32"
                 />
               </div>
 

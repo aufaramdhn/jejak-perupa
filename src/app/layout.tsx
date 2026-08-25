@@ -4,6 +4,7 @@ import { ModalProvider } from "@/lib/modalContext";
 import { SiteProvider } from "@/lib/siteContext";
 import { CategoryProvider } from "@/lib/categoryContext";
 import { FeatureFlagsProvider } from "@/lib/featureFlagsContext";
+import { DynamicFavicon } from "@/components/atoms/DynamicFavicon";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -53,6 +54,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col bg-jp-paper text-jp-ink font-prose antialiased">
         <SiteProvider>
+          <DynamicFavicon />
           <CategoryProvider>
             <FeatureFlagsProvider>
               <ModalProvider>{children}</ModalProvider>

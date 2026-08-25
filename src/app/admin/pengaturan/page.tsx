@@ -7,6 +7,7 @@ import { Input } from "@/components/atoms/Input";
 import { Button } from "@/components/atoms/Button";
 import { Badge } from "@/components/atoms/Badge";
 import { Modal } from "@/components/atoms/Modal";
+import { ImageDualInput } from "@/components/molecules/ImageDualInput";
 import { PeruChanMascotSlider } from "@/components/organisms/PeruChanMascotSlider";
 import { PeruChanTipBanner } from "@/components/organisms/PeruChanTipBanner";
 import { useSiteSettings } from "@/lib/siteContext";
@@ -29,6 +30,7 @@ import {
   Check,
   X,
   Shuffle,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -51,7 +53,8 @@ export default function AdminPengaturanPage() {
   const [siteName, setSiteName] = useState(settings.siteName);
   const [siteTagline, setSiteTagline] = useState(settings.siteTagline);
   const [logoInitials, setLogoInitials] = useState(settings.logoInitials);
-  const [logoImageUrl, setLogoImageUrl] = useState(settings.logoImageUrl);
+  const [logoImageUrl, setLogoImageUrl] = useState(settings.logoImageUrl || "");
+  const [faviconUrl, setFaviconUrl] = useState(settings.faviconUrl || "");
   const [heroEditionBadge, setHeroEditionBadge] = useState(settings.heroEditionBadge);
   const [heroHeadline, setHeroHeadline] = useState(settings.heroHeadline);
   const [heroDescription, setHeroDescription] = useState(settings.heroDescription);
@@ -66,7 +69,8 @@ export default function AdminPengaturanPage() {
     setSiteName(settings.siteName);
     setSiteTagline(settings.siteTagline);
     setLogoInitials(settings.logoInitials);
-    setLogoImageUrl(settings.logoImageUrl);
+    setLogoImageUrl(settings.logoImageUrl || "");
+    setFaviconUrl(settings.faviconUrl || "");
     setHeroEditionBadge(settings.heroEditionBadge);
     setHeroHeadline(settings.heroHeadline);
     setHeroDescription(settings.heroDescription);
@@ -85,6 +89,7 @@ export default function AdminPengaturanPage() {
   const [slideQuote, setSlideQuote] = useState("");
   const [slideImageUrl, setSlideImageUrl] = useState("");
   const [slideAccent, setSlideAccent] = useState<"blue" | "brown" | "lime">("blue");
+  const [slideImageMode, setSlideImageMode] = useState<"official" | "custom">("official");
 
   // Quotes Library modal/form state
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
@@ -93,6 +98,7 @@ export default function AdminPengaturanPage() {
   const [quoteCategoryBadge, setQuoteCategoryBadge] = useState("Catatan Santai Peru-Chan");
   const [quoteImageSrc, setQuoteImageSrc] = useState("/images/mascot/peruchan-drawing.png");
   const [quoteIsActive, setQuoteIsActive] = useState(true);
+  const [quoteImageMode, setQuoteImageMode] = useState<"official" | "custom">("official");
 
   // 4 Official Mascot Poses
   const officialMascotPoses = [
@@ -136,6 +142,7 @@ export default function AdminPengaturanPage() {
     setSlideQuote("");
     setSlideImageUrl("/images/mascot/peruchan-excited.png");
     setSlideAccent("blue");
+    setSlideImageMode("official");
     setIsSlideModalOpen(true);
   };
 
@@ -146,6 +153,9 @@ export default function AdminPengaturanPage() {
     setSlideQuote(slide.quote);
     setSlideImageUrl(slide.imageUrl || "");
     setSlideAccent(slide.accentColor || "blue");
+
+    const isOfficial = officialMascotPoses.some((p) => p.src === slide.imageUrl);
+    setSlideImageMode(isOfficial ? "official" : "custom");
     setIsSlideModalOpen(true);
   };
 
@@ -210,6 +220,7 @@ export default function AdminPengaturanPage() {
     setQuoteCategoryBadge("Catatan Santai Peru-Chan");
     setQuoteImageSrc("/images/mascot/peruchan-drawing.png");
     setQuoteIsActive(true);
+    setQuoteImageMode("official");
     setIsQuoteModalOpen(true);
   };
 
@@ -219,6 +230,9 @@ export default function AdminPengaturanPage() {
     setQuoteCategoryBadge(q.categoryBadge);
     setQuoteImageSrc(q.imageSrc || "/images/mascot/peruchan-drawing.png");
     setQuoteIsActive(q.isActive);
+
+    const isOfficial = officialMascotPoses.some((p) => p.src === q.imageSrc);
+    setQuoteImageMode(isOfficial ? "official" : "custom");
     setIsQuoteModalOpen(true);
   };
 
@@ -280,6 +294,7 @@ export default function AdminPengaturanPage() {
       siteTagline,
       logoInitials,
       logoImageUrl,
+      faviconUrl,
       heroEditionBadge,
       heroHeadline,
       heroDescription,
@@ -292,14 +307,14 @@ export default function AdminPengaturanPage() {
     alert({
       type: "success",
       title: "Pengaturan Disimpan",
-      message: "Seluruh konfigurasi identitas situs dan narasi telah diperbarui.",
+      message: "Seluruh konfigurasi identitas situs, logo, favicon, dan narasi telah diperbarui.",
     });
   };
 
   const handleResetSettings = async () => {
     const confirmed = await confirm({
       title: "Reset ke Pengaturan Bawaan?",
-      message: "Semua pengaturan nama, tagline, slide maskot, dan library quotes akan dikembalikan ke setelan awal default.",
+      message: "Semua pengaturan nama, tagline, logo, favicon, slide maskot, dan library quotes akan dikembalikan ke setelan awal default.",
       confirmLabel: "Ya, Reset",
       cancelLabel: "Batal",
       variant: "warning",
@@ -319,7 +334,7 @@ export default function AdminPengaturanPage() {
   return (
     <AdminLayout
       title="Pengaturan Identitas Situs & Peru-Chan"
-      subtitle="Kustomisasi logo, nama platform, narasi beranda, dan kelola galeri ilustrasi karakter serta quotes secara langsung."
+      subtitle="Kustomisasi logo, favicon, nama platform, narasi beranda, dan kelola galeri ilustrasi karakter serta quotes secara langsung."
       actionButton={
         <div className="flex items-center gap-2.5">
           <Button
@@ -580,7 +595,7 @@ export default function AdminPengaturanPage() {
           </div>
         </div>
 
-        {/* 3. IDENTITAS & BRANDING SITUS */}
+        {/* 3. IDENTITAS BRAND, LOGO, & FAVICON METADATA */}
         <form onSubmit={handleSaveGeneralSettings} className="space-y-10">
           <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-8 shadow-2xs space-y-6">
             <div className="border-b border-jp-gray-100 pb-4">
@@ -589,15 +604,48 @@ export default function AdminPengaturanPage() {
                   3
                 </span>
                 <Heading3 className="text-lg text-jp-ink">
-                  Identitas Brand & Metadata Situs
+                  Identitas Brand, Logo, & Favicon Situs
                 </Heading3>
               </div>
               <p className="mt-1 text-xs text-jp-gray-500 font-prose pl-8">
-                Konfigurasi nama platform, tagline, inisial logo, dan kontak redaksi resmi.
+                Konfigurasi logo visual, ikon favicon tab browser, nama platform, tagline, dan kontak redaksi resmi.
               </p>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2">
+            {/* LOGO & FAVICON DUAL INPUT GRID */}
+            <div className="grid gap-6 sm:grid-cols-2 p-5 rounded-xl bg-jp-paper/60 border border-jp-gray-200">
+              {/* LOGO PLATFORM */}
+              <ImageDualInput
+                label="Logo Platform (Resmi)"
+                value={logoImageUrl}
+                onChange={setLogoImageUrl}
+                placeholderUrl="https://domain.com/logo-jejak-perupa.png"
+                helperGuideline="Rekomendasi rasio 1:1 atau horizontal, resolusi minimal 128×128 px hingga 512×512 px, format PNG transparan atau SVG, ukuran maksimal 2 MB."
+                minWidth={128}
+                minHeight={128}
+                maxSizeBytes={2 * 1024 * 1024}
+                maxSizeLabel="2 MB"
+                previewObjectFit="contain"
+                previewClassName="h-16 w-16 bg-white p-1"
+              />
+
+              {/* FAVICON BROWSER */}
+              <ImageDualInput
+                label="Favicon Browser (Ikon Tab)"
+                value={faviconUrl}
+                onChange={setFaviconUrl}
+                placeholderUrl="https://domain.com/favicon.ico"
+                helperGuideline="Rekomendasi rasio 1:1 (persegi), ukuran standar 32×32 px atau 64×64 px, format ICO atau PNG transparan, ukuran maksimal 500 KB."
+                minWidth={32}
+                minHeight={32}
+                maxSizeBytes={512 * 1024}
+                maxSizeLabel="500 KB"
+                previewObjectFit="contain"
+                previewClassName="h-12 w-12 bg-white p-1"
+              />
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 pt-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
                   Nama Platform
@@ -622,7 +670,7 @@ export default function AdminPengaturanPage() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  Inisial Logo Avatar
+                  Inisial Logo Avatar (Fallback Jika Logo Kosong)
                 </label>
                 <Input
                   type="text"
@@ -765,35 +813,81 @@ export default function AdminPengaturanPage() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                    Pilih Pose Ilustrasi Resmi
-                  </label>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {officialMascotPoses.map((pose) => (
+                {/* POSE SELECTION MODE: OFFICIAL VS CUSTOM UPLOAD/URL */}
+                <div className="space-y-2.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                      Sumber Gambar Pose Karakter
+                    </label>
+                    <div className="flex items-center gap-1 rounded-md bg-jp-paper p-0.5 border border-jp-gray-200">
                       <button
-                        key={pose.src}
                         type="button"
-                        onClick={() => setSlideImageUrl(pose.src)}
+                        onClick={() => setSlideImageMode("official")}
                         className={cn(
-                          "flex flex-col items-center gap-1.5 rounded-lg border p-2 text-center transition cursor-pointer",
-                          slideImageUrl === pose.src
-                            ? "border-jp-blue-900 bg-jp-blue-50 ring-2 ring-jp-blue-900/30"
-                            : "border-jp-gray-200 bg-white hover:bg-jp-paper"
+                          "rounded px-2.5 py-0.5 text-[11px] font-bold font-mono transition cursor-pointer",
+                          slideImageMode === "official"
+                            ? "bg-jp-blue-900 text-white shadow-2xs"
+                            : "text-jp-gray-500 hover:text-jp-ink"
                         )}
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={pose.src}
-                          alt={pose.shortLabel}
-                          className="h-16 object-contain"
-                        />
-                        <span className="text-[10px] font-bold text-jp-ink font-mono">
-                          {pose.shortLabel}
-                        </span>
+                        Pose Resmi
                       </button>
-                    ))}
+                      <button
+                        type="button"
+                        onClick={() => setSlideImageMode("custom")}
+                        className={cn(
+                          "rounded px-2.5 py-0.5 text-[11px] font-bold font-mono transition cursor-pointer",
+                          slideImageMode === "custom"
+                            ? "bg-jp-blue-900 text-white shadow-2xs"
+                            : "text-jp-gray-500 hover:text-jp-ink"
+                        )}
+                      >
+                        + Pose Kustom / Unggah
+                      </button>
+                    </div>
                   </div>
+
+                  {slideImageMode === "official" ? (
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {officialMascotPoses.map((pose) => (
+                        <button
+                          key={pose.src}
+                          type="button"
+                          onClick={() => setSlideImageUrl(pose.src)}
+                          className={cn(
+                            "flex flex-col items-center gap-1.5 rounded-lg border p-2 text-center transition cursor-pointer",
+                            slideImageUrl === pose.src
+                              ? "border-jp-blue-900 bg-jp-blue-50 ring-2 ring-jp-blue-900/30"
+                              : "border-jp-gray-200 bg-white hover:bg-jp-paper"
+                          )}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={pose.src}
+                            alt={pose.shortLabel}
+                            className="h-16 object-contain"
+                          />
+                          <span className="text-[10px] font-bold text-jp-ink font-mono">
+                            {pose.shortLabel}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <ImageDualInput
+                      label="Unggah atau Masukkan URL Pose Peru-Chan Baru"
+                      value={slideImageUrl}
+                      onChange={setSlideImageUrl}
+                      placeholderUrl="https://domain.com/peruchan-pose-baru.png"
+                      helperGuideline="Format PNG transparan sangat direkomendasikan, resolusi minimal 300×300 px, ukuran maksimal 2 MB."
+                      minWidth={200}
+                      minHeight={200}
+                      maxSizeBytes={2 * 1024 * 1024}
+                      maxSizeLabel="2 MB"
+                      previewObjectFit="contain"
+                      previewClassName="h-16 w-16 bg-white p-1"
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -912,36 +1006,81 @@ export default function AdminPengaturanPage() {
                   </div>
                 </div>
 
-                {/* POSE SELECTOR */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                    Pilih Pose Karakter Peru-Chan
-                  </label>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {officialMascotPoses.map((pose) => (
+                {/* POSE SELECTION MODE: OFFICIAL VS CUSTOM UPLOAD/URL */}
+                <div className="space-y-2.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                      Pilih Pose Karakter Peru-Chan
+                    </label>
+                    <div className="flex items-center gap-1 rounded-md bg-jp-paper p-0.5 border border-jp-gray-200">
                       <button
-                        key={pose.src}
                         type="button"
-                        onClick={() => setQuoteImageSrc(pose.src)}
+                        onClick={() => setQuoteImageMode("official")}
                         className={cn(
-                          "flex flex-col items-center gap-1.5 rounded-lg border p-2 text-center transition cursor-pointer",
-                          quoteImageSrc === pose.src
-                            ? "border-jp-blue-900 bg-jp-blue-50 ring-2 ring-jp-blue-900/30"
-                            : "border-jp-gray-200 bg-white hover:bg-jp-paper"
+                          "rounded px-2.5 py-0.5 text-[11px] font-bold font-mono transition cursor-pointer",
+                          quoteImageMode === "official"
+                            ? "bg-jp-blue-900 text-white shadow-2xs"
+                            : "text-jp-gray-500 hover:text-jp-ink"
                         )}
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={pose.src}
-                          alt={pose.shortLabel}
-                          className="h-14 object-contain"
-                        />
-                        <span className="text-[10px] font-bold text-jp-ink font-mono">
-                          {pose.shortLabel}
-                        </span>
+                        Pose Resmi
                       </button>
-                    ))}
+                      <button
+                        type="button"
+                        onClick={() => setQuoteImageMode("custom")}
+                        className={cn(
+                          "rounded px-2.5 py-0.5 text-[11px] font-bold font-mono transition cursor-pointer",
+                          quoteImageMode === "custom"
+                            ? "bg-jp-blue-900 text-white shadow-2xs"
+                            : "text-jp-gray-500 hover:text-jp-ink"
+                        )}
+                      >
+                        + Pose Kustom / Unggah
+                      </button>
+                    </div>
                   </div>
+
+                  {quoteImageMode === "official" ? (
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {officialMascotPoses.map((pose) => (
+                        <button
+                          key={pose.src}
+                          type="button"
+                          onClick={() => setQuoteImageSrc(pose.src)}
+                          className={cn(
+                            "flex flex-col items-center gap-1.5 rounded-lg border p-2 text-center transition cursor-pointer",
+                            quoteImageSrc === pose.src
+                              ? "border-jp-blue-900 bg-jp-blue-50 ring-2 ring-jp-blue-900/30"
+                              : "border-jp-gray-200 bg-white hover:bg-jp-paper"
+                          )}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={pose.src}
+                            alt={pose.shortLabel}
+                            className="h-14 object-contain"
+                          />
+                          <span className="text-[10px] font-bold text-jp-ink font-mono">
+                            {pose.shortLabel}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <ImageDualInput
+                      label="Unggah atau Masukkan URL Pose Peru-Chan Baru"
+                      value={quoteImageSrc}
+                      onChange={setQuoteImageSrc}
+                      placeholderUrl="https://domain.com/peruchan-custom.png"
+                      helperGuideline="Format PNG transparan sangat direkomendasikan, resolusi minimal 300×300 px, ukuran maksimal 2 MB."
+                      minWidth={200}
+                      minHeight={200}
+                      maxSizeBytes={2 * 1024 * 1024}
+                      maxSizeLabel="2 MB"
+                      previewObjectFit="contain"
+                      previewClassName="h-16 w-16 bg-white p-1"
+                    />
+                  )}
                 </div>
 
                 {/* ACTIVE STATUS TOGGLE */}
