@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Newsreader, Lora, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Newsreader, Lora, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -18,7 +18,7 @@ const lora = Lora({
   display: "swap",
 });
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -45,9 +45,9 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${newsreader.variable} ${lora.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} scroll-smooth`}
+      className={`${newsreader.variable} ${lora.variable} ${inter.variable} ${jetbrainsMono.variable} scroll-smooth`}
     >
-      <body className="min-h-screen flex flex-col bg-jp-paper text-jp-ink font-sans antialiased">
+      <body className="min-h-screen flex flex-col bg-jp-paper text-jp-ink font-prose antialiased">
         {children}
       </body>
     </html>

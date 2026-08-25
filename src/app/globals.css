@@ -64,7 +64,7 @@
 
   --font-heading: var(--font-heading), "Newsreader", "Playfair Display", Georgia, serif;
   --font-prose: var(--font-prose), "Lora", Georgia, serif;
-  --font-sans: var(--font-sans), "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-sans: var(--font-sans), "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono: var(--font-mono), "JetBrains Mono", monospace;
 
   --shadow-jp-card: var(--shadow-jp-card);
@@ -78,7 +78,7 @@ html {
 body {
   background-color: var(--jp-paper);
   color: var(--jp-ink);
-  font-family: var(--font-sans);
+  font-family: var(--font-prose);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -87,6 +87,14 @@ h1, h2, h3, h4, .font-heading {
   font-family: var(--font-heading);
 }
 
-.font-prose, article p, article li {
+p, article, .font-prose {
   font-family: var(--font-prose);
+}
+
+button, input, select, textarea, nav, .font-sans {
+  font-family: var(--font-sans);
+}
+
+.font-mono, code, pre {
+  font-family: var(--font-mono);
 }

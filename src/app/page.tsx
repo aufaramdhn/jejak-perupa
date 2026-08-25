@@ -47,8 +47,8 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-7xl items-center gap-12 lg:gap-16 px-6 sm:px-8 lg:px-12 lg:grid-cols-[1.25fr_380px]">
           <div>
             {/* Clean editorial introduction without generic AI pill badge */}
-            <div className="mb-4 text-xs font-semibold tracking-wider text-jp-blue-700 uppercase">
-              Platform Arsip & Pembelajaran Seni Rupa Indonesia
+            <div className="mb-4 inline-flex items-center gap-2 rounded-md border border-jp-blue-200 bg-white px-3 py-1 font-mono text-xs font-semibold text-jp-blue-900 shadow-2xs">
+              Arsip & Wacana Seni Rupa Nusantara : Edisi 2026
             </div>
 
             <Heading1 className="text-4xl sm:text-5xl lg:text-6xl text-jp-blue-900 leading-[1.15]">
