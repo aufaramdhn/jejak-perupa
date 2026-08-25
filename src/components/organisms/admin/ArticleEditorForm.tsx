@@ -486,7 +486,7 @@ export function ArticleEditorForm({
               <History className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+              <div className="text-xs font-bold text-amber-900 font-sans">
                 Draf Belum Tersimpan Ditemukan
               </div>
               <p className="text-xs text-amber-800 font-prose mt-0.5">
@@ -518,15 +518,15 @@ export function ArticleEditorForm({
         </div>
       )}
 
-      {/* 2. TOP ACTION HEADER & AUTO-SAVE INDICATOR */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-jp-gray-300 bg-white p-4 shadow-2xs">
+      {/* 2. TOP ACTION HEADER & AUTO-SAVE INDICATOR (FLAT EDITORIAL BAR) */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-jp-gray-300">
         <div className="flex items-center gap-3">
           <Link href={backUrl}>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="rounded-lg"
+              className="rounded-lg text-xs"
             >
               <ArrowLeft className="h-4 w-4 mr-1.5" />
               Kembali
@@ -534,23 +534,23 @@ export function ArticleEditorForm({
           </Link>
 
           {lastAutoSaveTime && (
-            <div className="flex items-center gap-1.5 font-mono text-[11px] text-green-700 bg-green-50 px-2.5 py-1 rounded-md border border-green-200">
-              <CheckCircle className="h-3 w-3" />
+            <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-green-800">
+              <CheckCircle className="h-3.5 w-3.5 text-green-600" />
               <span>Tersimpan otomatis ({lastAutoSaveTime})</span>
             </div>
           )}
         </div>
 
-        {/* TAB TOGGLE: TULIS vs PRATINJAU */}
+        {/* TAB TOGGLE: TULIS vs PRATINJAU (SEGMENTED FLAT BUTTONS) */}
         <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border border-jp-gray-200 bg-jp-paper p-1">
+          <div className="flex items-center gap-1 rounded-lg bg-jp-gray-200/60 p-1">
             <button
               type="button"
               onClick={() => setActiveTab("write")}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition cursor-pointer",
+                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition cursor-pointer font-sans",
                 activeTab === "write"
-                  ? "bg-jp-blue-900 text-white shadow-2xs"
+                  ? "bg-white text-jp-blue-900 shadow-2xs font-bold"
                   : "text-jp-gray-600 hover:text-jp-ink"
               )}
             >
@@ -561,9 +561,9 @@ export function ArticleEditorForm({
               type="button"
               onClick={() => setActiveTab("preview")}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition cursor-pointer",
+                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition cursor-pointer font-sans",
                 activeTab === "preview"
-                  ? "bg-jp-blue-900 text-white shadow-2xs"
+                  ? "bg-white text-jp-blue-900 shadow-2xs font-bold"
                   : "text-jp-gray-600 hover:text-jp-ink"
               )}
             >
@@ -624,18 +624,18 @@ export function ArticleEditorForm({
           {/* SECTION A: METADATA UTAMA ARTIKEL */}
           <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-8 shadow-2xs space-y-6">
             <div className="border-b border-jp-gray-200 pb-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-jp-blue-700 font-mono">
+              <div className="font-mono text-xs font-bold text-jp-blue-700">
                 Bagian 1
               </div>
-              <Heading3 className="text-lg text-jp-ink">
+              <Heading2 className="text-xl text-jp-ink mt-0.5">
                 Metadata & Identitas Naskah
-              </Heading3>
+              </Heading2>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2">
               {/* JUDUL ARTIKEL */}
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                <label className="text-xs font-bold text-jp-ink">
                   Judul Artikel <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -669,7 +669,7 @@ export function ArticleEditorForm({
 
               {/* PENULIS / AFILIASI */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                <label className="text-xs font-bold text-jp-ink">
                   Nama Penulis & Lembaga <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -704,7 +704,7 @@ export function ArticleEditorForm({
               {/* KATEGORI ARTIKEL */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                  <label className="text-xs font-bold text-jp-ink">
                     Kategori Wacana <span className="text-red-500">*</span>
                   </label>
                   <button
@@ -728,7 +728,7 @@ export function ArticleEditorForm({
 
               {/* ESTIMASI WAKTU BACA */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-jp-ink flex items-center gap-1.5">
+                <label className="text-xs font-bold text-jp-ink flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5 text-jp-gray-500" />
                   Estimasi Durasi Baca <span className="text-red-500">*</span>
                 </label>
@@ -778,17 +778,12 @@ export function ArticleEditorForm({
               </div>
 
               {/* HEADER PHOTO & GRADIENT OVERLAY (OPTIONAL CUSTOM HEADER) */}
-              <div className="space-y-4 sm:col-span-2 rounded-xl border border-jp-gray-300 bg-jp-paper/50 p-5 md:p-6 shadow-2xs">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-jp-blue-900" />
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                      Foto Latar Belakang & Gradasi Header Artikel (Opsional)
-                    </h4>
-                  </div>
-                  <p className="mt-1 text-xs text-jp-gray-500 font-prose">
-                    Kustomisasi foto panorama pada latar belakang header artikel dengan gradasi putih pelindung teks agar judul dan ringkasan tetap terbaca kontras dan tajam.
-                  </p>
+              <div className="space-y-4 sm:col-span-2 pt-6 border-t border-jp-gray-200">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-jp-blue-900" />
+                  <h3 className="font-heading text-sm md:text-base font-bold text-jp-ink">
+                    Foto Latar Belakang & Gradasi Header Artikel (Opsional)
+                  </h3>
                 </div>
 
                 <ImageDualInput
@@ -856,9 +851,9 @@ export function ArticleEditorForm({
 
                     {/* LIVE HEADER PREVIEW MOCKUP */}
                     <div className="sm:col-span-2 space-y-2 pt-2">
-                      <div className="text-xs font-bold font-mono text-jp-blue-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <div className="text-xs font-bold font-mono text-jp-blue-900 flex items-center gap-1.5">
                         <Eye className="h-3.5 w-3.5" />
-                        Pratinjau Langsung Efek Gradasi Header (Real-Time 1:1)
+                        Pratinjau Langsung Efek Gradasi Header
                       </div>
                       <div className="relative rounded-xl border border-jp-gray-300 overflow-hidden shadow-xs bg-jp-paper">
                         {/* IMAGE BACKDROP */}
@@ -935,8 +930,8 @@ export function ArticleEditorForm({
 
               {/* EKSERP / RINGKASAN */}
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  Ekserp / Ringkasan Pembuka <span className="text-red-500">*</span>
+                <label className="text-xs font-bold text-jp-ink">
+                  Ringkasan Ekserp Pembuka <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="field-excerpt"
@@ -973,12 +968,12 @@ export function ArticleEditorForm({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-jp-blue-700 font-mono">
+                <div className="font-mono text-xs font-bold text-jp-blue-700">
                   Bagian 2
-                </span>
-                <Heading3 className="text-lg text-jp-ink">
+                </div>
+                <Heading2 className="text-xl text-jp-ink mt-0.5">
                   Struktur Bab & Isi Pembahasan
-                </Heading3>
+                </Heading2>
               </div>
 
               <Button
@@ -1005,7 +1000,7 @@ export function ArticleEditorForm({
                       <span className="flex h-6 px-2.5 items-center justify-center rounded-md bg-jp-blue-900 font-mono text-xs font-bold text-white">
                         Bab {idx + 1}
                       </span>
-                      <span className="text-xs font-bold uppercase tracking-wider text-jp-gray-500 font-mono">
+                      <span className="text-xs font-semibold text-jp-gray-600 font-sans">
                         Subjudul Pembahasan
                       </span>
                     </div>
@@ -1094,10 +1089,10 @@ export function ArticleEditorForm({
           {/* SECTION C: CATATAN MASKOT PERU-CHAN & DAFTAR PUSTAKA */}
           <div className="grid gap-8 lg:grid-cols-2 items-start">
             {/* PERU-CHAN EDITORIAL TIP */}
-            <div className="rounded-xl border border-jp-blue-300 bg-jp-blue-50/50 p-6 space-y-4">
+            <div className="rounded-xl border border-jp-blue-200 bg-jp-blue-50/40 p-6 space-y-4">
               <div className="flex items-center gap-2 border-b border-jp-blue-200 pb-3">
                 <Sparkles className="h-4 w-4 text-jp-blue-700" />
-                <span className="text-xs font-bold uppercase tracking-wider text-jp-blue-900">
+                <span className="font-heading text-sm font-bold text-jp-blue-900">
                   Catatan Editorial Peru-Chan (Opsional)
                 </span>
               </div>
@@ -1120,19 +1115,24 @@ export function ArticleEditorForm({
                   Aksen Tema Boks Tips:
                 </label>
                 <div className="flex gap-2">
-                  {(["blue", "brown", "lime"] as const).map((accent) => (
+                  {[
+                    { id: "blue", label: "Biru Klasik", colorBg: "bg-jp-blue-700" },
+                    { id: "brown", label: "Cokelat Arsip", colorBg: "bg-jp-brown-700" },
+                    { id: "lime", label: "Hijau Limau", colorBg: "bg-jp-lime-600" },
+                  ].map((t) => (
                     <button
-                      key={accent}
+                      key={t.id}
                       type="button"
-                      onClick={() => setPeruChanTheme(accent)}
+                      onClick={() => setPeruChanTheme(t.id as any)}
                       className={cn(
-                        "flex-1 rounded-lg py-1.5 text-xs font-bold border transition cursor-pointer uppercase font-mono",
-                        peruChanTheme === accent
-                          ? "border-jp-ink bg-white text-jp-ink shadow-xs"
-                          : "border-jp-gray-200 bg-jp-paper text-jp-gray-500 hover:bg-white"
+                        "flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold border transition cursor-pointer font-sans",
+                        peruChanTheme === t.id
+                          ? "border-jp-ink bg-white text-jp-ink shadow-2xs font-bold"
+                          : "border-jp-gray-300 bg-jp-paper text-jp-gray-600 hover:bg-white"
                       )}
                     >
-                      {accent}
+                      <span className={cn("h-2 w-2 rounded-full", t.colorBg)} />
+                      <span>{t.label}</span>
                     </button>
                   ))}
                 </div>
@@ -1144,7 +1144,7 @@ export function ArticleEditorForm({
               <div className="flex items-center justify-between border-b border-jp-gray-200 pb-3">
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4 text-jp-gray-600" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                  <span className="font-heading text-sm font-bold text-jp-ink">
                     Daftar Pustaka & Rujukan
                   </span>
                 </div>
@@ -1274,7 +1274,7 @@ export function ArticleEditorForm({
           {/* PREVIEW REFERENCES */}
           {references.length > 0 && (
             <div className="border-t border-jp-gray-200 pt-6 space-y-2">
-              <h3 className="font-heading text-sm font-bold text-jp-ink uppercase tracking-wider">
+              <h3 className="font-heading text-base font-bold text-jp-ink">
                 Daftar Pustaka & Rujukan
               </h3>
               <ul className="space-y-1 text-xs font-prose text-jp-gray-700 list-disc pl-5">

@@ -16,7 +16,7 @@ export interface ArticleGridProps {
 export function ArticleGrid({
   articles,
   title = "Artikel Terbaru",
-  sectionLabel = "Pengetahuan",
+  sectionLabel,
   viewAllHref,
   className,
 }: ArticleGridProps) {
@@ -24,8 +24,10 @@ export function ArticleGrid({
     <section className={cn("mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-16 lg:py-20", className)}>
       <div className="flex items-end justify-between">
         <div>
-          <SectionLabel>{sectionLabel}</SectionLabel>
-          <Heading2 className="mt-2 text-2xl sm:text-3xl text-jp-ink">{title}</Heading2>
+          {sectionLabel && <SectionLabel>{sectionLabel}</SectionLabel>}
+          <Heading2 className={cn("text-2xl sm:text-3xl text-jp-ink", sectionLabel ? "mt-2" : "")}>
+            {title}
+          </Heading2>
         </div>
 
         {viewAllHref && (

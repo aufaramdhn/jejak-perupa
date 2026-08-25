@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Badge } from "@/components/atoms/typography/Badge";
 import { Heading3, Paragraph } from "@/components/atoms/typography/Typography";
-import { ArrowRight, Volume2 } from "lucide-react";
+import { ArrowRight, Volume2, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface GlossaryCardProps {
@@ -36,8 +36,8 @@ export function GlossaryCard({
         <div className="flex items-center justify-between gap-2 min-h-[28px]">
           <Badge variant="blue">{category}</Badge>
           {phoneticSpelling ? (
-            <span className="inline-flex items-center gap-1 font-mono text-[11px] text-jp-gray-500">
-              <Volume2 className="h-3 w-3 text-jp-blue-700 shrink-0" />
+            <span className="inline-flex items-center gap-1 font-mono text-[11px] text-jp-gray-500 font-medium">
+              <Volume2 className="h-3.5 w-3.5 text-jp-blue-700 shrink-0" />
               /{phoneticSpelling}/
             </span>
           ) : (
@@ -46,24 +46,27 @@ export function GlossaryCard({
         </div>
 
         {/* TERM HEADING */}
-        <Heading3 className="mt-3 text-xl font-bold text-jp-ink">{term}</Heading3>
+        <Heading3 className="mt-3 text-xl font-bold text-jp-ink tracking-tight">
+          {term}
+        </Heading3>
 
         {/* DEFINITION SHORT (FLEX GROW) */}
         <Paragraph className="mt-2 text-sm text-jp-gray-700 leading-relaxed flex-1 font-prose">
           {definitionShort}
         </Paragraph>
 
-        {/* STANDARDIZED REFERENCE SLOT */}
-        <div className="mt-4 pt-2 min-h-[44px]">
+        {/* CLEAN INLINE REFERENCE (NO NESTED BORDER) */}
+        <div className="mt-4 pt-2 min-h-[36px] flex items-center text-xs text-jp-gray-600 font-sans">
           {exampleArtworkTitle ? (
-            <div className="rounded-lg bg-jp-paper px-3 py-1.5 text-xs text-jp-gray-700 border border-jp-gray-200 truncate">
-              <span className="font-semibold text-jp-blue-900">Rujukan: </span>
-              <em>{exampleArtworkTitle}</em>
+            <div className="flex items-center gap-1.5 truncate text-jp-gray-700">
+              <BookOpen className="h-3.5 w-3.5 text-jp-blue-700 shrink-0" />
+              <span className="text-jp-blue-900 font-semibold">Rujukan:</span>
+              <em className="truncate text-jp-ink font-serif">{exampleArtworkTitle}</em>
             </div>
           ) : (
-            <div className="text-[11px] text-jp-gray-400 italic py-1">
+            <span className="text-xs text-jp-gray-400 italic">
               Konsep Teori Umum
-            </div>
+            </span>
           )}
         </div>
       </div>
@@ -72,9 +75,9 @@ export function GlossaryCard({
       <div className="mt-6 pt-4 border-t border-jp-gray-100 flex items-center justify-between">
         <Link
           href={`/kamus#${slug}`}
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.12em] text-jp-blue-700 hover:text-jp-blue-900 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-jp-blue-700 hover:text-jp-blue-900 transition-colors font-sans"
         >
-          Lihat Selengkapnya
+          <span>Lihat selengkapnya</span>
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>

@@ -10,7 +10,7 @@ export function Heading1({ className, children, ...props }: TypographyProps) {
   return (
     <h1
       className={cn(
-        "font-heading text-3xl font-bold tracking-tight text-jp-ink sm:text-4xl md:text-5xl leading-[1.2]",
+        "font-heading text-3xl font-bold tracking-tight text-jp-ink sm:text-4xl md:text-5xl leading-[1.18]",
         className
       )}
       {...props}
@@ -24,7 +24,7 @@ export function Heading2({ className, children, ...props }: TypographyProps) {
   return (
     <h2
       className={cn(
-        "font-heading text-2xl font-bold tracking-tight text-jp-ink md:text-3xl leading-[1.3]",
+        "font-heading text-2xl font-bold tracking-tight text-jp-ink md:text-3xl leading-[1.25]",
         className
       )}
       {...props}
@@ -52,7 +52,7 @@ export function LeadText({ className, children, ...props }: TypographyProps) {
   return (
     <p
       className={cn(
-        "max-w-[680px] font-prose text-lg md:text-xl leading-[1.75] text-jp-gray-700",
+        "max-w-2xl font-prose text-base md:text-lg leading-[1.75] text-jp-gray-700",
         className
       )}
       {...props}
@@ -66,7 +66,7 @@ export function Paragraph({ className, children, ...props }: TypographyProps) {
   return (
     <p
       className={cn(
-        "max-w-[680px] font-prose text-base md:text-lg leading-[1.8] text-jp-gray-700",
+        "max-w-prose font-prose text-sm md:text-base leading-[1.8] text-jp-gray-700",
         className
       )}
       {...props}
@@ -80,7 +80,7 @@ export function SectionLabel({ className, children, ...props }: TypographyProps)
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-2 text-xs font-bold tracking-wider text-jp-blue-700",
+        "text-xs font-mono font-semibold tracking-wider text-jp-blue-900",
         className
       )}
       {...props}

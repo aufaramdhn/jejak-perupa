@@ -4,7 +4,7 @@ import React, { useState, useTransition } from "react";
 import { GlossaryCard } from "@/components/molecules/exploration/GlossaryCard";
 import { GlossaryCardSkeleton } from "@/components/molecules/exploration/GlossaryCardSkeleton";
 import { SearchBar } from "@/components/molecules/navigation/SearchBar";
-import { Heading2, SectionLabel } from "@/components/atoms/typography/Typography";
+import { Heading1, Heading2, SectionLabel } from "@/components/atoms/typography/Typography";
 import type { GlossaryData } from "@/lib/data/glossary";
 import { cn } from "@/lib/utils";
 
@@ -60,7 +60,9 @@ export function GlossaryDirectory({ terms, className }: GlossaryDirectoryProps) 
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
           <SectionLabel>Ensiklopedia A-Z</SectionLabel>
-          <Heading2 className="mt-2 text-jp-ink">Kamus Istilah Seni Rupa</Heading2>
+          <Heading1 className="mt-2 text-3xl sm:text-4xl text-jp-ink">
+            Kamus Istilah Seni Rupa
+          </Heading1>
           <p className="mt-2 text-sm text-jp-gray-700 max-w-xl font-prose">
             Kumpulan istilah kunci, konsep estetika, aliran seni, dan teknik berkarya dari masa ke masa.
           </p>

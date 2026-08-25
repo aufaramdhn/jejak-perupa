@@ -6,12 +6,10 @@ import { Button } from "@/components/atoms/form/Button";
 import {
   Upload,
   Link as LinkIcon,
-  Image as ImageIcon,
   X,
   CheckCircle2,
   AlertTriangle,
   Info,
-  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -177,53 +175,53 @@ export function ImageDualInput({
   };
 
   return (
-    <div className={cn("space-y-2.5 font-sans", className)}>
+    <div className={cn("space-y-3 font-sans", className)}>
       {label && (
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+          <label className="font-heading text-sm font-bold text-jp-ink">
             {label}
           </label>
           {value && (
             <button
               type="button"
               onClick={handleClear}
-              className="flex items-center gap-1 text-[11px] text-red-600 hover:text-red-700 font-mono transition cursor-pointer"
+              className="flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-mono transition cursor-pointer"
             >
-              <X className="h-3 w-3" />
+              <X className="h-3.5 w-3.5" />
               Hapus Gambar
             </button>
           )}
         </div>
       )}
 
-      {/* DUAL MODE TABS */}
-      <div className="flex items-center gap-1.5 rounded-lg bg-jp-paper p-1 border border-jp-gray-200 w-fit">
+      {/* DUAL MODE TABS: BORDERLESS EDITORIAL UNDERLINE TOGGLE */}
+      <div className="flex items-center gap-6 text-xs border-b border-jp-gray-200 pb-1">
         <button
           type="button"
           onClick={() => setActiveTab("file")}
           className={cn(
-            "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-bold transition cursor-pointer",
+            "flex items-center gap-1.5 pb-1.5 -mb-1 transition cursor-pointer font-sans",
             activeTab === "file"
-              ? "bg-white text-jp-blue-900 shadow-2xs border border-jp-gray-200/80"
-              : "text-jp-gray-500 hover:text-jp-ink"
+              ? "text-jp-blue-900 border-b-2 border-jp-blue-900 font-bold"
+              : "text-jp-gray-500 hover:text-jp-ink font-medium"
           )}
         >
           <Upload className="h-3.5 w-3.5" />
-          Unggah Berkas
+          <span>Unggah Berkas</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("url")}
           className={cn(
-            "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-bold transition cursor-pointer",
+            "flex items-center gap-1.5 pb-1.5 -mb-1 transition cursor-pointer font-sans",
             activeTab === "url"
-              ? "bg-white text-jp-blue-900 shadow-2xs border border-jp-gray-200/80"
-              : "text-jp-gray-500 hover:text-jp-ink"
+              ? "text-jp-blue-900 border-b-2 border-jp-blue-900 font-bold"
+              : "text-jp-gray-500 hover:text-jp-ink font-medium"
           )}
         >
           <LinkIcon className="h-3.5 w-3.5" />
-          Tautan URL
+          <span>Tautan URL</span>
         </button>
       </div>
 
@@ -238,10 +236,10 @@ export function ImageDualInput({
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           className={cn(
-            "relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-5 text-center transition cursor-pointer",
+            "relative flex flex-col items-center justify-center rounded-xl border border-dashed p-6 text-center transition cursor-pointer",
             dragOver
               ? "border-jp-blue-900 bg-jp-blue-50/70"
-              : "border-jp-gray-300 bg-white hover:border-jp-blue-400 hover:bg-jp-paper/30"
+              : "border-jp-gray-300 bg-white hover:border-jp-blue-600 hover:bg-jp-paper/40"
           )}
         >
           <input
@@ -256,11 +254,11 @@ export function ImageDualInput({
             <Upload className="h-5 w-5" />
           </div>
 
-          <div className="text-xs font-bold text-jp-ink">
-            Klik untuk memilih berkas atau seret gambar ke sini
+          <div className="text-xs md:text-sm font-semibold text-jp-ink">
+            Pilih berkas dari perangkat atau seret gambar ke area ini
           </div>
-          <p className="mt-1 text-[11px] text-jp-gray-400 font-mono">
-            PNG, JPG, WebP, SVG, atau ICO (Maks. {maxSizeLabel})
+          <p className="mt-1 text-xs text-jp-gray-500 font-mono">
+            Format: PNG, JPG, WebP, SVG, atau ICO (Maksimal {maxSizeLabel})
           </p>
         </div>
       ) : (
@@ -292,24 +290,24 @@ export function ImageDualInput({
         </div>
       )}
 
-      {/* GUIDELINE HELPER TEXT */}
+      {/* GUIDELINE HELPER TEXT (UNBOXED PLAIN EDITORIAL CAPTION) */}
       {helperGuideline && (
-        <div className="flex items-start gap-1.5 text-[11px] text-jp-gray-500 font-prose bg-jp-paper/50 rounded-lg p-2 border border-jp-gray-200">
+        <p className="flex items-start gap-1.5 text-xs text-jp-gray-600 font-prose leading-relaxed">
           <Info className="h-3.5 w-3.5 text-jp-blue-700 shrink-0 mt-0.5" />
           <span>{helperGuideline}</span>
-        </div>
+        </p>
       )}
 
       {/* VALIDATION WARNING / ERROR */}
       {validationError && (
-        <div className="flex items-start gap-1.5 text-xs text-red-600 font-sans bg-red-50 rounded-lg p-2.5 border border-red-200">
+        <div className="flex items-start gap-2 text-xs text-red-600 font-sans bg-red-50 rounded-lg p-2.5 border border-red-200">
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>{validationError}</span>
         </div>
       )}
 
       {validationWarning && !validationError && (
-        <div className="flex items-start gap-1.5 text-xs text-amber-700 font-sans bg-amber-50 rounded-lg p-2.5 border border-amber-200">
+        <div className="flex items-start gap-2 text-xs text-amber-700 font-sans bg-amber-50 rounded-lg p-2.5 border border-amber-200">
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>{validationWarning}</span>
         </div>
@@ -317,7 +315,7 @@ export function ImageDualInput({
 
       {/* LIVE THUMBNAIL PREVIEW */}
       {value && !validationError && (
-        <div className="relative rounded-xl border border-jp-gray-200 bg-white p-3 shadow-2xs flex items-center gap-3.5">
+        <div className="relative rounded-xl border border-jp-gray-300 bg-white p-3.5 shadow-2xs flex items-center gap-3.5">
           <div
             className={cn(
               "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-jp-paper border border-jp-gray-200 flex items-center justify-center",
@@ -327,7 +325,11 @@ export function ImageDualInput({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={value}
-              alt="Pratinjau"
+              alt="Pratinjau Gambar"
+              width={64}
+              height={64}
+              loading="lazy"
+              decoding="async"
               className={cn(
                 "h-full w-full",
                 previewObjectFit === "contain" ? "object-contain p-1" : "object-cover"
@@ -341,23 +343,23 @@ export function ImageDualInput({
               <span>Gambar Siap Digunakan</span>
             </div>
 
-            <div className="flex flex-wrap gap-2 text-[10px] font-mono text-jp-gray-500">
+            <div className="flex flex-wrap gap-2 text-xs font-mono text-jp-gray-500">
               {imageMeta?.width && imageMeta?.height ? (
-                <span className="bg-jp-paper px-1.5 py-0.5 rounded border border-jp-gray-200">
+                <span className="bg-jp-paper px-2 py-0.5 rounded border border-jp-gray-200">
                   {imageMeta.width} × {imageMeta.height} px
                 </span>
               ) : null}
               {imageMeta?.sizeKb ? (
-                <span className="bg-jp-paper px-1.5 py-0.5 rounded border border-jp-gray-200">
+                <span className="bg-jp-paper px-2 py-0.5 rounded border border-jp-gray-200">
                   {imageMeta.sizeKb} KB
                 </span>
               ) : null}
               {value.startsWith("data:") ? (
-                <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">
+                <span className="bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 font-sans font-medium">
                   Berkas Lokal
                 </span>
               ) : (
-                <span className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded border border-purple-200 truncate max-w-[200px]">
+                <span className="bg-purple-50 text-purple-800 px-2 py-0.5 rounded border border-purple-200 truncate max-w-[200px] font-sans font-medium">
                   Tautan URL
                 </span>
               )}
@@ -367,10 +369,10 @@ export function ImageDualInput({
           <button
             type="button"
             onClick={handleClear}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition cursor-pointer"
             title="Hapus gambar"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
       )}

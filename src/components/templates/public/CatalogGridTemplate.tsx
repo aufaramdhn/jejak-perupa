@@ -42,6 +42,7 @@ export function CatalogGridTemplate({
 
       {/* CONTENT AREA */}
       <section className={cn("mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-12 lg:py-16", className)}>
+        <h2 className="sr-only">Daftar Koleksi dan Katalog Wacana</h2>
         {children}
       </section>
     </MainPublicLayout>

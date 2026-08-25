@@ -34,7 +34,7 @@ export function StudioCard({
   return (
     <div
       className={cn(
-        "flex items-start gap-3.5 rounded-xl border border-jp-gray-300 bg-white p-4.5 shadow-sm transition-all duration-200 hover:border-jp-blue-700 hover:shadow-jp-card",
+        "flex items-start gap-3.5 rounded-xl border border-jp-gray-300 bg-white p-4.5 shadow-2xs transition-all duration-200 hover:border-jp-blue-700 hover:shadow-jp-hover",
         className
       )}
     >
@@ -42,9 +42,9 @@ export function StudioCard({
         {renderIcon()}
       </div>
       <div>
-        <h4 className="font-heading text-base font-bold text-jp-ink">{title}</h4>
+        <h3 className="font-heading text-base font-bold text-jp-ink">{title}</h3>
         {description && (
-          <p className="mt-1 text-xs leading-relaxed text-jp-gray-700">
+          <p className="mt-1 text-xs leading-relaxed text-jp-gray-700 font-prose">
             {description}
           </p>
         )}

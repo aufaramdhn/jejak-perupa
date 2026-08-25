@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { MainPublicLayout } from "@/components/templates/public/MainPublicLayout";
 import { ArticleEditorForm } from "@/components/organisms/admin/ArticleEditorForm";
 import {
@@ -16,12 +15,11 @@ export default function KontribusiArtikelPage() {
       <div className="bg-jp-paper min-h-screen py-10 lg:py-14">
         <div className="mx-auto max-w-5xl px-6 sm:px-8 lg:px-12 space-y-8">
           {/* HEADER INTRO */}
-          <div className="border-b border-jp-gray-300 pb-6 space-y-2">
-            <SectionLabel>Meja Kontributor Pembelajar</SectionLabel>
+          <div className="border-b border-jp-gray-300 pb-6 space-y-2.5">
             <Heading1 className="text-3xl lg:text-4xl text-jp-ink">
               Tulis & Kirimkan Naskah Wacana Seni Rupa
             </Heading1>
-            <Paragraph className="text-xs md:text-sm text-jp-gray-600 font-prose max-w-3xl">
+            <Paragraph className="text-sm md:text-base text-jp-gray-700 font-prose max-w-2xl leading-relaxed">
               Bagikan hasil analisis visual, telaah sejarah seni, atau catatan eksperimen studiomu. Setiap naskah yang dikirimkan akan ditinjau secara berkala oleh Kurator Redaksi Jejak Perupa sebelum diterbitkan ke katalog publik.
             </Paragraph>
           </div>

@@ -7,7 +7,7 @@ import { CategorySection } from "@/components/organisms/exploration/CategorySect
 import { ArtistHeroCard } from "@/components/organisms/artwork/ArtistHeroCard";
 import { PeruChanTipBanner } from "@/components/organisms/peruchan/PeruChanTipBanner";
 import { PeruChanMascotSlider } from "@/components/organisms/peruchan/PeruChanMascotSlider";
-import { Heading1, Heading2, Paragraph } from "@/components/atoms/typography/Typography";
+import { Heading1, Heading2, Paragraph, SectionLabel } from "@/components/atoms/typography/Typography";
 import { Sparkles, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
@@ -48,10 +48,6 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 grid gap-12 lg:grid-cols-[1.2fr_0.8fr] items-center">
           {/* HERO LEFT COPY */}
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-md border border-jp-blue-200 bg-white px-3 py-1 font-mono text-xs font-semibold text-jp-blue-900 shadow-2xs">
-              Arsip & Wacana Seni Rupa Nusantara : Edisi 2026
-            </div>
-
             <Heading1 className="text-4xl sm:text-5xl lg:text-6xl text-jp-blue-900 leading-[1.15]">
               Belajar seni,
               <br />
@@ -81,7 +77,6 @@ export default function HomePage() {
         <ArticleGrid
           articles={latestArticles}
           title="Tulisan Pilihan Minggu Ini"
-          sectionLabel="Eksplorasi Terbaru"
           viewAllHref="/artikel"
         />
       </div>

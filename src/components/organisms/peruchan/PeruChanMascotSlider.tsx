@@ -148,24 +148,17 @@ export function PeruChanMascotSlider({
 
         {/* CHARACTER TITLE */}
         <div className="text-center space-y-0.5">
-          <h3 className="font-heading text-xl md:text-2xl font-bold text-jp-ink tracking-tight">
+          <h2 className="font-heading text-xl md:text-2xl font-bold text-jp-ink tracking-tight">
             {currentSlide.title}
-          </h3>
-          <div className="text-xs font-semibold text-jp-gray-500 uppercase tracking-wider">
+          </h2>
+          <div className="text-xs font-semibold text-jp-gray-600 font-sans">
             Maskot Resmi & Sahabat Belajar Seni
           </div>
         </div>
 
-        {/* QUOTE SPEECH CARD */}
-        <div
-          className={cn(
-            "relative rounded-xl border border-jp-gray-200 bg-white/90 p-4 shadow-xs backdrop-blur-xs",
-            "border-l-4",
-            theme.quoteBorder
-          )}
-        >
-          <Quote className="absolute right-3 bottom-3 h-6 w-6 text-jp-gray-200 pointer-events-none" />
-          <p className="font-prose text-xs md:text-sm text-jp-gray-700 leading-relaxed italic relative z-10">
+        {/* QUOTE SPEECH (BORDERLESS EDITORIAL) */}
+        <div className="relative px-3 py-1 text-center">
+          <p className="font-prose text-xs sm:text-sm text-jp-gray-700 leading-relaxed italic">
             &ldquo;{currentSlide.quote}&rdquo;
           </p>
         </div>

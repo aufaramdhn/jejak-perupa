@@ -96,12 +96,12 @@ export function PeruChanCallout({
           </div>
 
           {subtitle && (
-            <h4 className="mt-1 font-heading text-lg font-bold text-jp-ink">
+            <h3 className="mt-1 font-heading text-lg font-bold text-jp-ink">
               {subtitle}
-            </h4>
+            </h3>
           )}
 
-          <div className="mt-2 text-sm md:text-base leading-relaxed text-jp-gray-700 space-y-2.5 font-prose">
+          <div className="mt-2 max-w-2xl text-sm md:text-base leading-relaxed text-jp-gray-700 space-y-2.5 font-prose">
             {children}
           </div>
         </div>

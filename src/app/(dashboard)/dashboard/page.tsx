@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { MainPublicLayout } from "@/components/templates/public/MainPublicLayout";
-import { Heading2, Heading3, Paragraph, SectionLabel } from "@/components/atoms/typography/Typography";
+import { Heading1, Heading2, Paragraph, SectionLabel } from "@/components/atoms/typography/Typography";
 import { Button } from "@/components/atoms/form/Button";
 import { Skeleton } from "@/components/atoms/feedback/Skeleton";
 import { ArticleCard } from "@/components/molecules/article/ArticleCard";
@@ -35,8 +35,8 @@ export default function UserDashboardOverviewPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div>
               <SectionLabel>Ruang Belajar Mandiri</SectionLabel>
-              <Heading2 className="mt-2 text-jp-ink text-3xl sm:text-4xl">Halo, Pelajar Seni!</Heading2>
-              <Paragraph className="mt-1 text-sm md:text-base text-jp-gray-700 font-sans">
+              <Heading1 className="mt-2 text-jp-ink text-3xl sm:text-4xl">Halo, Pelajar Seni!</Heading1>
+              <Paragraph className="mt-1 text-sm md:text-base text-jp-gray-700 font-prose max-w-2xl">
                 Lanjutkan perjalanan eksplorasi seni rupamu dan raih pemahaman mendalam.
               </Paragraph>
             </div>
@@ -68,47 +68,47 @@ export default function UserDashboardOverviewPage() {
           <div className="grid gap-6 sm:grid-cols-3">
             <div className="rounded-xl border border-jp-gray-300 bg-white p-6 shadow-2xs">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-jp-gray-500">
+                <span className="text-xs font-semibold text-jp-gray-600 font-sans">
                   Materi Selesai
                 </span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-jp-blue-100 text-jp-blue-900">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-jp-blue-50 text-jp-blue-900 border border-jp-blue-100">
                   <BookOpen className="h-4.5 w-4.5" />
                 </div>
               </div>
-              <div className="mt-3 font-heading text-3xl font-extrabold text-jp-ink">
+              <div className="mt-3 font-heading text-3xl font-bold text-jp-ink font-mono">
                 3
               </div>
-              <p className="mt-1 text-xs text-jp-gray-500">Dari total 5 modul kurikulum</p>
+              <p className="mt-1 text-xs text-jp-gray-500 font-prose">Dari total 5 modul kurikulum</p>
             </div>
 
             <div className="rounded-xl border border-jp-gray-300 bg-white p-6 shadow-2xs">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-jp-gray-500">
+                <span className="text-xs font-semibold text-jp-gray-600 font-sans">
                   Materi Tersimpan
                 </span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-jp-brown-100 text-jp-brown-900">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-jp-brown-50 text-jp-brown-900 border border-jp-brown-100">
                   <Bookmark className="h-4.5 w-4.5" />
                 </div>
               </div>
-              <div className="mt-3 font-heading text-3xl font-extrabold text-jp-ink">
+              <div className="mt-3 font-heading text-3xl font-bold text-jp-ink font-mono">
                 {savedArticles.length}
               </div>
-              <p className="mt-1 text-xs text-jp-gray-500">Artikel & biografi seniman</p>
+              <p className="mt-1 text-xs text-jp-gray-500 font-prose">Artikel & biografi seniman</p>
             </div>
 
             <div className="rounded-xl border border-jp-gray-300 bg-white p-6 shadow-2xs">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-jp-gray-500">
+                <span className="text-xs font-semibold text-jp-gray-600 font-sans">
                   Evaluasi Kuis
                 </span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-jp-lime-muted text-jp-ink">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-jp-lime-muted text-jp-ink border border-jp-lime/60">
                   <Award className="h-4.5 w-4.5" />
                 </div>
               </div>
-              <div className="mt-3 font-heading text-3xl font-extrabold text-jp-ink">
+              <div className="mt-3 font-heading text-3xl font-bold text-jp-ink font-mono">
                 100%
               </div>
-              <p className="mt-1 text-xs text-green-700 font-semibold">Tingkat akurasi pemahaman</p>
+              <p className="mt-1 text-xs text-green-700 font-semibold font-prose">Tingkat akurasi pemahaman</p>
             </div>
           </div>
         )}
@@ -124,14 +124,14 @@ export default function UserDashboardOverviewPage() {
         ) : (
           <div className="rounded-xl border border-jp-blue-200 bg-gradient-to-r from-jp-blue-50 to-white p-6 md:p-8 space-y-6 shadow-xs">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-jp-blue-700">
+              <div className="max-w-3xl">
+                <div className="font-mono text-xs font-bold text-jp-blue-700">
                   Kurikulum yang Sedang Diikuti
-                </span>
-                <Heading3 className="mt-1 text-xl text-jp-blue-900">
+                </div>
+                <Heading2 className="mt-1 text-xl md:text-2xl text-jp-blue-900">
                   {learningPaths[0]?.title}
-                </Heading3>
-                <p className="mt-1 text-sm text-jp-gray-700 font-prose">
+                </Heading2>
+                <p className="mt-2 text-sm md:text-base text-jp-gray-700 font-prose max-w-2xl leading-relaxed">
                   {learningPaths[0]?.description}
                 </p>
               </div>
@@ -147,7 +147,7 @@ export default function UserDashboardOverviewPage() {
             <div className="space-y-2 pt-2">
               <div className="flex justify-between text-xs font-semibold text-jp-blue-900">
                 <span>Progres Belajar</span>
-                <span>60% Selesai</span>
+                <span className="font-mono font-bold">60% Selesai</span>
               </div>
               <div className="h-3 w-full rounded-full bg-white overflow-hidden p-0.5 border border-jp-blue-200">
                 <div className="h-full rounded-full bg-jp-blue-900 transition-all duration-500 w-[60%]" />
@@ -161,11 +161,11 @@ export default function UserDashboardOverviewPage() {
           <div className="flex items-center justify-between">
             <div>
               <SectionLabel>Koleksi Pribadi</SectionLabel>
-              <Heading3 className="text-2xl text-jp-ink">Artikel yang Disimpan</Heading3>
+              <Heading2 className="text-2xl text-jp-ink mt-1">Artikel yang Disimpan</Heading2>
             </div>
-            <Link href="/artikel" className="inline-flex items-center gap-1 text-xs font-bold text-jp-blue-700 hover:underline">
-              Jelajahi Lebih Banyak
-              <ArrowRight className="h-3 w-3" />
+            <Link href="/artikel" className="inline-flex items-center gap-1 text-xs font-bold text-jp-blue-700 hover:text-jp-blue-900 transition-colors">
+              <span>Jelajahi lebih banyak</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
 
