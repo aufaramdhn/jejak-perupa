@@ -10,6 +10,7 @@ import { Button } from "@/components/atoms/Button";
 import { PeruChanCallout } from "@/components/molecules/PeruChanCallout";
 import { artService } from "@/lib/services/artService";
 import { useModal } from "@/lib/modalContext";
+import { useFeatureFlags } from "@/lib/featureFlagsContext";
 import {
   FileText,
   Users,
@@ -23,11 +24,14 @@ import {
   TrendingUp,
   AlertCircle,
   Layers,
+  SlidersHorizontal,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function AdminOverviewPage() {
   const { alert } = useModal();
+  const { activePreset, enabledCount, totalCount } = useFeatureFlags();
   const articles = artService.getAllArticles();
   const artists = artService.getAllArtists();
   const terms = artService.getAllGlossaryTerms();
@@ -97,6 +101,45 @@ export default function AdminOverviewPage() {
       }
     >
       <div className="space-y-8 font-sans">
+        {/* RELEASE PHASE STATUS BAR */}
+        <div className="rounded-xl border border-jp-blue-200 bg-jp-blue-50/70 p-4 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-jp-blue-900 text-white shadow-2xs">
+              <SlidersHorizontal className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-jp-ink">
+                  Fase Rilis Aktif:{" "}
+                  <span className="text-jp-blue-900 font-mono">
+                    {activePreset === "custom"
+                      ? "Kustom (Custom Override)"
+                      : activePreset.toUpperCase()}
+                  </span>
+                </span>
+                <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-jp-blue-200 text-jp-blue-800">
+                  {enabledCount}/{totalCount} Fitur Tayang
+                </span>
+              </div>
+              <p className="text-[11px] text-jp-gray-500 font-prose mt-0.5">
+                Menu publik dan section beranda otomatis menyesuaikan sakelar fase yang aktif.
+              </p>
+            </div>
+          </div>
+
+          <Link href="/admin/rilis">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-lg text-xs border-jp-blue-300 bg-white text-jp-blue-900 hover:bg-jp-blue-50"
+            >
+              <SlidersHorizontal className="h-3 w-3 mr-1.5" />
+              Kelola Rilis & Sakelar Fitur
+            </Button>
+          </Link>
+        </div>
+
         {/* 1. KPI SUMMARY METRIC CARDS */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-jp-gray-300 bg-white p-5 shadow-2xs space-y-3">

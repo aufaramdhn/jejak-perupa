@@ -25,6 +25,7 @@ import {
   ChevronRight,
   ShieldCheck,
   Layers,
+  SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -117,12 +118,17 @@ export function AdminLayout({
       ],
     },
     {
-      group: "Konfigurasi & Visual",
+      group: "Konfigurasi & Sistem",
       items: [
         {
           label: "Pengaturan & Peru-Chan",
           href: "/admin/pengaturan",
           icon: <Sparkles className="h-4 w-4" />,
+        },
+        {
+          label: "Manajemen Rilis",
+          href: "/admin/rilis",
+          icon: <SlidersHorizontal className="h-4 w-4" />,
         },
       ],
     },

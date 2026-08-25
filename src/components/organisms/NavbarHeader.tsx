@@ -18,6 +18,7 @@ import { Badge } from "@/components/atoms/Badge";
 import { useAuth } from "@/lib/auth";
 import { useModal } from "@/lib/modalContext";
 import { useSiteSettings } from "@/lib/siteContext";
+import { useFeatureFlags } from "@/lib/featureFlagsContext";
 import { cn } from "@/lib/utils";
 
 export function NavbarHeader() {
@@ -35,6 +36,7 @@ export function NavbarHeader() {
   const { currentUser, isAuthenticated, isMounted, logout } = useAuth();
   const { confirm, toast } = useModal();
   const { settings } = useSiteSettings();
+  const { isFeatureEnabled } = useFeatureFlags();
 
   const handleLogoutClick = async () => {
     setProfileDropdownOpen(false);
@@ -98,39 +100,46 @@ export function NavbarHeader() {
     pathname.startsWith("/agenda") ||
     pathname.startsWith("/komunitas");
 
-  // Clean feature list without AI slop icons
-  const exploreFeatures = [
+  // Clean feature list dynamically filtered by active release flags
+  const allExploreFeatures = [
     {
       title: "Kamus Istilah Seni A-Z",
       desc: "Ensiklopedia istilah, konsep estetika, dan teknik seni rupa.",
       href: "/kamus",
       active: pathname.startsWith("/kamus"),
+      enabled: isFeatureEnabled("core_platform"),
     },
     {
       title: "Jalur Belajar Mandiri",
       desc: "Kurikulum bertahap dari pemula hingga analisis seni tingkat lanjut.",
       href: "/jalur-belajar",
       active: pathname.startsWith("/jalur-belajar"),
+      enabled: isFeatureEnabled("progress_belajar"),
     },
     {
       title: "Peta Geospasial Seni",
       desc: "Koordinat museum, galeri, monumen, dan sanggar se-Indonesia.",
       href: "/peta-seni",
       active: pathname.startsWith("/peta-seni"),
+      enabled: isFeatureEnabled("jejak_seni_daerah") || isFeatureEnabled("jejak_seni_museum"),
     },
     {
       title: "Agenda & Pameran Seni",
       desc: "Jadwal pameran, lokakarya, diskusi, dan pendaftaran open call.",
       href: "/agenda",
       active: pathname.startsWith("/agenda"),
+      enabled: isFeatureEnabled("agenda_seni"),
     },
     {
       title: "Direktori Komunitas",
       desc: "Basis data kolektif seni dan ruang seni alternatif nusantara.",
       href: "/komunitas",
       active: pathname.startsWith("/komunitas"),
+      enabled: isFeatureEnabled("direktori_komunitas"),
     },
   ];
+
+  const exploreFeatures = allExploreFeatures.filter((f) => f.enabled);
 
   return (
     <header className="sticky top-0 z-50 border-b border-jp-gray-300 bg-jp-paper/95 backdrop-blur transition-all">

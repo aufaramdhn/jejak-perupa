@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useSiteSettings } from "@/lib/siteContext";
+import { useFeatureFlags } from "@/lib/featureFlagsContext";
 import { cn } from "@/lib/utils";
 
 export interface FooterSectionProps {
@@ -15,6 +16,7 @@ export function FooterSection({
   copyrightYear = 2026,
 }: FooterSectionProps) {
   const { settings } = useSiteSettings();
+  const { isFeatureEnabled } = useFeatureFlags();
 
   return (
     <footer
@@ -76,11 +78,13 @@ export function FooterSection({
                   Kamus Istilah Seni A-Z
                 </Link>
               </li>
-              <li>
-                <Link href="/jalur-belajar" className="hover:text-white transition-colors">
-                  Jalur Belajar Mandiri
-                </Link>
-              </li>
+              {isFeatureEnabled("progress_belajar") && (
+                <li>
+                  <Link href="/jalur-belajar" className="hover:text-white transition-colors">
+                    Jalur Belajar Mandiri
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -90,24 +94,30 @@ export function FooterSection({
               Ekosistem Seni
             </div>
             <ul className="space-y-2 text-sm text-jp-brown-100/90">
-              <li>
-                <Link href="/peta-seni" className="hover:text-white transition-colors">
-                  Peta Seni Nusantara
-                </Link>
-              </li>
-              <li>
-                <Link href="/agenda" className="hover:text-white transition-colors">
-                  Agenda & Pameran
-                </Link>
-              </li>
-              <li>
-                <Link href="/komunitas" className="hover:text-white transition-colors">
-                  Komunitas Seni
-                </Link>
-              </li>
+              {(isFeatureEnabled("jejak_seni_daerah") || isFeatureEnabled("jejak_seni_museum")) && (
+                <li>
+                  <Link href="/peta-seni" className="hover:text-white transition-colors">
+                    Peta Seni Nusantara
+                  </Link>
+                </li>
+              )}
+              {isFeatureEnabled("agenda_seni") && (
+                <li>
+                  <Link href="/agenda" className="hover:text-white transition-colors">
+                    Agenda & Pameran
+                  </Link>
+                </li>
+              )}
+              {isFeatureEnabled("direktori_komunitas") && (
+                <li>
+                  <Link href="/komunitas" className="hover:text-white transition-colors">
+                    Komunitas Seni
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link href="/dashboard" className="hover:text-white transition-colors">
-                  Dashboard Belajar
+                  Dashboard Pembelajar
                 </Link>
               </li>
             </ul>
