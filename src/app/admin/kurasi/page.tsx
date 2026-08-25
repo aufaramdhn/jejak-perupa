@@ -6,6 +6,7 @@ import { Heading2, Heading3, Paragraph } from "@/components/atoms/Typography";
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
 import { PeruChanCallout } from "@/components/molecules/PeruChanCallout";
+import { useCategories } from "@/lib/categoryContext";
 import { useModal } from "@/lib/modalContext";
 import {
   Eye,
@@ -96,6 +97,8 @@ export default function AdminKurasiPage() {
   const [tipDraft, setTipDraft] = useState("");
   const [themeDraft, setThemeDraft] = useState<"blue" | "brown" | "lime">("blue");
 
+  const { categories, updateCategory, addCategory } = useCategories();
+
   const handleOpenReview = (sub: SubmissionItem) => {
     setSelectedSub(sub);
     setTipDraft(sub.peruChanTip || "");
@@ -114,6 +117,16 @@ export default function AdminKurasiPage() {
     });
 
     if (confirmed) {
+      // Approve proposed category if applicable
+      const matchedCat = categories.find(
+        (c) => c.name.toLowerCase() === selectedSub.category.toLowerCase()
+      );
+      if (matchedCat && matchedCat.isApproved === false) {
+        updateCategory(matchedCat.id, { isApproved: true });
+      } else if (!matchedCat) {
+        addCategory({ name: selectedSub.category, isApproved: true });
+      }
+
       setSubmissions(
         submissions.map((s) =>
           s.id === selectedSub.id

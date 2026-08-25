@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heading2, Heading3, Paragraph } from "@/components/atoms/Typography";
@@ -10,6 +10,8 @@ import { Button } from "@/components/atoms/Button";
 import { Badge } from "@/components/atoms/Badge";
 import { RichTextEditor } from "@/components/molecules/RichTextEditor";
 import { PeruChanCallout } from "@/components/molecules/PeruChanCallout";
+import { QuickAddCategoryModal } from "@/components/molecules/QuickAddCategoryModal";
+import { useCategories } from "@/lib/categoryContext";
 import { useModal } from "@/lib/modalContext";
 import { useAuth } from "@/lib/auth";
 import {
@@ -101,23 +103,26 @@ export function ArticleEditorForm({
     initialData?.peruChanTheme || "blue"
   );
 
+  const { approvedCategories } = useCategories();
+
   // Auto-Save & Recovery State
   const [draftDetected, setDraftDetected] = useState<boolean>(false);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [lastAutoSaveTime, setLastAutoSaveTime] = useState<string | null>(null);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const isInitialMount = useRef(true);
 
   // Validation Errors State
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Category Options
-  const categoryOptions = [
-    { value: "Pendidikan Seni", label: "Pendidikan Seni" },
-    { value: "Teknik Studio", label: "Teknik Studio" },
-    { value: "Sejarah Seni", label: "Sejarah Seni" },
-    { value: "Teori Seni", label: "Teori Seni" },
-  ];
+  // Dynamic Category Options from Context
+  const categoryOptions = useMemo(() => {
+    return approvedCategories.map((c) => ({
+      value: c.name,
+      label: c.name,
+    }));
+  }, [approvedCategories]);
 
   // 1. CHECK FOR SAVED DRAFT ON MOUNT
   useEffect(() => {
@@ -666,9 +671,21 @@ export function ArticleEditorForm({
 
               {/* KATEGORI ARTIKEL */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  Kategori Wacana <span className="text-red-500">*</span>
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                    Kategori Wacana <span className="text-red-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryModalOpen(true)}
+                    className="text-[11px] font-bold text-jp-blue-700 hover:text-jp-blue-900 flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="h-3 w-3" />
+                    {mode === "public-contribute"
+                      ? "Usulkan Kategori"
+                      : "+ Kategori Baru"}
+                  </button>
+                </div>
                 <Select
                   options={categoryOptions}
                   value={category}
@@ -1060,6 +1077,14 @@ export function ArticleEditorForm({
           )}
         </div>
       )}
+
+      {/* QUICK ADD CATEGORY MODAL */}
+      <QuickAddCategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        onSuccess={(newCat) => setCategory(newCat)}
+        isPublicSuggestion={mode === "public-contribute"}
+      />
     </div>
   );
 }

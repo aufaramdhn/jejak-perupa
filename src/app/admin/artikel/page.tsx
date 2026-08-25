@@ -7,7 +7,9 @@ import { Heading2, Heading3, Paragraph } from "@/components/atoms/Typography";
 import { Input } from "@/components/atoms/Input";
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
+import { QuickAddCategoryModal } from "@/components/molecules/QuickAddCategoryModal";
 import { artService } from "@/lib/services/artService";
+import { useCategories } from "@/lib/categoryContext";
 import { useModal } from "@/lib/modalContext";
 import {
   FileText,
@@ -19,32 +21,39 @@ import {
   Trash2,
   Eye,
   CheckCircle,
+  Layers,
+  FolderPlus,
+  SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function AdminArtikelPage() {
   const { confirm, alert } = useModal();
+  const { approvedCategories } = useCategories();
   const initialArticles = artService.getAllArticles();
 
   const [articlesList, setArticlesList] = useState(initialArticles);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
-  const categories = [
-    { id: "ALL", label: "Semua Kategori" },
-    { id: "pendidikan", label: "Pendidikan Seni" },
-    { id: "teknik", label: "Teknik Studio" },
-    { id: "sejarah", label: "Sejarah Seni" },
-    { id: "teori", label: "Teori & Wacana" },
-  ];
+  const dynamicCategories = useMemo(() => {
+    return [
+      { id: "ALL", name: "Semua Kategori" },
+      ...approvedCategories.map((c) => ({ id: c.name, name: c.name })),
+    ];
+  }, [approvedCategories]);
 
   const filteredArticles = useMemo(() => {
     return articlesList.filter((art) => {
       const matchSearch =
         art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        art.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+        art.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        art.category.toLowerCase().includes(searchQuery.toLowerCase());
       const matchCat =
-        selectedCategory === "ALL" || art.categoryId === selectedCategory;
+        selectedCategory === "ALL" ||
+        art.category.toLowerCase() === selectedCategory.toLowerCase() ||
+        art.categoryId.toLowerCase() === selectedCategory.toLowerCase();
       return matchSearch && matchCat;
     });
   }, [articlesList, searchQuery, selectedCategory]);
@@ -83,7 +92,49 @@ export default function AdminArtikelPage() {
       }
     >
       <div className="space-y-6 font-sans">
-        {/* SEARCH & FILTER CONTROLS */}
+        {/* TOP CATEGORY CONTROL BAR (DI ATAS FILTER CARD) */}
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-jp-gray-300 bg-white p-4 md:p-5 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-jp-blue-100 text-jp-blue-900 border border-jp-blue-200">
+              <Layers className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                Taksonomi Bidang Kajian
+              </div>
+              <p className="text-[11px] text-jp-gray-500 font-mono">
+                {approvedCategories.length} Kategori Aktif Terdaftar
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <Link href="/admin/kategori">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-lg text-xs"
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
+                Kelola Kategori
+              </Button>
+            </Link>
+
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsQuickAddOpen(true)}
+              className="rounded-lg text-xs"
+            >
+              <FolderPlus className="h-3.5 w-3.5 mr-1.5" />
+              Quick Add Kategori
+            </Button>
+          </div>
+        </div>
+
+        {/* SEARCH & DYNAMIC FILTER PILLS BAR */}
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-jp-gray-300 bg-white p-4 shadow-2xs">
           {/* SEARCH INPUT */}
           <div className="relative flex-1 min-w-[240px] max-w-md">
@@ -92,26 +143,26 @@ export default function AdminArtikelPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari judul artikel atau kata kunci..."
+              placeholder="Cari judul artikel, kata kunci, atau kategori..."
               className="w-full rounded-lg border border-jp-gray-300 bg-white pl-9 pr-4 py-2 text-xs text-jp-ink focus:border-jp-blue-700 outline-none"
             />
           </div>
 
-          {/* CATEGORY FILTER PILLS */}
+          {/* DYNAMIC CATEGORY FILTER PILLS */}
           <div className="flex flex-wrap items-center gap-1.5">
-            {categories.map((cat) => (
+            {dynamicCategories.map((cat) => (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
                 className={cn(
                   "rounded-md px-3 py-1.5 text-xs font-bold transition cursor-pointer",
-                  selectedCategory === cat.id
+                  selectedCategory.toLowerCase() === cat.id.toLowerCase()
                     ? "bg-jp-blue-900 text-white shadow-2xs"
                     : "bg-jp-paper border border-jp-gray-200 text-jp-gray-600 hover:text-jp-ink"
                 )}
               >
-                {cat.label}
+                {cat.name}
               </button>
             ))}
           </div>
@@ -128,7 +179,7 @@ export default function AdminArtikelPage() {
                   <th className="py-3.5 px-4 w-36">Kategori</th>
                   <th className="py-3.5 px-4 w-32">Durasi Baca</th>
                   <th className="py-3.5 px-4 w-28 text-center">Status</th>
-                  <th className="py-3.5 px-4 w-28 text-right">Aksi</th>
+                  <th className="py-3.5 px-4 w-32 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-jp-gray-200 text-xs">
@@ -224,6 +275,13 @@ export default function AdminArtikelPage() {
           </div>
         </div>
       </div>
+
+      {/* QUICK ADD CATEGORY MODAL */}
+      <QuickAddCategoryModal
+        isOpen={isQuickAddOpen}
+        onClose={() => setIsQuickAddOpen(false)}
+        onSuccess={(newCatName) => setSelectedCategory(newCatName)}
+      />
     </AdminLayout>
   );
 }

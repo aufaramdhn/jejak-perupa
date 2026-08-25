@@ -24,6 +24,7 @@ import {
   BookOpen,
   ChevronRight,
   ShieldCheck,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -107,6 +108,11 @@ export function AdminLayout({
           label: "Katalog Artikel",
           href: "/admin/artikel",
           icon: <FileText className="h-4 w-4" />,
+        },
+        {
+          label: "Kategori Wacana",
+          href: "/admin/kategori",
+          icon: <Layers className="h-4 w-4" />,
         },
         {
           label: "Direktori Seniman",

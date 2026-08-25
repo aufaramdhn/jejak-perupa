@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Newsreader, Lora, Inter, JetBrains_Mono } from "next/font/google";
 import { ModalProvider } from "@/lib/modalContext";
 import { SiteProvider } from "@/lib/siteContext";
+import { CategoryProvider } from "@/lib/categoryContext";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -51,7 +52,9 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col bg-jp-paper text-jp-ink font-prose antialiased">
         <SiteProvider>
-          <ModalProvider>{children}</ModalProvider>
+          <CategoryProvider>
+            <ModalProvider>{children}</ModalProvider>
+          </CategoryProvider>
         </SiteProvider>
       </body>
     </html>
