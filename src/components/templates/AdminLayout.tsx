@@ -338,23 +338,6 @@ export function AdminLayout({
               {title || "Ringkasan & Analitik Platform"}
             </span>
           </div>
-
-          {/* RIGHT SHORTCUTS & CTAs */}
-          <div className="flex items-center gap-3">
-            <Link href="/admin/artikel/tulis">
-              <Button variant="outline" size="sm" className="rounded-lg">
-                <Plus className="h-3.5 w-3.5 mr-1.5" />
-                Tulis Artikel Baru
-              </Button>
-            </Link>
-
-            <Link href="/" target="_blank">
-              <Button variant="primary" size="sm" className="rounded-lg">
-                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                Pratinjau Live Situs
-              </Button>
-            </Link>
-          </div>
         </header>
 
         {/* WORKSPACE PAGE CONTENT */}
