@@ -5,6 +5,7 @@ import {
   defaultSiteSettings,
   SiteSettingsData,
   MascotSlideItem,
+  PeruChanQuoteItem,
 } from "@/lib/data/siteSettings";
 
 const SETTINGS_STORAGE_KEY = "jejak_perupa_site_settings_v1";
@@ -15,6 +16,10 @@ interface SiteContextType {
   addMascotSlide: (slide: Omit<MascotSlideItem, "id" | "order">) => void;
   updateMascotSlide: (id: string, slide: Partial<MascotSlideItem>) => void;
   deleteMascotSlide: (id: string) => void;
+  addQuote: (quote: Omit<PeruChanQuoteItem, "id" | "order">) => void;
+  updateQuote: (id: string, quote: Partial<PeruChanQuoteItem>) => void;
+  deleteQuote: (id: string) => void;
+  toggleQuoteActive: (id: string) => void;
   resetToDefault: () => void;
 }
 
@@ -30,7 +35,14 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
       const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        setSettings({ ...defaultSiteSettings, ...parsed });
+        setSettings({
+          ...defaultSiteSettings,
+          ...parsed,
+          quotes:
+            parsed.quotes && parsed.quotes.length > 0
+              ? parsed.quotes
+              : defaultSiteSettings.quotes,
+        });
       }
     } catch (e) {
       console.warn("Failed to read site settings from localStorage", e);
@@ -59,6 +71,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     [saveToStorage]
   );
 
+  // MASCOT SLIDES
   const addMascotSlide = useCallback(
     (slide: Omit<MascotSlideItem, "id" | "order">) => {
       setSettings((prev) => {
@@ -104,6 +117,66 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     [saveToStorage]
   );
 
+  // QUOTES & TIPS LIBRARY
+  const addQuote = useCallback(
+    (quote: Omit<PeruChanQuoteItem, "id" | "order">) => {
+      setSettings((prev) => {
+        const newQuote: PeruChanQuoteItem = {
+          ...quote,
+          id: `quote-${Date.now()}`,
+          order: (prev.quotes || []).length + 1,
+        };
+        const updated = {
+          ...prev,
+          quotes: [...(prev.quotes || []), newQuote],
+        };
+        saveToStorage(updated);
+        return updated;
+      });
+    },
+    [saveToStorage]
+  );
+
+  const updateQuote = useCallback(
+    (id: string, quoteUpdate: Partial<PeruChanQuoteItem>) => {
+      setSettings((prev) => {
+        const updatedQuotes = (prev.quotes || []).map((q) =>
+          q.id === id ? { ...q, ...quoteUpdate } : q
+        );
+        const updated = { ...prev, quotes: updatedQuotes };
+        saveToStorage(updated);
+        return updated;
+      });
+    },
+    [saveToStorage]
+  );
+
+  const deleteQuote = useCallback(
+    (id: string) => {
+      setSettings((prev) => {
+        const updatedQuotes = (prev.quotes || []).filter((q) => q.id !== id);
+        const updated = { ...prev, quotes: updatedQuotes };
+        saveToStorage(updated);
+        return updated;
+      });
+    },
+    [saveToStorage]
+  );
+
+  const toggleQuoteActive = useCallback(
+    (id: string) => {
+      setSettings((prev) => {
+        const updatedQuotes = (prev.quotes || []).map((q) =>
+          q.id === id ? { ...q, isActive: !q.isActive } : q
+        );
+        const updated = { ...prev, quotes: updatedQuotes };
+        saveToStorage(updated);
+        return updated;
+      });
+    },
+    [saveToStorage]
+  );
+
   const resetToDefault = useCallback(() => {
     setSettings(defaultSiteSettings);
     saveToStorage(defaultSiteSettings);
@@ -117,6 +190,10 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
         addMascotSlide,
         updateMascotSlide,
         deleteMascotSlide,
+        addQuote,
+        updateQuote,
+        deleteQuote,
+        toggleQuoteActive,
         resetToDefault,
       }}
     >

@@ -6,10 +6,12 @@ import { Heading2, Heading3, Paragraph } from "@/components/atoms/Typography";
 import { Input } from "@/components/atoms/Input";
 import { Button } from "@/components/atoms/Button";
 import { Badge } from "@/components/atoms/Badge";
+import { Modal } from "@/components/atoms/Modal";
 import { PeruChanMascotSlider } from "@/components/organisms/PeruChanMascotSlider";
+import { PeruChanTipBanner } from "@/components/organisms/PeruChanTipBanner";
 import { useSiteSettings } from "@/lib/siteContext";
 import { useModal } from "@/lib/modalContext";
-import { MascotSlideItem } from "@/lib/data/siteSettings";
+import { MascotSlideItem, PeruChanQuoteItem } from "@/lib/data/siteSettings";
 import {
   Sparkles,
   Save,
@@ -23,6 +25,10 @@ import {
   Share2,
   CheckCircle,
   Eye,
+  MessageSquareQuote,
+  Check,
+  X,
+  Shuffle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,11 +39,15 @@ export default function AdminPengaturanPage() {
     addMascotSlide,
     updateMascotSlide,
     deleteMascotSlide,
+    addQuote,
+    updateQuote,
+    deleteQuote,
+    toggleQuoteActive,
     resetToDefault,
   } = useSiteSettings();
-  const { confirm, toast } = useModal();
+  const { confirm, alert } = useModal();
 
-  // Local form state
+  // Local form state for Site Info
   const [siteName, setSiteName] = useState(settings.siteName);
   const [siteTagline, setSiteTagline] = useState(settings.siteTagline);
   const [logoInitials, setLogoInitials] = useState(settings.logoInitials);
@@ -76,12 +86,55 @@ export default function AdminPengaturanPage() {
   const [slideImageUrl, setSlideImageUrl] = useState("");
   const [slideAccent, setSlideAccent] = useState<"blue" | "brown" | "lime">("blue");
 
+  // Quotes Library modal/form state
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
+  const [quoteText, setQuoteText] = useState("");
+  const [quoteCategoryBadge, setQuoteCategoryBadge] = useState("Catatan Santai Peru-Chan");
+  const [quoteImageSrc, setQuoteImageSrc] = useState("/images/mascot/peruchan-drawing.png");
+  const [quoteIsActive, setQuoteIsActive] = useState(true);
+
+  // 4 Official Mascot Poses
+  const officialMascotPoses = [
+    {
+      src: "/images/mascot/peruchan-drawing.png",
+      label: "Menggambar & Praktik Studio",
+      shortLabel: "Drawing",
+    },
+    {
+      src: "/images/mascot/peruchan-investigate.png",
+      label: "Meneliti & Telaah Kuratorial",
+      shortLabel: "Investigate",
+    },
+    {
+      src: "/images/mascot/peruchan-reading.png",
+      label: "Membaca & Sejarah Seni",
+      shortLabel: "Reading",
+    },
+    {
+      src: "/images/mascot/peruchan-excited.png",
+      label: "Semangat & Motivasi Belajar",
+      shortLabel: "Excited",
+    },
+  ];
+
+  // Preset Quote Categories
+  const quoteCategoryPresets = [
+    "Catatan Santai Peru-Chan",
+    "Telaah Kuratorial Maestro",
+    "Laboratorium Studio Seni",
+    "Dialektika Sejarah Seni",
+    "Tips Apresiasi Karya",
+    "Fakta Menarik Seni Rupa",
+  ];
+
+  // MASCOT SLIDES HANDLERS
   const handleOpenAddSlide = () => {
     setEditingSlideId(null);
-    setSlideTitle("Peru-Chan : Ekspresi Baru");
-    setSlideSubtitle("CATATAN STUDIO TAMBAHAN");
-    setSlideQuote("Setiap goresan kuas menyimpan jejak keberanian untuk berekspresi!");
-    setSlideImageUrl("");
+    setSlideTitle("");
+    setSlideSubtitle("");
+    setSlideQuote("");
+    setSlideImageUrl("/images/mascot/peruchan-excited.png");
     setSlideAccent("blue");
     setIsSlideModalOpen(true);
   };
@@ -92,43 +145,36 @@ export default function AdminPengaturanPage() {
     setSlideSubtitle(slide.subtitle);
     setSlideQuote(slide.quote);
     setSlideImageUrl(slide.imageUrl || "");
-    setSlideAccent(slide.accentColor);
+    setSlideAccent(slide.accentColor || "blue");
     setIsSlideModalOpen(true);
   };
 
   const handleSaveSlideModal = () => {
-    if (!slideTitle.trim() || !slideQuote.trim()) {
-      toast({
-        type: "warning",
-        title: "Data Belum Lengkap",
-        message: "Judul dan kutipan karakter wajib diisi.",
-      });
-      return;
-    }
+    if (!slideTitle || !slideQuote) return;
 
     if (editingSlideId) {
       updateMascotSlide(editingSlideId, {
         title: slideTitle,
-        subtitle: slideSubtitle || "MASKOT EDUKASI",
+        subtitle: slideSubtitle,
         quote: slideQuote,
-        imageUrl: slideImageUrl.trim() || undefined,
+        imageUrl: slideImageUrl,
         accentColor: slideAccent,
       });
-      toast({
+      alert({
         type: "success",
         title: "Slide Diperbarui",
-        message: "Perubahan pose karakter Peru-Chan berhasil disimpan.",
+        message: "Perubahan pose slide karakter berhasil disimpan.",
       });
     } else {
       addMascotSlide({
         title: slideTitle,
-        subtitle: slideSubtitle || "MASKOT EDUKASI",
+        subtitle: slideSubtitle,
         quote: slideQuote,
-        imageUrl: slideImageUrl.trim() || undefined,
+        imageUrl: slideImageUrl,
         accentColor: slideAccent,
         isActive: true,
       });
-      toast({
+      alert({
         type: "success",
         title: "Slide Ditambahkan",
         message: "Pose karakter Peru-Chan baru berhasil ditambahkan ke slideshow.",
@@ -149,10 +195,80 @@ export default function AdminPengaturanPage() {
 
     if (confirmed) {
       deleteMascotSlide(id);
-      toast({
+      alert({
         type: "success",
         title: "Slide Dihapus",
         message: "Slide karakter telah dikeluarkan dari tayangan.",
+      });
+    }
+  };
+
+  // QUOTES LIBRARY HANDLERS
+  const handleOpenAddQuote = () => {
+    setEditingQuoteId(null);
+    setQuoteText("");
+    setQuoteCategoryBadge("Catatan Santai Peru-Chan");
+    setQuoteImageSrc("/images/mascot/peruchan-drawing.png");
+    setQuoteIsActive(true);
+    setIsQuoteModalOpen(true);
+  };
+
+  const handleOpenEditQuote = (q: PeruChanQuoteItem) => {
+    setEditingQuoteId(q.id);
+    setQuoteText(q.quoteText);
+    setQuoteCategoryBadge(q.categoryBadge);
+    setQuoteImageSrc(q.imageSrc || "/images/mascot/peruchan-drawing.png");
+    setQuoteIsActive(q.isActive);
+    setIsQuoteModalOpen(true);
+  };
+
+  const handleSaveQuoteModal = () => {
+    if (!quoteText.trim()) return;
+
+    if (editingQuoteId) {
+      updateQuote(editingQuoteId, {
+        quoteText: quoteText.trim(),
+        categoryBadge: quoteCategoryBadge.trim(),
+        imageSrc: quoteImageSrc,
+        isActive: quoteIsActive,
+      });
+      alert({
+        type: "success",
+        title: "Kutipan Diperbarui",
+        message: "Perubahan kutipan tips Peru-Chan berhasil disimpan.",
+      });
+    } else {
+      addQuote({
+        quoteText: quoteText.trim(),
+        categoryBadge: quoteCategoryBadge.trim(),
+        imageSrc: quoteImageSrc,
+        isActive: quoteIsActive,
+      });
+      alert({
+        type: "success",
+        title: "Kutipan Ditambahkan",
+        message: "Kutipan tips baru berhasil ditambahkan ke library tayangan beranda.",
+      });
+    }
+    setIsQuoteModalOpen(false);
+  };
+
+  const handleDeleteQuote = async (id: string, text: string) => {
+    const confirmed = await confirm({
+      title: "Hapus Kutipan Tips Ini?",
+      message: `Kutipan "${text.slice(0, 60)}..." akan dihapus secara permanen dari tayangan beranda.`,
+      confirmLabel: "Hapus Kutipan",
+      cancelLabel: "Batal",
+      variant: "danger",
+      iconType: "trash",
+    });
+
+    if (confirmed) {
+      deleteQuote(id);
+      alert({
+        type: "info",
+        title: "Kutipan Dihapus",
+        message: "Kutipan telah dihapus dari library tayangan.",
       });
     }
   };
@@ -173,7 +289,7 @@ export default function AdminPengaturanPage() {
       contactEmail,
       instagramUrl,
     });
-    toast({
+    alert({
       type: "success",
       title: "Pengaturan Disimpan",
       message: "Seluruh konfigurasi identitas situs dan narasi telah diperbarui.",
@@ -183,7 +299,7 @@ export default function AdminPengaturanPage() {
   const handleResetSettings = async () => {
     const confirmed = await confirm({
       title: "Reset ke Pengaturan Bawaan?",
-      message: "Semua pengaturan nama, tagline, dan slide maskot akan dikembalikan ke setelan awal default.",
+      message: "Semua pengaturan nama, tagline, slide maskot, dan library quotes akan dikembalikan ke setelan awal default.",
       confirmLabel: "Ya, Reset",
       cancelLabel: "Batal",
       variant: "warning",
@@ -192,7 +308,7 @@ export default function AdminPengaturanPage() {
 
     if (confirmed) {
       resetToDefault();
-      toast({
+      alert({
         type: "info",
         title: "Pengaturan Direset",
         message: "Konfigurasi situs telah dikembalikan ke standar awal.",
@@ -203,7 +319,7 @@ export default function AdminPengaturanPage() {
   return (
     <AdminLayout
       title="Pengaturan Identitas Situs & Peru-Chan"
-      subtitle="Kustomisasi logo, nama platform, narasi beranda, dan kelola galeri ilustrasi karakter secara langsung."
+      subtitle="Kustomisasi logo, nama platform, narasi beranda, dan kelola galeri ilustrasi karakter serta quotes secara langsung."
       actionButton={
         <div className="flex items-center gap-2.5">
           <Button
@@ -230,21 +346,20 @@ export default function AdminPengaturanPage() {
       }
     >
       <div className="space-y-10 font-sans">
-
-        {/* 1. KELOLA SLIDESHOW KARAKTER PERU-CHAN */}
+        {/* 1. KELOLA SLIDESHOW KARAKTER PERU-CHAN (HERO & ABOUT) */}
         <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-8 shadow-2xs space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-jp-gray-100 pb-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-blue-900 text-white text-xs font-bold">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-blue-900 text-white text-xs font-bold font-mono">
                   1
                 </span>
                 <Heading3 className="text-lg text-jp-ink">
-                  Galeri Slideshow Karakter Peru-Chan (Beranda & Tentang)
+                  Galeri Slideshow Karakter Peru-Chan (Hero & Tentang)
                 </Heading3>
               </div>
               <p className="mt-1 text-xs text-jp-gray-500 font-prose pl-8">
-                Tambahkan foto ilustrasi pose, kutipan motivasi studio, dan pilih tema aksen warna untuk setiap slide.
+                Kelola pose ilustrasi, kutipan motivasi studio, dan tema aksen warna pada hero beranda.
               </p>
             </div>
 
@@ -260,223 +375,316 @@ export default function AdminPengaturanPage() {
             </Button>
           </div>
 
-          {/* GRID OF CURRENT SLIDES & LIVE PREVIEW */}
-          <div className="grid gap-8 lg:grid-cols-[1.3fr_0.9fr] items-start pt-2">
-            {/* SLIDES LIST */}
-            <div className="space-y-4">
-              <div className="text-xs font-bold uppercase tracking-wider text-jp-gray-600">
-                Daftar Slide Aktif ({settings.mascotSlides.length} Pose Terdaftar)
-              </div>
-
-              <div className="space-y-3">
-                {settings.mascotSlides.map((slide, idx) => (
-                  <div
-                    key={slide.id}
-                    className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-jp-gray-200 bg-jp-paper/40 p-4 transition hover:border-jp-blue-300"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-jp-blue-100 font-mono text-xs font-bold text-jp-blue-900">
-                        #{idx + 1}
-                      </span>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-jp-ink">
-                            {slide.title}
-                          </span>
-                          <Badge variant={slide.accentColor} size="sm">
-                            {slide.accentColor.toUpperCase()}
-                          </Badge>
-                          {!slide.isActive && (
-                            <span className="text-[10px] text-red-600 font-bold">
-                              (Nonaktif)
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-jp-gray-500 font-mono">
-                          {slide.subtitle}
-                        </div>
-                        <p className="text-xs text-jp-gray-700 italic font-prose max-w-md line-clamp-2">
-                          &ldquo;{slide.quote}&rdquo;
-                        </p>
+          {/* SLIDES GRID */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {settings.mascotSlides.map((slide, idx) => (
+              <div
+                key={slide.id}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-jp-gray-200 bg-jp-paper/40 p-4 transition hover:border-jp-blue-300 hover:shadow-xs"
+              >
+                <div className="space-y-3">
+                  <div className="relative flex h-36 items-center justify-center overflow-hidden rounded-lg bg-white border border-jp-gray-200">
+                    {slide.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={slide.imageUrl}
+                        alt={slide.title}
+                        className="max-h-32 object-contain transition duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-jp-blue-50 text-jp-blue-900">
+                        <Sparkles className="h-6 w-6" />
                       </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEditSlide(slide)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-jp-gray-300 bg-white text-jp-gray-700 hover:bg-jp-blue-50 hover:text-jp-blue-900 transition cursor-pointer"
-                        title="Edit Slide"
+                    )}
+                    <span className="absolute top-2 left-2 rounded-md bg-jp-ink/80 px-2 py-0.5 font-mono text-[10px] font-bold text-white backdrop-blur-xs">
+                      #{idx + 1}
+                    </span>
+                    <span className="absolute top-2 right-2">
+                      <Badge
+                        variant={
+                          slide.accentColor === "lime"
+                            ? "lime"
+                            : slide.accentColor === "brown"
+                            ? "brown"
+                            : "blue"
+                        }
+                        size="sm"
                       >
-                        <Edit2 className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={settings.mascotSlides.length <= 1}
-                        onClick={() => handleDeleteSlide(slide.id, slide.title)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
-                        title="Hapus Slide"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                        {slide.accentColor}
+                      </Badge>
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            {/* LIVE PREVIEW COMPONENT */}
-            <div className="space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-jp-gray-600">
-                Pratinjau Langsung (Live Preview di Beranda)
+                  <div>
+                    <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-jp-gray-400">
+                      {slide.subtitle || "CATATAN MASKOT"}
+                    </div>
+                    <div className="font-bold text-jp-ink text-sm truncate">
+                      {slide.title}
+                    </div>
+                    <p className="mt-1 font-prose text-xs italic text-jp-gray-600 line-clamp-2">
+                      &ldquo;{slide.quote}&rdquo;
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-end gap-1.5 border-t border-jp-gray-200/60 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditSlide(slide)}
+                    title="Edit Slide"
+                    className="flex h-7 w-7 items-center justify-center rounded-md border border-jp-gray-200 bg-white text-jp-gray-600 hover:text-jp-blue-900 hover:border-jp-blue-700 transition cursor-pointer"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSlide(slide.id, slide.title)}
+                    title="Hapus Slide"
+                    className="flex h-7 w-7 items-center justify-center rounded-md border border-red-200 bg-white text-red-600 hover:bg-red-50 transition cursor-pointer"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
-              <PeruChanMascotSlider className="w-full shadow-md" />
+            ))}
+          </div>
+
+          {/* LIVE PREVIEW SLIDER */}
+          <div className="rounded-xl border border-jp-blue-200 bg-jp-blue-50/40 p-5 space-y-3">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold text-jp-blue-900 uppercase tracking-wider">
+              <Eye className="h-4 w-4" />
+              Pratinjau Langsung Slideshow Peru-Chan (1:1)
+            </div>
+            <div className="max-w-2xl mx-auto py-2">
+              <PeruChanMascotSlider autoPlayInterval={5000} />
             </div>
           </div>
         </div>
 
-        {/* 2. IDENTITAS & BRANDING SITUS */}
-        <form onSubmit={handleSaveGeneralSettings} className="space-y-8">
+        {/* 2. LIBRARY QUOTES & TIPS PERU-CHAN (GAME LOADING TIPS SLIDESHOW) */}
+        <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-8 shadow-2xs space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-jp-gray-100 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-blue-900 text-white text-xs font-bold font-mono">
+                  2
+                </span>
+                <Heading3 className="text-lg text-jp-ink">
+                  Library Quotes & Tips Kuratorial Peru-Chan
+                </Heading3>
+              </div>
+              <p className="mt-1 text-xs text-jp-gray-500 font-prose pl-8">
+                Koleksi kutipan tips yang tayang berganti otomatis (*game loading screen style*) di bagian bawah beranda.
+              </p>
+            </div>
+
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={handleOpenAddQuote}
+              className="rounded-lg"
+            >
+              <Plus className="h-4 w-4 mr-1.5" />
+              Tambah Kutipan Baru
+            </Button>
+          </div>
+
+          {/* QUOTES LIST */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {(settings.quotes || []).map((q, idx) => (
+              <div
+                key={q.id}
+                className={cn(
+                  "relative flex flex-col justify-between rounded-xl border p-5 transition shadow-2xs",
+                  q.isActive
+                    ? "border-jp-gray-300 bg-white hover:border-jp-blue-400"
+                    : "border-jp-gray-200 bg-jp-paper/50 opacity-60"
+                )}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2 border-b border-jp-gray-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-jp-blue-900 bg-jp-blue-50 px-2 py-0.5 rounded border border-jp-blue-200">
+                        {q.categoryBadge}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleQuoteActive(q.id)}
+                      className={cn(
+                        "rounded-md px-2 py-0.5 text-[10px] font-bold font-mono transition cursor-pointer border",
+                        q.isActive
+                          ? "bg-green-50 text-green-700 border-green-200"
+                          : "bg-gray-100 text-gray-500 border-gray-200"
+                      )}
+                    >
+                      {q.isActive ? "Aktif Tayang" : "Non-Aktif"}
+                    </button>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-jp-blue-50 border border-jp-blue-100 p-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={q.imageSrc || "/images/mascot/peruchan-drawing.png"}
+                        alt="Peru-Chan"
+                        className="max-h-14 object-contain"
+                      />
+                    </div>
+
+                    <div className="flex-1">
+                      <p className="font-heading text-sm md:text-base italic text-jp-ink leading-relaxed">
+                        &ldquo;{q.quoteText}&rdquo;
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between border-t border-jp-gray-100 pt-3 text-xs text-jp-gray-400 font-mono">
+                  <span>Slot #{idx + 1}</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEditQuote(q)}
+                      title="Edit Kutipan"
+                      className="flex h-7 w-7 items-center justify-center rounded-md border border-jp-gray-200 bg-white text-jp-gray-600 hover:text-jp-blue-900 hover:border-jp-blue-700 transition cursor-pointer"
+                    >
+                      <Edit2 className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteQuote(q.id, q.quoteText)}
+                      title="Hapus Kutipan"
+                      className="flex h-7 w-7 items-center justify-center rounded-md border border-red-200 bg-white text-red-600 hover:bg-red-50 transition cursor-pointer"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* LIVE PREVIEW OF GAME TIPS SLIDESHOW */}
+          <div className="rounded-xl border border-jp-blue-200 bg-jp-blue-50/40 p-5 space-y-3">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold text-jp-blue-900 uppercase tracking-wider">
+              <Eye className="h-4 w-4" />
+              Pratinjau Live Banner Tips Beranda (Auto-Slideshow)
+            </div>
+            <div className="pt-2">
+              <PeruChanTipBanner autoPlayInterval={4000} />
+            </div>
+          </div>
+        </div>
+
+        {/* 3. IDENTITAS & BRANDING SITUS */}
+        <form onSubmit={handleSaveGeneralSettings} className="space-y-10">
           <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-8 shadow-2xs space-y-6">
-            <div className="flex items-center gap-2 border-b border-jp-gray-100 pb-4">
-              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-blue-900 text-white text-xs font-bold">
-                2
-              </span>
-              <Heading3 className="text-lg text-jp-ink">
-                Identitas Platform & Informasi Kontak Redaksi
-              </Heading3>
+            <div className="border-b border-jp-gray-100 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-blue-900 text-white text-xs font-bold font-mono">
+                  3
+                </span>
+                <Heading3 className="text-lg text-jp-ink">
+                  Identitas Brand & Metadata Situs
+                </Heading3>
+              </div>
+              <p className="mt-1 text-xs text-jp-gray-500 font-prose pl-8">
+                Konfigurasi nama platform, tagline, inisial logo, dan kontak redaksi resmi.
+              </p>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  Nama Situs / Brand
+                  Nama Platform
                 </label>
                 <Input
                   type="text"
-                  required
                   value={siteName}
                   onChange={(e) => setSiteName(e.target.value)}
-                  placeholder="JEJAK PERUPA"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  Tagline / Sub-Identitas
+                  Tagline Kuratorial
                 </label>
                 <Input
                   type="text"
-                  required
                   value={siteTagline}
                   onChange={(e) => setSiteTagline(e.target.value)}
-                  placeholder="Catatan Perjalanan Pelajar Seni Rupa"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  Inisial Logo (Avatar / Favicon)
+                  Inisial Logo Avatar
                 </label>
                 <Input
                   type="text"
-                  maxLength={4}
                   value={logoInitials}
                   onChange={(e) => setLogoInitials(e.target.value)}
-                  placeholder="JP"
+                  maxLength={4}
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  URL Gambar Logo Kustom (Opsional)
-                </label>
-                <Input
-                  type="url"
-                  value={logoImageUrl}
-                  onChange={(e) => setLogoImageUrl(e.target.value)}
-                  placeholder="https://domain.com/logo.png"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-jp-ink flex items-center gap-1.5">
-                  <Mail className="h-3.5 w-3.5 text-jp-blue-700" />
-                  Email Resmi Redaksi
+                  Email Kontak Redaksi
                 </label>
                 <Input
                   type="email"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
-                  placeholder="redaksi@jejakperupa.id"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-jp-ink flex items-center gap-1.5">
-                  <Share2 className="h-3.5 w-3.5 text-jp-blue-700" />
-                  Tautan Akun Media Sosial (Instagram)
-                </label>
-                <Input
-                  type="url"
-                  value={instagramUrl}
-                  onChange={(e) => setInstagramUrl(e.target.value)}
-                  placeholder="https://instagram.com/jejakperupa"
                 />
               </div>
             </div>
           </div>
 
-          {/* 3. TEKS HERO & BERANDA */}
+          {/* 4. TEKS EDITORIAL HALAMAN */}
           <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-8 shadow-2xs space-y-6">
-            <div className="flex items-center gap-2 border-b border-jp-gray-100 pb-4">
-              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-blue-900 text-white text-xs font-bold">
-                3
-              </span>
-              <Heading3 className="text-lg text-jp-ink">
-                Narasi Hero & Sorotan Beranda
-              </Heading3>
+            <div className="border-b border-jp-gray-100 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-blue-900 text-white text-xs font-bold font-mono">
+                  4
+                </span>
+                <Heading3 className="text-lg text-jp-ink">
+                  Teks Editorial Beranda & Halaman Tentang
+                </Heading3>
+              </div>
+              <p className="mt-1 text-xs text-jp-gray-500 font-prose pl-8">
+                Narasi filosofi, visi kuratorial, dan deskripsi pembuka yang tampil di halaman beranda dan tentang kami.
+              </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  Badge Edisi Tahun Beranda
+                  Headline Utama Beranda
                 </label>
                 <Input
                   type="text"
-                  value={heroEditionBadge}
-                  onChange={(e) => setHeroEditionBadge(e.target.value)}
-                  placeholder="Arsip & Wacana Seni Rupa Nusantara : Edisi 2026"
+                  value={heroHeadline}
+                  onChange={(e) => setHeroHeadline(e.target.value)}
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  Deskripsi Pengantar Beranda
+                  Deskripsi Narasi Hero
                 </label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={heroDescription}
                   onChange={(e) => setHeroDescription(e.target.value)}
                   className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2.5 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none font-prose leading-relaxed"
                 />
               </div>
-            </div>
-          </div>
 
-          {/* 4. NARASI HALAMAN TENTANG KAMI */}
-          <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-8 shadow-2xs space-y-6">
-            <div className="flex items-center gap-2 border-b border-jp-gray-100 pb-4">
-              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-blue-900 text-white text-xs font-bold">
-                4
-              </span>
-              <Heading3 className="text-lg text-jp-ink">
-                Narasi Filosofis Halaman Tentang Kami
-              </Heading3>
-            </div>
-
-            <div className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
                   Visi Platform
@@ -485,30 +693,6 @@ export default function AdminPengaturanPage() {
                   rows={2}
                   value={aboutVision}
                   onChange={(e) => setAboutVision(e.target.value)}
-                  className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2.5 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none font-prose leading-relaxed"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  Misi Platform
-                </label>
-                <textarea
-                  rows={2}
-                  value={aboutMission}
-                  onChange={(e) => setAboutMission(e.target.value)}
-                  className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2.5 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none font-prose leading-relaxed"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                  Filosofi Edukasi Seni
-                </label>
-                <textarea
-                  rows={2}
-                  value={aboutPhilosophy}
-                  onChange={(e) => setAboutPhilosophy(e.target.value)}
                   className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2.5 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none font-prose leading-relaxed"
                 />
               </div>
@@ -526,8 +710,8 @@ export default function AdminPengaturanPage() {
 
         {/* MODAL EDIT / TAMBAH SLIDE MASCOT */}
         {isSlideModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs font-sans animate-in fade-in duration-150">
-            <div className="relative w-full max-w-lg overflow-hidden rounded-xl border border-jp-gray-300 bg-white shadow-2xl space-y-5 p-6">
+          <Modal isOpen={true} onClose={() => setIsSlideModalOpen(false)} maxWidth="lg">
+            <div className="space-y-5 p-6 md:p-7 font-sans">
               <div className="flex items-center justify-between border-b border-jp-gray-200 pb-3">
                 <Heading3 className="text-lg text-jp-ink">
                   {editingSlideId ? "Edit Pose Karakter Peru-Chan" : "Tambah Pose Karakter Peru-Chan"}
@@ -535,16 +719,16 @@ export default function AdminPengaturanPage() {
                 <button
                   type="button"
                   onClick={() => setIsSlideModalOpen(false)}
-                  className="text-xs font-bold text-jp-gray-400 hover:text-jp-ink cursor-pointer"
+                  className="text-jp-gray-400 hover:text-jp-ink p-1 cursor-pointer"
                 >
-                  Tutup
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                    Judul Pose / Ekspresi
+                    Judul Pose / Ekspresi <span className="text-red-500">*</span>
                   </label>
                   <Input
                     type="text"
@@ -569,7 +753,7 @@ export default function AdminPengaturanPage() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                    Kutipan Motivasi / Tips Maskot
+                    Kutipan Motivasi / Tips Maskot <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     rows={3}
@@ -583,17 +767,33 @@ export default function AdminPengaturanPage() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                    URL Gambar Ilustrasi (Opsional)
+                    Pilih Pose Ilustrasi Resmi
                   </label>
-                  <Input
-                    type="url"
-                    value={slideImageUrl}
-                    onChange={(e) => setSlideImageUrl(e.target.value)}
-                    placeholder="https://.../peruchan-pose.png"
-                  />
-                  <span className="text-[11px] text-jp-gray-400">
-                    Jika dikosongkan, kartu akan menggunakan ikon maskot kuratorial bawaan.
-                  </span>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {officialMascotPoses.map((pose) => (
+                      <button
+                        key={pose.src}
+                        type="button"
+                        onClick={() => setSlideImageUrl(pose.src)}
+                        className={cn(
+                          "flex flex-col items-center gap-1.5 rounded-lg border p-2 text-center transition cursor-pointer",
+                          slideImageUrl === pose.src
+                            ? "border-jp-blue-900 bg-jp-blue-50 ring-2 ring-jp-blue-900/30"
+                            : "border-jp-gray-200 bg-white hover:bg-jp-paper"
+                        )}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={pose.src}
+                          alt={pose.shortLabel}
+                          className="h-16 object-contain"
+                        />
+                        <span className="text-[10px] font-bold text-jp-ink font-mono">
+                          {pose.shortLabel}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
@@ -607,7 +807,7 @@ export default function AdminPengaturanPage() {
                         type="button"
                         onClick={() => setSlideAccent(accent)}
                         className={cn(
-                          "flex-1 rounded-lg py-2 text-xs font-bold border transition cursor-pointer uppercase",
+                          "flex-1 rounded-lg py-2 text-xs font-bold border transition cursor-pointer uppercase font-mono",
                           slideAccent === accent
                             ? "border-jp-ink bg-jp-paper text-jp-ink shadow-xs"
                             : "border-jp-gray-200 bg-white text-jp-gray-500 hover:bg-jp-gray-50"
@@ -641,7 +841,149 @@ export default function AdminPengaturanPage() {
                 </Button>
               </div>
             </div>
-          </div>
+          </Modal>
+        )}
+
+        {/* MODAL EDIT / TAMBAH QUOTE TIPS (GAME LOADING STYLE) */}
+        {isQuoteModalOpen && (
+          <Modal isOpen={true} onClose={() => setIsQuoteModalOpen(false)} maxWidth="lg">
+            <div className="space-y-5 p-6 md:p-7 font-sans">
+              <div className="flex items-center justify-between border-b border-jp-gray-200 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-jp-blue-100 text-jp-blue-900">
+                    <MessageSquareQuote className="h-4 w-4" />
+                  </div>
+                  <Heading3 className="text-lg text-jp-ink">
+                    {editingQuoteId ? "Edit Kutipan Tips Peru-Chan" : "Tambah Kutipan Tips Baru"}
+                  </Heading3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsQuoteModalOpen(false)}
+                  className="text-jp-gray-400 hover:text-jp-ink p-1 cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* QUOTE TEXT */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                    Teks Kutipan / Tips <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={quoteText}
+                    onChange={(e) => setQuoteText(e.target.value)}
+                    placeholder="Contoh: Jangan takut mencoba warna kontras di kanvasmu. Keberanian eksperimen adalah awal karakter rupa!"
+                    className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none font-heading italic text-base leading-relaxed"
+                  />
+                </div>
+
+                {/* CATEGORY BADGE & PRESETS */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                    Label Kategori Tips
+                  </label>
+                  <Input
+                    type="text"
+                    value={quoteCategoryBadge}
+                    onChange={(e) => setQuoteCategoryBadge(e.target.value)}
+                    placeholder="Contoh: Catatan Santai Peru-Chan"
+                  />
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {quoteCategoryPresets.map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setQuoteCategoryBadge(preset)}
+                        className={cn(
+                          "rounded-md px-2 py-0.5 text-[10px] font-bold font-mono transition cursor-pointer border",
+                          quoteCategoryBadge === preset
+                            ? "bg-jp-blue-900 text-white border-jp-blue-900"
+                            : "bg-jp-paper text-jp-gray-600 border-jp-gray-200 hover:bg-white"
+                        )}
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* POSE SELECTOR */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                    Pilih Pose Karakter Peru-Chan
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {officialMascotPoses.map((pose) => (
+                      <button
+                        key={pose.src}
+                        type="button"
+                        onClick={() => setQuoteImageSrc(pose.src)}
+                        className={cn(
+                          "flex flex-col items-center gap-1.5 rounded-lg border p-2 text-center transition cursor-pointer",
+                          quoteImageSrc === pose.src
+                            ? "border-jp-blue-900 bg-jp-blue-50 ring-2 ring-jp-blue-900/30"
+                            : "border-jp-gray-200 bg-white hover:bg-jp-paper"
+                        )}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={pose.src}
+                          alt={pose.shortLabel}
+                          className="h-14 object-contain"
+                        />
+                        <span className="text-[10px] font-bold text-jp-ink font-mono">
+                          {pose.shortLabel}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ACTIVE STATUS TOGGLE */}
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="quoteActiveCheck"
+                    checked={quoteIsActive}
+                    onChange={(e) => setQuoteIsActive(e.target.checked)}
+                    className="h-4 w-4 rounded border-jp-gray-300 text-jp-blue-900 focus:ring-jp-blue-700 cursor-pointer"
+                  />
+                  <label
+                    htmlFor="quoteActiveCheck"
+                    className="text-xs font-bold text-jp-ink cursor-pointer"
+                  >
+                    Aktifkan kutipan ini dalam tayangan beranda
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-jp-gray-100">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsQuoteModalOpen(false)}
+                  className="rounded-lg"
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={handleSaveQuoteModal}
+                  className="rounded-lg"
+                >
+                  Simpan Kutipan
+                </Button>
+              </div>
+            </div>
+          </Modal>
         )}
       </div>
     </AdminLayout>

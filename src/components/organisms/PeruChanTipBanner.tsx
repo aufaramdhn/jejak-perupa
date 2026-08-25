@@ -1,53 +1,188 @@
 "use client";
 
-import React, { useState } from "react";
-import { Sparkles } from "lucide-react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useSiteSettings } from "@/lib/siteContext";
+import { Sparkles, ChevronLeft, ChevronRight, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface PeruChanTipBannerProps {
-  tipText: string;
+  tipText?: string;
   badgeText?: string;
   imageSrc?: string;
   className?: string;
+  autoPlayInterval?: number;
 }
 
 export function PeruChanTipBanner({
-  tipText,
-  badgeText = "Catatan Santai Peru-Chan",
-  imageSrc = "/images/mascot/peruchan-drawing.png",
+  tipText: initialTipText,
+  badgeText: initialBadgeText,
+  imageSrc: initialImageSrc,
   className,
+  autoPlayInterval = 7500,
 }: PeruChanTipBannerProps) {
+  const { settings } = useSiteSettings();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  // Active quotes from site settings
+  const activeQuotes = useMemo(() => {
+    if (settings.quotes && settings.quotes.length > 0) {
+      const filtered = settings.quotes.filter((q) => q.isActive);
+      if (filtered.length > 0) return filtered;
+    }
+
+    // Fallback if settings not yet loaded or empty
+    return [
+      {
+        id: "fallback-1",
+        categoryBadge: initialBadgeText || "Catatan Santai Peru-Chan",
+        quoteText:
+          initialTipText ||
+          "Jangan takut kalau karya pertamamu belum terlihat bagus. Dalam seni rupa, proses pencarian bentuk adalah bagian tak terpisahkan dari karya itu sendiri.",
+        authorNote: "Peru-Chan",
+        imageSrc: initialImageSrc || "/images/mascot/peruchan-drawing.png",
+        accentColor: "blue" as const,
+        isActive: true,
+        order: 1,
+      },
+    ];
+  }, [settings.quotes, initialTipText, initialBadgeText, initialImageSrc]);
+
+  // Ensure currentIndex is in bounds
+  const validIndex = currentIndex >= activeQuotes.length ? 0 : currentIndex;
+  const currentQuote = activeQuotes[validIndex];
+
+  // Auto-play timer
+  useEffect(() => {
+    if (activeQuotes.length <= 1 || isPaused) return;
+
+    const timer = setInterval(() => {
+      handleNext();
+    }, autoPlayInterval);
+
+    return () => clearInterval(timer);
+  }, [activeQuotes.length, isPaused, autoPlayInterval, validIndex]);
+
+  const changeSlide = (newIndex: number) => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setCurrentIndex(newIndex);
+    setImageError(false);
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 250);
+  };
+
+  const handleNext = () => {
+    const nextIdx = (validIndex + 1) % activeQuotes.length;
+    changeSlide(nextIdx);
+  };
+
+  const handlePrev = () => {
+    const prevIdx = (validIndex - 1 + activeQuotes.length) % activeQuotes.length;
+    changeSlide(prevIdx);
+  };
+
+  const handleShuffle = () => {
+    if (activeQuotes.length <= 1) return;
+    let randomIdx = Math.floor(Math.random() * activeQuotes.length);
+    if (randomIdx === validIndex) {
+      randomIdx = (validIndex + 1) % activeQuotes.length;
+    }
+    changeSlide(randomIdx);
+  };
+
   return (
-    <section className={cn("mx-auto max-w-5xl px-6 sm:px-8 lg:px-12 pb-16 lg:pb-20", className)}>
-      <div className="relative overflow-hidden rounded-xl border border-jp-blue-200 bg-gradient-to-r from-jp-blue-50 via-jp-blue-50/80 to-white p-6 md:p-8 shadow-xs">
+    <section
+      className={cn(
+        "mx-auto max-w-5xl px-6 sm:px-8 lg:px-12 pb-16 lg:pb-20 font-sans",
+        className
+      )}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className="relative overflow-hidden rounded-xl border border-jp-blue-200 bg-gradient-to-r from-jp-blue-50/90 via-jp-blue-50/70 to-white p-6 md:p-8 shadow-xs transition-all duration-300 hover:border-jp-blue-300 hover:shadow-sm">
+        {/* TOP ACCENT LINE */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-jp-blue-900 via-jp-blue-600 to-jp-lime-600" />
+
         <div className="grid items-center gap-6 sm:grid-cols-[100px_1fr]">
-          {/* MASKOT */}
-          <div className="flex justify-center">
-            {imageSrc && !imageError ? (
+          {/* MASCOT IMAGE */}
+          <div className="flex justify-center shrink-0">
+            {currentQuote.imageSrc && !imageError ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={imageSrc}
+                src={currentQuote.imageSrc}
                 alt="Peru-Chan"
-                className="max-h-24 object-contain"
+                className={cn(
+                  "max-h-24 object-contain transition-all duration-300 transform",
+                  isAnimating ? "scale-95 opacity-50" : "scale-100 opacity-100"
+                )}
                 onError={() => setImageError(true)}
               />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-white text-jp-blue-900 border border-jp-blue-200 shadow-2xs">
+              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white text-jp-blue-900 border border-jp-blue-200 shadow-2xs">
                 <Sparkles className="h-8 w-8 text-jp-blue-700" />
               </div>
             )}
           </div>
 
-          {/* TIP CONTENT */}
-          <div>
-            <div className="text-xs font-bold text-jp-blue-900 tracking-wide">
-              {badgeText}
+          {/* QUOTE CONTENT */}
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-jp-blue-100 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-jp-blue-900 tracking-wide uppercase font-mono">
+                  {currentQuote.categoryBadge || "Catatan Santai Peru-Chan"}
+                </span>
+                {activeQuotes.length > 1 && (
+                  <span className="font-mono text-[10px] text-jp-gray-500 bg-white/80 px-1.5 py-0.5 rounded border border-jp-blue-200">
+                    {validIndex + 1}/{activeQuotes.length}
+                  </span>
+                )}
+              </div>
+
+              {/* SLIDESHOW / SHUFFLE CONTROLS */}
+              {activeQuotes.length > 1 && (
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={handleShuffle}
+                    title="Ganti Tips Acak (Shuffle)"
+                    className="flex h-6 w-6 items-center justify-center rounded-md border border-jp-blue-200 bg-white text-jp-blue-800 hover:bg-jp-blue-100 transition cursor-pointer shadow-2xs"
+                  >
+                    <Shuffle className="h-3 w-3" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    title="Kutipan Sebelumnya"
+                    className="flex h-6 w-6 items-center justify-center rounded-md border border-jp-blue-200 bg-white text-jp-blue-800 hover:bg-jp-blue-100 transition cursor-pointer shadow-2xs"
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    title="Kutipan Selanjutnya"
+                    className="flex h-6 w-6 items-center justify-center rounded-md border border-jp-blue-200 bg-white text-jp-blue-800 hover:bg-jp-blue-100 transition cursor-pointer shadow-2xs"
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
 
-            <p className="mt-1.5 font-heading text-lg md:text-xl font-normal italic leading-relaxed text-jp-ink">
-              &ldquo;{tipText}&rdquo;
+            {/* QUOTE TEXT */}
+            <p
+              className={cn(
+                "font-heading text-base sm:text-lg md:text-xl font-normal italic leading-relaxed text-jp-ink transition-opacity duration-250",
+                isAnimating ? "opacity-30" : "opacity-100"
+              )}
+            >
+              &ldquo;{currentQuote.quoteText}&rdquo;
             </p>
           </div>
         </div>
