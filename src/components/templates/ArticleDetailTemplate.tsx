@@ -26,8 +26,8 @@ export function ArticleDetailTemplate({
 
   return (
     <MainPublicLayout>
-      {/* HEADER SECTION WITH DYNAMIC BACKDROP & CUSTOMIZABLE WHITE GRADIENT */}
-      <section className="relative border-b border-jp-gray-300 overflow-hidden py-14 lg:py-20">
+      {/* HEADER SECTION WITH DYNAMIC BACKDROP & EDITORIAL PAPER-BLUE GRADIENT */}
+      <section className="relative border-b border-jp-gray-300 overflow-hidden py-14 lg:py-20 bg-jp-paper">
         {/* BACKDROP IMAGE (IF PROVIDED) */}
         {headerBgImageUrl && (
           <div
@@ -36,12 +36,12 @@ export function ArticleDetailTemplate({
           />
         )}
 
-        {/* WHITE / PAPER GRADIENT OVERLAY FROM BOTTOM TO TOP */}
+        {/* SIGNATURE EDITORIAL PAPER & SOFT BLUE GRADIENT OVERLAY */}
         {headerBgImageUrl ? (
           <div
             className="absolute inset-0 pointer-events-none transition-all duration-300"
             style={{
-              background: `linear-gradient(to top, #FDFCFA 0%, rgba(253, 252, 250, ${opacityFraction}) ${heightPercent}%, rgba(253, 252, 250, 0.3) 100%)`,
+              background: `linear-gradient(to top, #FAFAF7 0%, rgba(250, 250, 247, ${opacityFraction}) ${heightPercent}%, rgba(238, 245, 255, 0.45) 100%)`,
             }}
           />
         ) : (

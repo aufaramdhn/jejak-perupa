@@ -33,6 +33,10 @@ import {
   Save,
   AlertTriangle,
   History,
+  Home,
+  ChevronRight,
+  User,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -845,37 +849,74 @@ export function ArticleEditorForm({
                     <div className="sm:col-span-2 space-y-2 pt-2">
                       <div className="text-xs font-bold font-mono text-jp-blue-900 uppercase tracking-wider flex items-center gap-1.5">
                         <Eye className="h-3.5 w-3.5" />
-                        Pratinjau Langsung Efek Gradasi Header (Real-Time)
+                        Pratinjau Langsung Efek Gradasi Header (Real-Time 1:1)
                       </div>
-                      <div className="relative rounded-xl border border-jp-gray-300 overflow-hidden shadow-2xs">
-                        {/* IMAGE */}
+                      <div className="relative rounded-xl border border-jp-gray-300 overflow-hidden shadow-xs bg-jp-paper">
+                        {/* IMAGE BACKDROP */}
                         <div
-                          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-300"
                           style={{ backgroundImage: `url(${headerBgImageUrl})` }}
                         />
-                        {/* GRADIENT OVERLAY */}
+                        {/* SIGNATURE EDITORIAL PAPER & SOFT BLUE GRADIENT OVERLAY */}
                         <div
-                          className="absolute inset-0 pointer-events-none"
+                          className="absolute inset-0 pointer-events-none transition-all duration-300"
                           style={{
-                            background: `linear-gradient(to top, #FDFCFA 0%, rgba(253, 252, 250, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, rgba(253, 252, 250, 0.3) 100%)`,
+                            background: `linear-gradient(to top, #FAFAF7 0%, rgba(250, 250, 247, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, rgba(238, 245, 255, 0.45) 100%)`,
                           }}
                         />
-                        {/* SAMPLE CONTENT */}
-                        <div className="relative z-10 p-6 md:p-8 space-y-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-jp-lime text-jp-ink">
-                              {category || "Kategori"}
+                        {/* SAMPLE CONTENT (IDENTICAL TO ARTICLE DETAIL PAGE) */}
+                        <div className="relative z-10 p-6 md:p-8 space-y-4">
+                          {/* BREADCRUMB */}
+                          <div className="flex items-center gap-1.5 text-xs text-jp-gray-500 font-sans">
+                            <Home className="h-3.5 w-3.5 text-jp-gray-400" />
+                            <span>Beranda</span>
+                            <ChevronRight className="h-3 w-3 text-jp-gray-400" />
+                            <span>Artikel</span>
+                            <ChevronRight className="h-3 w-3 text-jp-gray-400" />
+                            <span className="font-bold text-jp-blue-900">{category || "Pendidikan Seni"}</span>
+                          </div>
+
+                          {/* CATEGORY & ARCHIVE BADGE */}
+                          <div className="flex items-center gap-2.5">
+                            <span className="rounded-md bg-jp-lime px-2.5 py-0.5 text-xs font-bold text-jp-ink">
+                              {category || "Pendidikan Seni"}
                             </span>
-                            <span className="text-[11px] font-semibold text-jp-gray-600 font-mono">
+                            <span className="text-xs font-semibold text-jp-gray-500 font-sans">
                               Arsip Jejak Perupa
                             </span>
                           </div>
-                          <h3 className="font-heading text-xl md:text-2xl font-bold text-jp-ink">
-                            {title || "Judul Artikel Contoh Akan Tampil Di Sini"}
+
+                          {/* ARTICLE TITLE */}
+                          <h3 className="font-heading text-2xl md:text-3xl lg:text-4xl font-bold text-jp-ink leading-tight max-w-4xl">
+                            {title || "Mengenal Program Studi: Seni Rupa Murni"}
                           </h3>
-                          <p className="font-heading text-xs md:text-sm italic text-jp-gray-700 max-w-xl line-clamp-2">
-                            {excerpt || "Ringkasan pembuka artikel yang memikat akan terbaca sangat jelas di atas area gradasi putih ini."}
+
+                          {/* EXCERPT */}
+                          <p className="font-prose text-sm md:text-base text-jp-gray-700 leading-relaxed max-w-3xl">
+                            {excerpt || "Sebuah pengantar santai untuk mengenal Seni Rupa Murni, kehidupan perkuliahannya, studio yang dapat dipilih, hingga berbagai kemungkinan profesi setelah lulus."}
                           </p>
+
+                          {/* AUTHOR META ROW */}
+                          <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-jp-gray-300/80 text-xs text-jp-gray-500 font-sans">
+                            <div className="flex items-center gap-1.5">
+                              <User className="h-3.5 w-3.5 text-jp-gray-400" />
+                              <span className="font-bold text-jp-ink">{authorName || "Jejak Perupa"}</span>
+                            </div>
+                            <span>·</span>
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5 text-jp-gray-400" />
+                              <span>Arsip 2017</span>
+                            </div>
+                            <span>·</span>
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="h-3.5 w-3.5 text-jp-gray-400" />
+                              <span>{readTime || "8 menit membaca"}</span>
+                            </div>
+                            <span>·</span>
+                            <span className="font-mono text-[10px] bg-jp-paper border border-jp-gray-300 px-2 py-0.5 rounded text-jp-gray-600">
+                              Versi arsip
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1159,11 +1200,11 @@ export function ArticleEditorForm({
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                  background: `linear-gradient(to top, #FDFCFA 0%, rgba(253, 252, 250, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, rgba(253, 252, 250, 0.3) 100%)`,
+                  background: `linear-gradient(to top, #FAFAF7 0%, rgba(250, 250, 247, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, rgba(238, 245, 255, 0.45) 100%)`,
                 }}
               />
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-b from-jp-blue-50/50 via-white to-white pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-b from-jp-blue-50/70 via-jp-paper to-white pointer-events-none" />
             )}
 
             <div className="relative z-10 space-y-4">
