@@ -110,11 +110,6 @@ export function AdminLayout({
           icon: <FileText className="h-4 w-4" />,
         },
         {
-          label: "Kategori Wacana",
-          href: "/admin/kategori",
-          icon: <Layers className="h-4 w-4" />,
-        },
-        {
           label: "Direktori Seniman",
           href: "/admin/seniman",
           icon: <Users className="h-4 w-4" />,

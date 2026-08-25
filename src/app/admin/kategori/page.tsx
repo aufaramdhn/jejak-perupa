@@ -17,6 +17,7 @@ import {
   Trash2,
   CheckCircle,
   Plus,
+  ArrowLeft,
   Layers,
   Sparkles,
   X,
@@ -120,15 +121,27 @@ export default function AdminKategoriPage() {
       subtitle="Kelola taksonomi bidang kajian, warna aksen kuratorial, dan kelompok artikel edukasi."
       actionButton={
         <div className="flex items-center gap-2">
+          <Link href="/admin/artikel">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-lg text-xs"
+            >
+              <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+              Kembali ke Katalog
+            </Button>
+          </Link>
+
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleReset}
-            className="rounded-lg"
+            className="rounded-lg text-xs"
           >
             <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-            Reset Bawaan
+            Reset
           </Button>
 
           <Button
@@ -136,7 +149,7 @@ export default function AdminKategoriPage() {
             variant="primary"
             size="sm"
             onClick={() => setIsAddModalOpen(true)}
-            className="rounded-lg"
+            className="rounded-lg text-xs"
           >
             <Plus className="h-4 w-4 mr-1.5" />
             Tambah Kategori
