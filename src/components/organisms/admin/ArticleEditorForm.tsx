@@ -518,9 +518,9 @@ export function ArticleEditorForm({
         </div>
       )}
 
-      {/* 2. TOP ACTION HEADER & AUTO-SAVE INDICATOR (FLAT EDITORIAL BAR) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-jp-gray-300">
-        <div className="flex items-center gap-3">
+      {/* 2. TOP ACTION HEADER & AUTO-SAVE INDICATOR (RESPONSIVE MOBILE ERGONOMICS) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 pb-4 border-b border-jp-gray-300">
+        <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
           <Link href={backUrl}>
             <Button
               type="button"
@@ -541,14 +541,15 @@ export function ArticleEditorForm({
           )}
         </div>
 
-        {/* TAB TOGGLE: TULIS vs PRATINJAU (SEGMENTED FLAT BUTTONS) */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg bg-jp-gray-200/60 p-1">
+        {/* TAB TOGGLE & ACTIONS (FULL-WIDTH 2 COLUMNS ON MOBILE, INLINE ON DESKTOP) */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto">
+          {/* TABS (2 COLS FULL WIDTH ON MOBILE) */}
+          <div className="grid grid-cols-2 sm:flex items-center gap-1 rounded-lg bg-jp-gray-200/60 p-1 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setActiveTab("write")}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition cursor-pointer font-sans",
+                "flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold rounded-md transition cursor-pointer font-sans w-full",
                 activeTab === "write"
                   ? "bg-white text-jp-blue-900 shadow-2xs font-bold"
                   : "text-jp-gray-600 hover:text-jp-ink"
@@ -561,60 +562,59 @@ export function ArticleEditorForm({
               type="button"
               onClick={() => setActiveTab("preview")}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition cursor-pointer font-sans",
+                "flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold rounded-md transition cursor-pointer font-sans w-full",
                 activeTab === "preview"
                   ? "bg-white text-jp-blue-900 shadow-2xs font-bold"
                   : "text-jp-gray-600 hover:text-jp-ink"
               )}
             >
               <Eye className="h-3.5 w-3.5" />
-              <span>Pratinjau Pembaca</span>
+              <span>Pratinjau</span>
             </button>
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleClearForm}
-            className="rounded-lg text-xs"
+          {/* ACTION BUTTONS (2 COLS FULL WIDTH ON MOBILE) */}
+          <div
+            className={cn(
+              "w-full sm:w-auto items-center gap-2",
+              mode === "public-contribute" ? "grid grid-cols-2 sm:flex" : "grid grid-cols-3 sm:flex"
+            )}
           >
-            <RotateCcw className="h-3.5 w-3.5 mr-1" />
-            Reset
-          </Button>
-
-          {mode !== "public-contribute" && (
             <Button
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => handleSubmit(true)}
-              className="rounded-lg text-xs"
+              onClick={handleClearForm}
+              className="rounded-lg text-xs w-full justify-center py-2 sm:py-1.5"
             >
-              <Save className="h-3.5 w-3.5 mr-1" />
-              Simpan Draf
+              <RotateCcw className="h-3.5 w-3.5 mr-1" />
+              Reset
             </Button>
-          )}
 
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={() => handleSubmit(false)}
-            className="rounded-lg text-xs"
-          >
-            {mode === "public-contribute" ? (
-              <>
-                <Send className="h-3.5 w-3.5 mr-1.5" />
-                Kirim Naskah
-              </>
-            ) : (
-              <>
-                <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
-                Terbitkan Artikel
-              </>
+            {mode !== "public-contribute" && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleSubmit(true)}
+                className="rounded-lg text-xs w-full justify-center py-2 sm:py-1.5"
+              >
+                <Save className="h-3.5 w-3.5 mr-1" />
+                Simpan Draf
+              </Button>
             )}
-          </Button>
+
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => handleSubmit(false)}
+              className="rounded-lg text-xs font-bold w-full justify-center py-2 sm:py-1.5"
+            >
+              <Send className="h-3.5 w-3.5 mr-1.5" />
+              {mode === "public-contribute" ? "Kirim Naskah" : "Terbitkan Artikel"}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -966,7 +966,7 @@ export function ArticleEditorForm({
 
           {/* SECTION B: BAB-BAB PEMBAHASAN NARASI */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               <div>
                 <div className="font-mono text-xs font-bold text-jp-blue-700">
                   Bagian 2
@@ -981,7 +981,7 @@ export function ArticleEditorForm({
                 variant="outline"
                 size="sm"
                 onClick={handleAddChapter}
-                className="rounded-lg text-xs"
+                className="rounded-lg text-xs w-full sm:w-auto justify-center"
               >
                 <Plus className="h-3.5 w-3.5 mr-1" />
                 Tambah Bab Baru

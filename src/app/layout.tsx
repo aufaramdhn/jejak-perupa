@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Newsreader, Lora, Inter, JetBrains_Mono } from "next/font/google";
 import { ModalProvider } from "@/lib/modalContext";
+import { SearchProvider } from "@/lib/searchContext";
 import { SiteProvider } from "@/lib/siteContext";
 import { CategoryProvider } from "@/lib/categoryContext";
 import { FeatureFlagsProvider } from "@/lib/featureFlagsContext";
@@ -139,7 +140,9 @@ export default function RootLayout({
           <DynamicFavicon />
           <CategoryProvider>
             <FeatureFlagsProvider>
-              <ModalProvider>{children}</ModalProvider>
+              <SearchProvider>
+                <ModalProvider>{children}</ModalProvider>
+              </SearchProvider>
             </FeatureFlagsProvider>
           </CategoryProvider>
         </SiteProvider>

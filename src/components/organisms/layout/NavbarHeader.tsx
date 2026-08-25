@@ -19,15 +19,17 @@ import { useAuth } from "@/lib/auth";
 import { useModal } from "@/lib/modalContext";
 import { useSiteSettings } from "@/lib/siteContext";
 import { useFeatureFlags } from "@/lib/featureFlagsContext";
+import { useSearch } from "@/lib/searchContext";
 import { cn } from "@/lib/utils";
 
 export function NavbarHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [exploreDropdownOpen, setExploreDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
+  const { openSearch } = useSearch();
+
+  const navHeaderRef = useRef<HTMLElement>(null);
   const exploreRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -60,32 +62,28 @@ export function NavbarHeader() {
     }
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/cari?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchOpen(false);
-    }
-  };
-
-  // Close dropdowns on outside click
+  // Close dropdowns and mobile menu on outside click or touch
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        exploreRef.current &&
-        !exploreRef.current.contains(event.target as Node)
-      ) {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      const target = event.target as Node;
+      if (navHeaderRef.current && !navHeaderRef.current.contains(target)) {
+        setMobileMenuOpen(false);
+        setExploreDropdownOpen(false);
+        setProfileDropdownOpen(false);
+      }
+      if (exploreRef.current && !exploreRef.current.contains(target)) {
         setExploreDropdownOpen(false);
       }
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(event.target as Node)
-      ) {
+      if (profileRef.current && !profileRef.current.contains(target)) {
         setProfileDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
   }, []);
 
   // Active link detection
@@ -142,7 +140,14 @@ export function NavbarHeader() {
   const exploreFeatures = allExploreFeatures.filter((f) => f.enabled);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-jp-gray-300 bg-jp-paper/95 backdrop-blur transition-all">
+    <>
+      <header
+        ref={navHeaderRef}
+        className={cn(
+          "sticky top-0 z-50 border-b border-jp-gray-300 transition-colors bg-white",
+          !mobileMenuOpen && "sm:bg-jp-paper/95 sm:backdrop-blur"
+        )}
+      >
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
         {/* LOGO IDENTITAS */}
         <Link href="/" className="flex items-center gap-3.5 group shrink-0">
@@ -283,9 +288,10 @@ export function NavbarHeader() {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => setSearchOpen(!searchOpen)}
-            aria-label="Buka pencarian"
-            className="h-10 w-10 rounded-full border-jp-gray-300 hover:border-jp-blue-700"
+            onClick={() => openSearch()}
+            aria-label="Cari materi dan seniman (Ctrl+K)"
+            title="Cari (Ctrl + K)"
+            className="h-10 w-10 rounded-full border-jp-gray-300 hover:border-jp-blue-700 cursor-pointer"
           >
             <Search className="h-4 w-4" />
           </Button>
@@ -405,40 +411,12 @@ export function NavbarHeader() {
         </div>
       </div>
 
-      {/* QUICK SEARCH BAR OVERLAY */}
-      {searchOpen && (
-        <div className="border-b border-jp-gray-300 bg-white px-6 py-4 shadow-sm">
-          <div className="mx-auto max-w-7xl">
-            <form onSubmit={handleSearchSubmit} className="flex items-center gap-3">
-              <input
-                type="text"
-                autoFocus
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari judul artikel, teori seni, nama seniman, istilah kamus, atau lokasi peta..."
-                className="flex-1 rounded-none border border-jp-gray-300 px-4 py-2.5 text-sm text-jp-ink outline-none focus:border-jp-blue-700 focus:ring-2 focus:ring-jp-blue-100"
-              />
-              <Button type="submit" variant="primary" size="md" className="rounded-none">
-                Cari
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="md"
-                className="rounded-none"
-                onClick={() => setSearchOpen(false)}
-              >
-                Tutup
-              </Button>
-            </form>
-          </div>
-        </div>
-      )}
 
-      {/* MOBILE DROPDOWN */}
+
+      {/* MOBILE DROPDOWN INSIDE HEADER */}
       {mobileMenuOpen && (
-        <div className="border-b border-jp-gray-300 bg-white px-6 py-5 md:hidden space-y-4">
-          <nav className="flex flex-col space-y-2">
+        <div className="border-t border-jp-gray-100 bg-white px-6 py-5 md:hidden space-y-4 shadow-lg animate-in slide-in-from-top-2 duration-150">
+          <nav className="flex flex-col space-y-2 font-sans">
             <Link
               href="/"
               onClick={() => setMobileMenuOpen(false)}
@@ -469,41 +447,21 @@ export function NavbarHeader() {
             >
               Direktori Seniman
             </Link>
-            <Link
-              href="/kamus"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-sm font-semibold text-jp-ink py-2 border-b border-jp-gray-100"
-            >
-              Kamus Istilah Seni A-Z
-            </Link>
-            <Link
-              href="/jalur-belajar"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-sm font-semibold text-jp-ink py-2 border-b border-jp-gray-100"
-            >
-              Jalur Belajar
-            </Link>
-            <Link
-              href="/peta-seni"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-sm font-semibold text-jp-ink py-2 border-b border-jp-gray-100"
-            >
-              Peta Seni Nusantara
-            </Link>
-            <Link
-              href="/agenda"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-sm font-semibold text-jp-ink py-2 border-b border-jp-gray-100"
-            >
-              Agenda & Pameran
-            </Link>
-            <Link
-              href="/komunitas"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-sm font-semibold text-jp-ink py-2 border-b border-jp-gray-100"
-            >
-              Direktori Komunitas
-            </Link>
+            {/* DYNAMIC EXPLORE FEATURES BASED ON FEATURE FLAGS */}
+            {exploreFeatures.map((feat) => (
+              <Link
+                key={feat.href}
+                href={feat.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  "text-sm font-semibold py-2 border-b border-jp-gray-100",
+                  feat.active ? "text-jp-blue-900 font-bold" : "text-jp-ink"
+                )}
+              >
+                {feat.title}
+              </Link>
+            ))}
+
             <Link
               href="/tentang"
               onClick={() => setMobileMenuOpen(false)}
@@ -528,7 +486,7 @@ export function NavbarHeader() {
                 <button
                   type="button"
                   onClick={handleLogoutClick}
-                  className="text-left text-xs font-semibold text-red-600 py-1"
+                  className="text-left text-xs font-semibold text-red-600 py-1 cursor-pointer"
                 >
                   Keluar dari Akun (Logout)
                 </button>
@@ -546,5 +504,15 @@ export function NavbarHeader() {
         </div>
       )}
     </header>
+
+    {/* BACKDROP OVERLAY BEHIND HEADER (Z-40) */}
+    {mobileMenuOpen && (
+      <div
+        className="fixed inset-0 bg-black/40 z-40 md:hidden animate-in fade-in duration-150"
+        onClick={() => setMobileMenuOpen(false)}
+        aria-hidden="true"
+      />
+    )}
+  </>
   );
 }

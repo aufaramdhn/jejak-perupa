@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSiteSettings } from "@/lib/siteContext";
-import { Sparkles, ChevronLeft, ChevronRight, Shuffle } from "lucide-react";
+import { Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface PeruChanTipBannerProps {
@@ -74,15 +74,6 @@ export function PeruChanTipBanner({
     changeSlide(prevIdx);
   };
 
-  const handleShuffle = () => {
-    if (activeQuotes.length <= 1) return;
-    let randomIdx = Math.floor(Math.random() * activeQuotes.length);
-    if (randomIdx === validIndex) {
-      randomIdx = (validIndex + 1) % activeQuotes.length;
-    }
-    changeSlide(randomIdx);
-  };
-
   // Auto-play timer
   useEffect(() => {
     if (activeQuotes.length <= 1 || isPaused) return;
@@ -98,101 +89,92 @@ export function PeruChanTipBanner({
   return (
     <section
       className={cn(
-        "mx-auto max-w-5xl px-6 sm:px-8 lg:px-12 pb-16 lg:pb-20 font-sans",
+        "mx-auto max-w-5xl px-4 sm:px-8 lg:px-12 pb-16 lg:pb-20 font-sans",
         className
       )}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="relative overflow-hidden rounded-xl border border-jp-blue-200 bg-gradient-to-r from-jp-blue-50/90 via-jp-blue-50/70 to-white p-6 md:p-8 shadow-xs transition-all duration-300 hover:border-jp-blue-300 hover:shadow-sm">
+      <div className="relative overflow-hidden rounded-xl border border-jp-blue-200 bg-gradient-to-r from-jp-blue-50/90 via-jp-blue-50/70 to-white p-4 sm:p-6 md:p-8 shadow-xs transition-all duration-300 hover:border-jp-blue-300 hover:shadow-sm">
         {/* TOP ACCENT LINE */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-jp-blue-900 via-jp-blue-600 to-jp-lime-600" />
 
-        <div className="grid items-center gap-6 sm:grid-cols-[100px_1fr]">
-          {/* MASCOT IMAGE */}
-          <div className="flex justify-center shrink-0">
-            {currentQuote.imageSrc && !imageError ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={currentQuote.imageSrc}
-                alt="Peru-Chan"
-                width={96}
-                height={96}
-                loading="lazy"
-                decoding="async"
-                className={cn(
-                  "max-h-24 object-contain transition-all duration-300 transform",
-                  isAnimating ? "scale-95 opacity-50" : "scale-100 opacity-100"
-                )}
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white text-jp-blue-900 border border-jp-blue-200 shadow-2xs">
-                <Sparkles className="h-8 w-8 text-jp-blue-700" />
-              </div>
-            )}
-          </div>
+        <div className="flex items-center gap-2 sm:gap-6">
+          {/* PREVIOUS BUTTON ON LEFT FLANK */}
+          {activeQuotes.length > 1 && (
+            <button
+              type="button"
+              onClick={handlePrev}
+              aria-label="Kutipan Sebelumnya"
+              title="Kutipan Sebelumnya"
+              className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg border border-jp-blue-200 bg-white/90 text-jp-blue-900 shadow-2xs hover:bg-jp-blue-50 transition cursor-pointer focus:outline-none"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          )}
 
-          {/* QUOTE CONTENT */}
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-jp-blue-100 pb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-jp-blue-900 tracking-wide uppercase font-mono">
+          {/* CENTER CONTENT: MASCOT + QUOTE */}
+          <div className="flex-1 min-w-0 grid items-center gap-4 sm:gap-6 sm:grid-cols-[90px_1fr]">
+            {/* MASCOT IMAGE */}
+            <div className="flex justify-center shrink-0">
+              {currentQuote.imageSrc && !imageError ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={currentQuote.imageSrc}
+                  alt="Peru-Chan"
+                  width={90}
+                  height={90}
+                  loading="lazy"
+                  decoding="async"
+                  className={cn(
+                    "max-h-20 sm:max-h-24 object-contain transition-all duration-300 transform",
+                    isAnimating ? "scale-95 opacity-50" : "scale-100 opacity-100"
+                  )}
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-white text-jp-blue-900 border border-jp-blue-200 shadow-2xs">
+                  <Sparkles className="h-7 w-7 text-jp-blue-700" />
+                </div>
+              )}
+            </div>
+
+            {/* QUOTE TEXT & CATEGORY */}
+            <div className="space-y-2 text-center sm:text-left min-w-0">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 border-b border-jp-blue-100 pb-1.5">
+                <span className="text-xs font-bold text-jp-blue-900 tracking-wide font-mono">
                   {currentQuote.categoryBadge || "Catatan Santai Peru-Chan"}
                 </span>
                 {activeQuotes.length > 1 && (
-                  <span className="font-mono text-[10px] text-jp-gray-500 bg-white/80 px-1.5 py-0.5 rounded border border-jp-blue-200">
+                  <span className="font-mono text-[10px] text-jp-gray-500 bg-white px-1.5 py-0.5 rounded border border-jp-blue-200">
                     {validIndex + 1}/{activeQuotes.length}
                   </span>
                 )}
               </div>
 
-              {/* SLIDESHOW / SHUFFLE CONTROLS */}
-              {activeQuotes.length > 1 && (
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={handleShuffle}
-                    aria-label="Ganti Tips Acak"
-                    title="Ganti Tips Acak (Shuffle)"
-                    className="flex min-h-[44px] min-w-[36px] items-center justify-center rounded-md border border-jp-blue-200 bg-white text-jp-blue-800 hover:bg-jp-blue-100 transition cursor-pointer shadow-2xs focus:outline-none"
-                  >
-                    <Shuffle className="h-3.5 w-3.5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handlePrev}
-                    aria-label="Kutipan Sebelumnya"
-                    title="Kutipan Sebelumnya"
-                    className="flex min-h-[44px] min-w-[36px] items-center justify-center rounded-md border border-jp-blue-200 bg-white text-jp-blue-800 hover:bg-jp-blue-100 transition cursor-pointer shadow-2xs focus:outline-none"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    aria-label="Kutipan Selanjutnya"
-                    title="Kutipan Selanjutnya"
-                    className="flex min-h-[44px] min-w-[36px] items-center justify-center rounded-md border border-jp-blue-200 bg-white text-jp-blue-800 hover:bg-jp-blue-100 transition cursor-pointer shadow-2xs focus:outline-none"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
+              <p
+                className={cn(
+                  "font-heading text-sm sm:text-base md:text-lg font-normal italic leading-relaxed text-jp-ink transition-opacity duration-250",
+                  isAnimating ? "opacity-30" : "opacity-100"
+                )}
+              >
+                &ldquo;{currentQuote.quoteText}&rdquo;
+              </p>
             </div>
-
-            {/* QUOTE TEXT */}
-            <p
-              className={cn(
-                "font-heading text-base sm:text-lg md:text-xl font-normal italic leading-relaxed text-jp-ink transition-opacity duration-250",
-                isAnimating ? "opacity-30" : "opacity-100"
-              )}
-            >
-              &ldquo;{currentQuote.quoteText}&rdquo;
-            </p>
           </div>
+
+          {/* NEXT BUTTON ON RIGHT FLANK */}
+          {activeQuotes.length > 1 && (
+            <button
+              type="button"
+              onClick={handleNext}
+              aria-label="Kutipan Selanjutnya"
+              title="Kutipan Selanjutnya"
+              className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg border border-jp-blue-200 bg-white/90 text-jp-blue-900 shadow-2xs hover:bg-jp-blue-50 transition cursor-pointer focus:outline-none"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </div>
     </section>

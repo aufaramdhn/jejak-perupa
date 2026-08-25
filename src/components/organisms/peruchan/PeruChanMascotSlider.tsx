@@ -82,17 +82,17 @@ export function PeruChanMascotSlider({
   return (
     <div
       className={cn(
-        "relative flex flex-col justify-between overflow-hidden rounded-2xl border p-6 md:p-7 shadow-lg transition-all duration-300 font-sans group",
+        "relative flex flex-col justify-between overflow-hidden rounded-2xl border p-4 sm:p-6 md:p-7 shadow-lg transition-all duration-300 font-sans group w-full max-w-md",
         theme.wrapper,
         className
       )}
       onMouseEnter={() => setIsPlaying(false)}
       onMouseLeave={() => setIsPlaying(true)}
     >
-      {/* BACKGROUND ACCENT GLOW */}
+      {/* BACKGROUND ACCENT GLOW (CLEAN OPACITY) */}
       <div
         className={cn(
-          "pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-radial to-transparent blur-2xl transition-colors duration-500",
+          "pointer-events-none absolute top-0 right-0 h-40 w-40 rounded-full opacity-20 transition-colors duration-500",
           theme.glow
         )}
       />
@@ -112,7 +112,7 @@ export function PeruChanMascotSlider({
             onClick={() => setIsPlaying(!isPlaying)}
             title={isPlaying ? "Jeda Slideshow" : "Lanjutkan Slideshow"}
             aria-label={isPlaying ? "Jeda Slideshow" : "Lanjutkan Slideshow"}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded text-jp-gray-400 hover:text-jp-ink transition cursor-pointer focus:outline-none"
+            className="flex min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px] items-center justify-center rounded text-jp-gray-400 hover:text-jp-ink transition cursor-pointer focus:outline-none"
           >
             {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
           </button>
@@ -127,7 +127,7 @@ export function PeruChanMascotSlider({
         {/* CHARACTER ILLUSTRATION DISPLAY */}
         <div className="flex items-center justify-center py-1">
           {currentSlide.imageUrl ? (
-            <div className="relative flex h-48 sm:h-56 w-full items-center justify-center">
+            <div className="relative flex h-44 sm:h-56 w-full items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={currentSlide.imageUrl}
@@ -136,7 +136,7 @@ export function PeruChanMascotSlider({
                 height={220}
                 loading="lazy"
                 decoding="async"
-                className="max-h-full max-w-full object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-102"
+                className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-102"
               />
             </div>
           ) : (
@@ -157,7 +157,7 @@ export function PeruChanMascotSlider({
         </div>
 
         {/* QUOTE SPEECH (BORDERLESS EDITORIAL) */}
-        <div className="relative px-3 py-1 text-center">
+        <div className="relative px-2 sm:px-3 py-1 text-center">
           <p className="font-prose text-xs sm:text-sm text-jp-gray-700 leading-relaxed italic">
             &ldquo;{currentSlide.quote}&rdquo;
           </p>
@@ -165,36 +165,36 @@ export function PeruChanMascotSlider({
       </div>
 
       {/* FOOTER NAVIGATION: DOTS & ARROW BUTTONS */}
-      <div className="relative z-10 flex items-center justify-between pt-1 border-t border-jp-gray-200/80 font-sans">
-        {/* DOT INDICATORS (WCAG 2.2 MINIMUM 44PX TOUCH TARGET) */}
-        <div className="flex items-center -ml-2">
+      <div className="relative z-10 flex items-center justify-between pt-2 border-t border-jp-gray-200/80 font-sans">
+        {/* DOT INDICATORS (RESPONSIVE TOUCH TARGETS) */}
+        <div className="flex items-center -ml-1 sm:-ml-2">
           {slides.map((slide, idx) => (
             <button
               key={slide.id}
               type="button"
               onClick={() => setCurrentIndex(idx)}
               aria-label={`Buka slide ${idx + 1}: ${slide.title}`}
-              className="flex min-h-[44px] min-w-[36px] items-center justify-center p-2 focus:outline-none cursor-pointer group/dot"
+              className="flex min-h-[36px] min-w-[26px] sm:min-w-[34px] items-center justify-center p-1 sm:p-2 focus:outline-none cursor-pointer group/dot"
             >
               <span
                 className={cn(
-                  "h-2.5 rounded-full transition-all duration-200",
+                  "h-2 sm:h-2.5 rounded-full transition-all duration-200",
                   idx === currentIndex
-                    ? "w-7 bg-jp-blue-900 shadow-2xs"
-                    : "w-2.5 bg-jp-gray-300 group-hover/dot:bg-jp-gray-400"
+                    ? "w-6 sm:w-7 bg-jp-blue-900 shadow-2xs"
+                    : "w-2 sm:w-2.5 bg-jp-gray-300 group-hover/dot:bg-jp-gray-400"
                 )}
               />
             </button>
           ))}
         </div>
 
-        {/* ARROWS (WCAG 2.2 MINIMUM 44PX TOUCH TARGET) */}
-        <div className="flex items-center gap-2">
+        {/* ARROWS */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={handlePrev}
             aria-label="Pose sebelumnya"
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-jp-gray-300 bg-white text-jp-gray-700 shadow-2xs hover:border-jp-blue-900 hover:text-jp-blue-900 transition cursor-pointer focus:outline-none"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-jp-gray-300 bg-white text-jp-gray-700 shadow-2xs hover:border-jp-blue-900 hover:text-jp-blue-900 transition cursor-pointer focus:outline-none"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -202,7 +202,7 @@ export function PeruChanMascotSlider({
             type="button"
             onClick={handleNext}
             aria-label="Pose berikutnya"
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-jp-gray-300 bg-white text-jp-gray-700 shadow-2xs hover:border-jp-blue-900 hover:text-jp-blue-900 transition cursor-pointer focus:outline-none"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-jp-gray-300 bg-white text-jp-gray-700 shadow-2xs hover:border-jp-blue-900 hover:text-jp-blue-900 transition cursor-pointer focus:outline-none"
           >
             <ChevronRight className="h-4 w-4" />
           </button>

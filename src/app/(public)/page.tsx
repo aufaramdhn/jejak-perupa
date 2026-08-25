@@ -45,7 +45,7 @@ export default function HomePage() {
     <MainPublicLayout>
       {/* HERO SECTION */}
       <section className="relative border-b border-jp-gray-300 bg-linear-to-b from-jp-blue-50/40 via-jp-paper to-jp-paper py-16 md:py-24">
-        <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 grid gap-12 lg:grid-cols-[1.2fr_0.8fr] items-center">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-12 grid gap-10 lg:gap-12 lg:grid-cols-[1.2fr_0.8fr] items-center">
           {/* HERO LEFT COPY */}
           <div>
             <Heading1 className="text-4xl sm:text-5xl lg:text-6xl text-jp-blue-900 leading-[1.15]">
