@@ -17,6 +17,9 @@ export interface ArticleFullData {
   publishedDate: string;
   authorName: string;
   coverImageUrl?: string;
+  headerBgImageUrl?: string;
+  headerGradientOpacity?: number;
+  headerGradientHeight?: number;
   featuredArtistSlug?: string;
   peruChanTip?: string;
   peruChanTipTitle?: string;
@@ -46,6 +49,9 @@ export const articlesData: ArticleFullData[] = [
     publishedDate: "2017 (Arsip Terkurasi)",
     authorName: "Jejak Perupa",
     coverImageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=80",
+    headerBgImageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=1600&auto=format&fit=crop&q=80",
+    headerGradientOpacity: 85,
+    headerGradientHeight: 80,
     peruChanTipTitle: "Tips dari Peru-Chan",
     peruChanTip:
       "Wawasan teoritis, kepekaan lingkungan, perluasan jejaring, dan proses berpikir kritis adalah bagian tak terpisahkan dari perjalanan belajar seni rupa.",

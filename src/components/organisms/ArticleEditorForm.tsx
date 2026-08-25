@@ -54,6 +54,9 @@ export interface ArticleEditorFormData {
   readTime: string;
   excerpt: string;
   coverImageUrl?: string;
+  headerBgImageUrl?: string;
+  headerGradientOpacity?: number;
+  headerGradientHeight?: number;
   chapters: ChapterItem[];
   references: ReferenceItem[];
   peruChanTip?: string;
@@ -91,6 +94,9 @@ export function ArticleEditorForm({
   const [readTime, setReadTime] = useState(initialData?.readTime || "6 menit membaca");
   const [excerpt, setExcerpt] = useState(initialData?.excerpt || "");
   const [coverImageUrl, setCoverImageUrl] = useState(initialData?.coverImageUrl || "");
+  const [headerBgImageUrl, setHeaderBgImageUrl] = useState(initialData?.headerBgImageUrl || "");
+  const [headerGradientOpacity, setHeaderGradientOpacity] = useState(initialData?.headerGradientOpacity ?? 85);
+  const [headerGradientHeight, setHeaderGradientHeight] = useState(initialData?.headerGradientHeight ?? 80);
   const [chapters, setChapters] = useState<ChapterItem[]>(
     initialData?.chapters && initialData.chapters.length > 0
       ? initialData.chapters
@@ -163,6 +169,9 @@ export function ArticleEditorForm({
             readTime,
             excerpt,
             coverImageUrl,
+            headerBgImageUrl,
+            headerGradientOpacity,
+            headerGradientHeight,
             chapters,
             references,
             peruChanTip,
@@ -184,6 +193,9 @@ export function ArticleEditorForm({
     readTime,
     excerpt,
     coverImageUrl,
+    headerBgImageUrl,
+    headerGradientOpacity,
+    headerGradientHeight,
     chapters,
     references,
     peruChanTip,
@@ -204,6 +216,9 @@ export function ArticleEditorForm({
           setReadTime(parsed.data.readTime || "6 menit membaca");
           setExcerpt(parsed.data.excerpt || "");
           setCoverImageUrl(parsed.data.coverImageUrl || "");
+          setHeaderBgImageUrl(parsed.data.headerBgImageUrl || "");
+          setHeaderGradientOpacity(parsed.data.headerGradientOpacity ?? 85);
+          setHeaderGradientHeight(parsed.data.headerGradientHeight ?? 80);
           if (parsed.data.chapters && parsed.data.chapters.length > 0) {
             setChapters(parsed.data.chapters);
           }
@@ -419,6 +434,9 @@ export function ArticleEditorForm({
       readTime,
       excerpt,
       coverImageUrl,
+      headerBgImageUrl,
+      headerGradientOpacity,
+      headerGradientHeight,
       chapters,
       references: references.filter((r) => r.citation.trim().length > 0),
       peruChanTip,
@@ -733,7 +751,7 @@ export function ArticleEditorForm({
               {/* COVER IMAGE DUAL INPUT */}
               <div className="space-y-1.5 sm:col-span-2">
                 <ImageDualInput
-                  label="Gambar Sampul Artikel (Opsional)"
+                  label="Gambar Sampul Artikel (Thumbnail Utama)"
                   value={coverImageUrl}
                   onChange={setCoverImageUrl}
                   placeholderUrl="https://domain.com/gambar-sampul.jpg"
@@ -744,6 +762,125 @@ export function ArticleEditorForm({
                   maxSizeLabel="3 MB"
                   previewClassName="h-20 w-32"
                 />
+              </div>
+
+              {/* HEADER PHOTO & GRADIENT OVERLAY (OPTIONAL CUSTOM HEADER) */}
+              <div className="space-y-4 sm:col-span-2 rounded-xl border border-jp-gray-300 bg-jp-paper/50 p-5 md:p-6 shadow-2xs">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-jp-blue-900" />
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                      Foto Latar Belakang & Gradasi Header Artikel (Opsional)
+                    </h4>
+                  </div>
+                  <p className="mt-1 text-xs text-jp-gray-500 font-prose">
+                    Kustomisasi foto panorama pada latar belakang header artikel dengan gradasi putih pelindung teks agar judul dan ringkasan tetap terbaca kontras dan tajam.
+                  </p>
+                </div>
+
+                <ImageDualInput
+                  label="Foto Latar Belakang Header"
+                  value={headerBgImageUrl}
+                  onChange={setHeaderBgImageUrl}
+                  placeholderUrl="https://domain.com/foto-header-panorama.jpg"
+                  helperGuideline="Rekomendasi rasio horizontal panorama (21:9 atau 16:9), resolusi minimal 1600×600 px hingga 1920×800 px, format JPG, PNG, atau WebP berkualitas tinggi, ukuran maksimal 3 MB."
+                  minWidth={1200}
+                  minHeight={400}
+                  maxSizeBytes={3 * 1024 * 1024}
+                  maxSizeLabel="3 MB"
+                  previewClassName="h-20 w-44"
+                />
+
+                {headerBgImageUrl && (
+                  <div className="grid gap-6 sm:grid-cols-2 pt-3 border-t border-jp-gray-200">
+                    {/* SLIDE BAR 1: OPACITY */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-jp-ink">
+                          Intensitas Gradasi Putih Pelindung Teks
+                        </label>
+                        <span className="font-mono text-xs font-bold bg-jp-blue-900 text-white px-2 py-0.5 rounded">
+                          {headerGradientOpacity}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="30"
+                        max="100"
+                        step="5"
+                        value={headerGradientOpacity}
+                        onChange={(e) => setHeaderGradientOpacity(Number(e.target.value))}
+                        className="w-full accent-jp-blue-900 cursor-pointer h-2 bg-jp-gray-300 rounded-lg"
+                      />
+                      <p className="text-[11px] text-jp-gray-500 font-prose">
+                        Semakin tinggi nilai persentase, semakin pekat lapisan putih pelindung teks di atas gambar.
+                      </p>
+                    </div>
+
+                    {/* SLIDE BAR 2: HEIGHT SPREAD */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-jp-ink">
+                          Ketinggian Sebaran Gradasi
+                        </label>
+                        <span className="font-mono text-xs font-bold bg-jp-blue-900 text-white px-2 py-0.5 rounded">
+                          {headerGradientHeight}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="40"
+                        max="100"
+                        step="5"
+                        value={headerGradientHeight}
+                        onChange={(e) => setHeaderGradientHeight(Number(e.target.value))}
+                        className="w-full accent-jp-blue-900 cursor-pointer h-2 bg-jp-gray-300 rounded-lg"
+                      />
+                      <p className="text-[11px] text-jp-gray-500 font-prose">
+                        Mengatur ketinggian titik peralihan kabut gradasi putih dari bawah menuju foto asli di atas.
+                      </p>
+                    </div>
+
+                    {/* LIVE HEADER PREVIEW MOCKUP */}
+                    <div className="sm:col-span-2 space-y-2 pt-2">
+                      <div className="text-xs font-bold font-mono text-jp-blue-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <Eye className="h-3.5 w-3.5" />
+                        Pratinjau Langsung Efek Gradasi Header (Real-Time)
+                      </div>
+                      <div className="relative rounded-xl border border-jp-gray-300 overflow-hidden shadow-2xs">
+                        {/* IMAGE */}
+                        <div
+                          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                          style={{ backgroundImage: `url(${headerBgImageUrl})` }}
+                        />
+                        {/* GRADIENT OVERLAY */}
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            background: `linear-gradient(to top, #FDFCFA 0%, rgba(253, 252, 250, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, rgba(253, 252, 250, 0.3) 100%)`,
+                          }}
+                        />
+                        {/* SAMPLE CONTENT */}
+                        <div className="relative z-10 p-6 md:p-8 space-y-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-jp-lime text-jp-ink">
+                              {category || "Kategori"}
+                            </span>
+                            <span className="text-[11px] font-semibold text-jp-gray-600 font-mono">
+                              Arsip Jejak Perupa
+                            </span>
+                          </div>
+                          <h3 className="font-heading text-xl md:text-2xl font-bold text-jp-ink">
+                            {title || "Judul Artikel Contoh Akan Tampil Di Sini"}
+                          </h3>
+                          <p className="font-heading text-xs md:text-sm italic text-jp-gray-700 max-w-xl line-clamp-2">
+                            {excerpt || "Ringkasan pembuka artikel yang memikat akan terbaca sangat jelas di atas area gradasi putih ini."}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* EKSERP / RINGKASAN */}
@@ -1011,29 +1148,48 @@ export function ArticleEditorForm({
         /* 4. LIVE PREVIEW TAB (1:1 PUBLIC RENDERING) */
         <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-10 shadow-2xs space-y-8 max-w-4xl mx-auto">
           {/* PREVIEW HEADER */}
-          <div className="border-b border-jp-gray-200 pb-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <Badge variant="blue">{category}</Badge>
-              <span className="text-xs text-jp-gray-500 font-mono">
-                {readTime}
-              </span>
-            </div>
-
-            <h1 className="font-heading text-2xl md:text-4xl font-bold text-jp-ink leading-tight">
-              {title || "Judul Artikel Anda Akan Tampil di Sini"}
-            </h1>
-
-            <div className="flex items-center gap-3 text-xs text-jp-gray-600 font-mono">
-              <span>Penulis: {authorName || "Nama Penulis"}</span>
-              <span>·</span>
-              <span>Diterbitkan Hari Ini</span>
-            </div>
-
-            {excerpt && (
-              <p className="font-heading text-base md:text-lg italic text-jp-gray-700 leading-relaxed border-l-4 border-jp-blue-900 pl-4 py-1">
-                {excerpt}
-              </p>
+          <div className="relative overflow-hidden rounded-xl border border-jp-gray-200 p-6 md:p-8">
+            {headerBgImageUrl && (
+              <div
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url(${headerBgImageUrl})` }}
+              />
             )}
+            {headerBgImageUrl ? (
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: `linear-gradient(to top, #FDFCFA 0%, rgba(253, 252, 250, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, rgba(253, 252, 250, 0.3) 100%)`,
+                }}
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-b from-jp-blue-50/50 via-white to-white pointer-events-none" />
+            )}
+
+            <div className="relative z-10 space-y-4">
+              <div className="flex items-center gap-2">
+                <Badge variant="blue">{category}</Badge>
+                <span className="text-xs text-jp-gray-500 font-mono">
+                  {readTime}
+                </span>
+              </div>
+
+              <h1 className="font-heading text-2xl md:text-4xl font-bold text-jp-ink leading-tight">
+                {title || "Judul Artikel Anda Akan Tampil di Sini"}
+              </h1>
+
+              <div className="flex items-center gap-3 text-xs text-jp-gray-600 font-mono">
+                <span>Penulis: {authorName || "Nama Penulis"}</span>
+                <span>·</span>
+                <span>Diterbitkan Hari Ini</span>
+              </div>
+
+              {excerpt && (
+                <p className="font-heading text-base md:text-lg italic text-jp-gray-700 leading-relaxed border-l-4 border-jp-blue-900 pl-4 py-1">
+                  {excerpt}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* PREVIEW CHAPTERS */}

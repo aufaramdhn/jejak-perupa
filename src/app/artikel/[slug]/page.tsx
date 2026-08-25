@@ -259,6 +259,9 @@ export default async function DynamicArticleDetailPage({
       header={headerContent}
       content={mainContent}
       sidebar={sidebarContent}
+      headerBgImageUrl={article.headerBgImageUrl}
+      headerGradientOpacity={article.headerGradientOpacity}
+      headerGradientHeight={article.headerGradientHeight}
     />
   );
 }
