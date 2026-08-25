@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useAuth } from "@/lib/auth";
+import { useModal } from "@/lib/modalContext";
 import { Heading2, Heading3, Paragraph } from "@/components/atoms/Typography";
 import { Input } from "@/components/atoms/Input";
 import { Button } from "@/components/atoms/Button";
@@ -23,6 +24,7 @@ import { cn } from "@/lib/utils";
 export function AuthModal() {
   const { modalOpen, modalMsg, closeAuthModal, login, register, loginWithDemo } =
     useAuth();
+  const { toast } = useModal();
 
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
@@ -40,7 +42,13 @@ export function AuthModal() {
     setLoading(true);
     const res = await login(email, password);
     setLoading(false);
-    if (!res.success) {
+    if (res.success) {
+      toast({
+        type: "success",
+        title: "Berhasil Masuk",
+        message: `Selamat datang kembali, ${res.user?.name || "Pembelajar"}!`,
+      });
+    } else {
       setErrorMsg(res.error || "Gagal masuk. Periksa kembali email dan kata sandi.");
     }
   };
@@ -51,7 +59,13 @@ export function AuthModal() {
     setLoading(true);
     const res = await register(name, email, password, institution);
     setLoading(false);
-    if (!res.success) {
+    if (res.success) {
+      toast({
+        type: "success",
+        title: "Pendaftaran Berhasil",
+        message: "Akun belajar Anda aktif. Selamat menjelajah!",
+      });
+    } else {
       setErrorMsg(res.error || "Pendaftaran gagal. Mohon periksa kembali data Anda.");
     }
   };

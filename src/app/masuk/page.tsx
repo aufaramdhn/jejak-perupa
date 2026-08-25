@@ -10,6 +10,7 @@ import { Button } from "@/components/atoms/Button";
 import { Badge } from "@/components/atoms/Badge";
 import { PeruChanCallout } from "@/components/molecules/PeruChanCallout";
 import { useAuth } from "@/lib/auth";
+import { useModal } from "@/lib/modalContext";
 import {
   ArrowRight,
   UserCheck,
@@ -27,6 +28,7 @@ import { cn } from "@/lib/utils";
 export default function LoginPage() {
   const router = useRouter();
   const { login, register, loginWithDemo } = useAuth();
+  const { toast } = useModal();
 
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
@@ -43,6 +45,11 @@ export default function LoginPage() {
     const res = await login(email, password);
     setLoading(false);
     if (res.success) {
+      toast({
+        type: "success",
+        title: "Berhasil Masuk",
+        message: `Selamat datang kembali, ${res.user?.name || "Pembelajar"}!`,
+      });
       if (res.user?.role === "ADMIN") {
         router.push("/admin");
       } else {
@@ -60,6 +67,11 @@ export default function LoginPage() {
     const res = await register(name, email, password, institution);
     setLoading(false);
     if (res.success) {
+      toast({
+        type: "success",
+        title: "Pendaftaran Berhasil",
+        message: "Akun Anda berhasil dibuat. Selamat menjelajahi arsip seni!",
+      });
       router.push("/dashboard");
     } else {
       setErrorMsg(res.error || "Pendaftaran gagal. Periksa data yang Anda masukkan.");
@@ -68,6 +80,11 @@ export default function LoginPage() {
 
   const handleDemoLogin = (userKey: "pelajar" | "kurator") => {
     loginWithDemo(userKey);
+    toast({
+      type: "success",
+      title: "Masuk sebagai Akun Demo",
+      message: "Anda kini menjelajah dalam mode akun demo.",
+    });
     if (userKey === "kurator") {
       router.push("/admin");
     } else {

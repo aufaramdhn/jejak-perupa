@@ -17,6 +17,7 @@ import { Badge } from "@/components/atoms/Badge";
 import { RichTextEditor } from "@/components/molecules/RichTextEditor";
 import { PeruChanCallout } from "@/components/molecules/PeruChanCallout";
 import { useAuth } from "@/lib/auth";
+import { useModal } from "@/lib/modalContext";
 import {
   Send,
   CheckCircle,
@@ -47,6 +48,7 @@ interface ReferenceItem {
 
 export default function KontribusiArtikelPage() {
   const { currentUser } = useAuth();
+  const { confirm, toast } = useModal();
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
 
   // Metadata form (starts clean and empty)
@@ -142,20 +144,41 @@ export default function KontribusiArtikelPage() {
           "Holt, Claire. (2000). *Melacak Jejak Perkembangan Seni di Indonesia*. Jakarta: Masyarakat Seni Pertunjukan Indonesia.",
       },
     ]);
+    toast({
+      type: "info",
+      title: "Contoh Draf Dimuat",
+      message: "Naskah demonstrasi berhasil dimuat ke formulir.",
+    });
   };
 
-  // Reset form to completely empty
-  const handleResetForm = () => {
-    setTitle("");
-    setExcerpt("");
-    setChapters([
-      {
-        id: `chap-${Date.now()}`,
-        title: "",
-        content: "",
-      },
-    ]);
-    setReferences([]);
+  // Reset form to completely empty with confirmation
+  const handleResetForm = async () => {
+    const confirmed = await confirm({
+      title: "Kosongkan Formulir?",
+      message: "Seluruh judul, bab materi, dan daftar sitasi yang telah ditulis akan direset kembali ke lembar awal kosong.",
+      confirmLabel: "Ya, Kosongkan",
+      cancelLabel: "Batal",
+      variant: "warning",
+      iconType: "alert",
+    });
+
+    if (confirmed) {
+      setTitle("");
+      setExcerpt("");
+      setChapters([
+        {
+          id: `chap-${Date.now()}`,
+          title: "",
+          content: "",
+        },
+      ]);
+      setReferences([]);
+      toast({
+        type: "info",
+        title: "Formulir Dikosongkan",
+        message: "Lembar kerja telah direset.",
+      });
+    }
   };
 
   // Chapter handlers
@@ -166,6 +189,11 @@ export default function KontribusiArtikelPage() {
       content: "",
     };
     setChapters([...chapters, newChapter]);
+    toast({
+      type: "info",
+      title: "Bab Baru Ditambahkan",
+      message: `Bab ${chapters.length + 1} siap ditulis.`,
+    });
   };
 
   const handleUpdateChapter = (id: string, field: keyof ChapterItem, value: string) => {
@@ -174,9 +202,25 @@ export default function KontribusiArtikelPage() {
     );
   };
 
-  const handleDeleteChapter = (id: string) => {
+  const handleDeleteChapter = async (id: string, chapterNum: number) => {
     if (chapters.length <= 1) return;
-    setChapters(chapters.filter((ch) => ch.id !== id));
+    const confirmed = await confirm({
+      title: `Hapus Bab ${chapterNum}?`,
+      message: `Seluruh teks isi narasi dan judul pada Bab ${chapterNum} akan dihapus dari draf ini.`,
+      confirmLabel: "Ya, Hapus Bab",
+      cancelLabel: "Batal",
+      variant: "danger",
+      iconType: "trash",
+    });
+
+    if (confirmed) {
+      setChapters(chapters.filter((ch) => ch.id !== id));
+      toast({
+        type: "success",
+        title: "Bab Dihapus",
+        message: `Bab ${chapterNum} berhasil dihapus.`,
+      });
+    }
   };
 
   const handleMoveChapter = (index: number, direction: "up" | "down") => {
@@ -211,14 +255,30 @@ export default function KontribusiArtikelPage() {
     );
   };
 
-  const handleDeleteReference = (id: string) => {
-    setReferences(references.filter((r) => r.id !== id));
+  const handleDeleteReference = async (id: string, refNum: number) => {
+    const confirmed = await confirm({
+      title: `Hapus Sitasi [${refNum}]?`,
+      message: "Rujukan kepustakaan ini akan dihapus dari daftar pustaka artikel.",
+      confirmLabel: "Hapus",
+      cancelLabel: "Batal",
+      variant: "danger",
+      iconType: "trash",
+    });
+
+    if (confirmed) {
+      setReferences(references.filter((r) => r.id !== id));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !authorName.trim() || chapters.length === 0) return;
     setSubmitted(true);
+    toast({
+      type: "success",
+      title: "Naskah Berhasil Dikirim",
+      message: "Draf artikel telah diserahkan ke antrean meja kurasi redaksi.",
+    });
   };
 
   return (
@@ -443,7 +503,7 @@ export default function KontribusiArtikelPage() {
                               type="button"
                               title="Hapus Bab"
                               disabled={chapters.length <= 1}
-                              onClick={() => handleDeleteChapter(chapter.id)}
+                              onClick={() => handleDeleteChapter(chapter.id, idx + 1)}
                               className="flex h-7 w-7 items-center justify-center rounded-md border border-red-200 bg-white text-red-600 hover:bg-red-50 hover:text-red-800 disabled:opacity-30 disabled:cursor-not-allowed transition ml-2"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -542,7 +602,7 @@ export default function KontribusiArtikelPage() {
                           />
                           <button
                             type="button"
-                            onClick={() => handleDeleteReference(ref.id)}
+                            onClick={() => handleDeleteReference(ref.id, idx + 1)}
                             className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-50 transition shrink-0"
                           >
                             <Trash2 className="h-4 w-4" />

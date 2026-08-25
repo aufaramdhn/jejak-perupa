@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Newsreader, Lora, Inter, JetBrains_Mono } from "next/font/google";
+import { ModalProvider } from "@/lib/modalContext";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -48,7 +49,7 @@ export default function RootLayout({
       className={`${newsreader.variable} ${lora.variable} ${inter.variable} ${jetbrainsMono.variable} scroll-smooth`}
     >
       <body className="min-h-screen flex flex-col bg-jp-paper text-jp-ink font-prose antialiased">
-        {children}
+        <ModalProvider>{children}</ModalProvider>
       </body>
     </html>
   );

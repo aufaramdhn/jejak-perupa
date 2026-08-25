@@ -16,6 +16,7 @@ import { Button } from "@/components/atoms/Button";
 import { Avatar } from "@/components/atoms/Avatar";
 import { Badge } from "@/components/atoms/Badge";
 import { useAuth } from "@/lib/auth";
+import { useModal } from "@/lib/modalContext";
 import { cn } from "@/lib/utils";
 
 export function NavbarHeader() {
@@ -31,6 +32,29 @@ export function NavbarHeader() {
   const router = useRouter();
 
   const { currentUser, isAuthenticated, logout } = useAuth();
+  const { confirm, toast } = useModal();
+
+  const handleLogoutClick = async () => {
+    setProfileDropdownOpen(false);
+    setMobileMenuOpen(false);
+    const confirmed = await confirm({
+      title: "Konfirmasi Keluar Akun",
+      message: "Apakah Anda yakin ingin mengakhiri sesi akun Jejak Perupa saat ini?",
+      confirmLabel: "Ya, Keluar Akun",
+      cancelLabel: "Batal",
+      variant: "danger",
+      iconType: "logout",
+    });
+
+    if (confirmed) {
+      logout();
+      toast({
+        title: "Berhasil Keluar",
+        message: "Sesi akun Anda telah berhasil diakhiri.",
+        type: "success",
+      });
+    }
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -318,10 +342,7 @@ export function NavbarHeader() {
                   <div className="py-1">
                     <button
                       type="button"
-                      onClick={() => {
-                        logout();
-                        setProfileDropdownOpen(false);
-                      }}
+                      onClick={handleLogoutClick}
                       className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
                     >
                       <span>Keluar (Logout)</span>
@@ -466,13 +487,22 @@ export function NavbarHeader() {
               Tentang Kami & Peru-Chan
             </Link>
             {isAuthenticated ? (
-              <Link
-                href="/dashboard"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-sm font-bold text-jp-blue-900 py-2.5"
-              >
-                Dashboard Profil ({currentUser?.name}) →
-              </Link>
+              <div className="flex flex-col gap-2 pt-2 border-t border-jp-gray-100">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm font-bold text-jp-blue-900 py-1.5"
+                >
+                  Dashboard Profil ({currentUser?.name}) →
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogoutClick}
+                  className="text-left text-xs font-semibold text-red-600 py-1"
+                >
+                  Keluar dari Akun (Logout)
+                </button>
+              </div>
             ) : (
               <Link
                 href="/masuk"

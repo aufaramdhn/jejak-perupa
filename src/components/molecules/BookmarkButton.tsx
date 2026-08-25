@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Bookmark } from "lucide-react";
 import { Button } from "@/components/atoms/Button";
 import { useAuth } from "@/lib/auth";
+import { useModal } from "@/lib/modalContext";
 import { cn } from "@/lib/utils";
 
 export interface BookmarkButtonProps {
@@ -20,11 +21,28 @@ export function BookmarkButton({
   className,
 }: BookmarkButtonProps) {
   const { requireAuth } = useAuth();
+  const { toast } = useModal();
   const [saved, setSaved] = useState(initialSaved);
 
   const toggleBookmark = () => {
     requireAuth(() => {
-      setSaved((prev) => !prev);
+      setSaved((prev) => {
+        const next = !prev;
+        if (next) {
+          toast({
+            type: "success",
+            title: "Materi Tersimpan",
+            message: "Materi berhasil ditambahkan ke koleksi ruang belajarmu.",
+          });
+        } else {
+          toast({
+            type: "info",
+            title: "Dihapus dari Simpanan",
+            message: "Materi telah dikeluarkan dari daftar bookmark.",
+          });
+        }
+        return next;
+      });
     }, "Masuk atau daftar akun terlebih dahulu untuk menyimpan materi ini ke ruang belajarmu.");
   };
 

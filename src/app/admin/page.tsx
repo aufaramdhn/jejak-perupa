@@ -21,6 +21,7 @@ import {
   Send,
   AlertCircle,
 } from "lucide-react";
+import { useModal } from "@/lib/modalContext";
 import { cn } from "@/lib/utils";
 
 interface SubmissionItem {
@@ -38,6 +39,7 @@ interface SubmissionItem {
 }
 
 export default function AdminDashboardPage() {
+  const { confirm, toast } = useModal();
   const articles = artService.getAllArticles();
   const artists = artService.getAllArtists();
   const terms = artService.getAllGlossaryTerms();
@@ -109,31 +111,63 @@ export default function AdminDashboardPage() {
     setThemeDraft(sub.peruChanTheme || "blue");
   };
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (!selectedSub) return;
-    setSubmissions(
-      submissions.map((s) =>
-        s.id === selectedSub.id
-          ? {
-              ...s,
-              status: "Disetujui",
-              peruChanTip: tipDraft,
-              peruChanTheme: themeDraft,
-            }
-          : s
-      )
-    );
-    setSelectedSub(null);
+    const confirmed = await confirm({
+      title: "Terbitkan Naskah Ini?",
+      message: `Naskah "${selectedSub.title}" beserta catatan resmi Peru-Chan akan segera dipublikasikan ke katalog artikel publik.`,
+      confirmLabel: "Ya, Terbitkan",
+      cancelLabel: "Batal",
+      variant: "primary",
+      iconType: "help",
+    });
+
+    if (confirmed) {
+      setSubmissions(
+        submissions.map((s) =>
+          s.id === selectedSub.id
+            ? {
+                ...s,
+                status: "Disetujui",
+                peruChanTip: tipDraft,
+                peruChanTheme: themeDraft,
+              }
+            : s
+        )
+      );
+      setSelectedSub(null);
+      toast({
+        type: "success",
+        title: "Naskah Berhasil Diterbitkan",
+        message: `Artikel "${selectedSub.title}" kini telah aktif dan tayang di publik.`,
+      });
+    }
   };
 
-  const handleRequestRevision = () => {
+  const handleRequestRevision = async () => {
     if (!selectedSub) return;
-    setSubmissions(
-      submissions.map((s) =>
-        s.id === selectedSub.id ? { ...s, status: "Perlu Revisi" } : s
-      )
-    );
-    setSelectedSub(null);
+    const confirmed = await confirm({
+      title: "Minta Revisi Kontributor?",
+      message: `Status naskah "${selectedSub.title}" akan diubah menjadi "Perlu Revisi" agar kontributor dapat memperbaiki naskahnya.`,
+      confirmLabel: "Minta Revisi",
+      cancelLabel: "Batal",
+      variant: "warning",
+      iconType: "alert",
+    });
+
+    if (confirmed) {
+      setSubmissions(
+        submissions.map((s) =>
+          s.id === selectedSub.id ? { ...s, status: "Perlu Revisi" } : s
+        )
+      );
+      setSelectedSub(null);
+      toast({
+        type: "info",
+        title: "Permintaan Revisi Terkirim",
+        message: "Status artikel telah diperbarui ke 'Perlu Revisi'.",
+      });
+    }
   };
 
   return (
