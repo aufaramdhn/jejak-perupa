@@ -51,31 +51,62 @@ export function PeruChanMascotSlider({
 
   const currentSlide = slides[currentIndex] || slides[0];
 
-  const getAccentTheme = (color: "blue" | "brown" | "lime") => {
-    switch (color) {
-      case "lime":
-        return {
-          wrapper: "border-jp-lime-400/80 bg-linear-to-b from-jp-lime-50/50 via-white to-white",
-          glow: "from-jp-lime-200/30",
-          badgeVariant: "lime" as const,
-          quoteBorder: "border-jp-lime-500",
-        };
-      case "brown":
-        return {
-          wrapper: "border-jp-brown-300 bg-linear-to-b from-jp-brown-50/50 via-white to-white",
-          glow: "from-jp-brown-200/30",
-          badgeVariant: "brown" as const,
-          quoteBorder: "border-jp-brown-600",
-        };
-      case "blue":
-      default:
-        return {
-          wrapper: "border-jp-blue-300 bg-linear-to-b from-jp-blue-50/60 via-white to-white",
-          glow: "from-jp-blue-200/30",
-          badgeVariant: "blue" as const,
-          quoteBorder: "border-jp-blue-700",
-        };
+  const getAccentTheme = (color?: string) => {
+    const rawColor = color || "blue";
+    const lower = rawColor.toLowerCase();
+
+    if (lower === "lime") {
+      return {
+        wrapperClass: "border-jp-lime-400/80 bg-linear-to-b from-jp-lime-50/50 via-white to-white",
+        glowClass: "from-jp-lime-200/30",
+        glowStyle: undefined,
+        wrapperStyle: undefined,
+        badgeVariant: "lime" as const,
+        customBadgeStyle: undefined,
+      };
     }
+
+    if (lower === "brown") {
+      return {
+        wrapperClass: "border-jp-brown-300 bg-linear-to-b from-jp-brown-50/50 via-white to-white",
+        glowClass: "from-jp-brown-200/30",
+        glowStyle: undefined,
+        wrapperStyle: undefined,
+        badgeVariant: "brown" as const,
+        customBadgeStyle: undefined,
+      };
+    }
+
+    if (lower === "blue") {
+      return {
+        wrapperClass: "border-jp-blue-300 bg-linear-to-b from-jp-blue-50/60 via-white to-white",
+        glowClass: "from-jp-blue-200/30",
+        glowStyle: undefined,
+        wrapperStyle: undefined,
+        badgeVariant: "blue" as const,
+        customBadgeStyle: undefined,
+      };
+    }
+
+    // Custom Hex or extended color
+    const hex = rawColor.startsWith("#") ? rawColor : "#182C4A";
+    return {
+      wrapperClass: "border",
+      wrapperStyle: {
+        borderColor: `${hex}45`,
+        backgroundImage: `linear-gradient(to bottom, ${hex}15 0%, #ffffff 55%, #ffffff 100%)`,
+      },
+      glowClass: "",
+      glowStyle: {
+        backgroundColor: `${hex}25`,
+      },
+      badgeVariant: "outline" as const,
+      customBadgeStyle: {
+        backgroundColor: `${hex}15`,
+        color: hex,
+        borderColor: `${hex}40`,
+      },
+    };
   };
 
   const theme = getAccentTheme(currentSlide.accentColor);
@@ -84,9 +115,10 @@ export function PeruChanMascotSlider({
     <div
       className={cn(
         "relative flex flex-col justify-between overflow-hidden rounded-2xl border p-4 sm:p-6 md:p-7 shadow-lg transition-all duration-300 font-sans group w-full max-w-md",
-        theme.wrapper,
+        theme.wrapperClass,
         className
       )}
+      style={theme.wrapperStyle}
       onMouseEnter={() => setIsPlaying(false)}
       onMouseLeave={() => setIsPlaying(true)}
     >
@@ -94,13 +126,18 @@ export function PeruChanMascotSlider({
       <div
         className={cn(
           "pointer-events-none absolute top-0 right-0 h-40 w-40 rounded-full opacity-20 transition-colors duration-500",
-          theme.glow
+          theme.glowClass
         )}
+        style={theme.glowStyle}
       />
 
       {/* TOP HEADER: BADGE & CONTROLS */}
       <div className="relative z-10 flex items-center justify-between gap-3 border-b border-jp-gray-200/80 pb-3">
-        <Badge variant={theme.badgeVariant} size="sm">
+        <Badge
+          variant={theme.badgeVariant}
+          size="sm"
+          style={theme.customBadgeStyle}
+        >
           {currentSlide.subtitle}
         </Badge>
 

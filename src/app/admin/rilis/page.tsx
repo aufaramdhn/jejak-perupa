@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { AdminLayout } from "@/components/templates/admin/AdminLayout";
 import { Heading2, Heading3, Paragraph } from "@/components/atoms/typography/Typography";
 import { Badge } from "@/components/atoms/typography/Badge";
 import { Button } from "@/components/atoms/form/Button";
+import { AdminReleaseSkeleton } from "@/components/organisms/admin/AdminReleaseSkeleton";
 import {
   featureFlagDefinitions,
   releasePresets,
@@ -52,6 +53,14 @@ export default function AdminRilisPage() {
   } = useFeatureFlags();
 
   const { confirm, alert } = useModal();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleApplyPreset = async (presetId: ReleasePresetId, name: string) => {
     const confirmed = await confirm({
@@ -175,20 +184,24 @@ export default function AdminRilisPage() {
       title="Manajemen Rilis & Feature Flags"
       subtitle="Kontrol tahapan rilis platform, visibilitas menu publik, dan sakelar fitur secara adaptif."
       actionButton={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
           <Button
             type="button"
             variant="outline"
-            size="sm"
+            size="md"
             onClick={() => handleApplyPreset("v1.0.0", "v1.0.0 (MVP Awal)")}
-            className="rounded-lg text-xs"
+            className="rounded-lg text-xs sm:text-sm font-bold w-full sm:w-auto py-2.5 px-4 h-10 cursor-pointer"
           >
             <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
             Reset ke v1.0.0
           </Button>
 
-          <Link href="/" target="_blank">
-            <Button variant="primary" size="sm" className="rounded-lg text-xs">
+          <Link href="/" target="_blank" className="w-full sm:w-auto block">
+            <Button
+              variant="primary"
+              size="md"
+              className="rounded-lg text-xs sm:text-sm font-bold w-full sm:w-auto py-2.5 px-4 h-10 shadow-xs cursor-pointer"
+            >
               <Eye className="h-3.5 w-3.5 mr-1.5" />
               Lihat Live Web
             </Button>
@@ -196,7 +209,10 @@ export default function AdminRilisPage() {
         </div>
       }
     >
-      <div className="space-y-8 font-sans">
+      {isLoading ? (
+        <AdminReleaseSkeleton />
+      ) : (
+        <div className="space-y-8 font-sans">
         {/* CURRENT STATUS BANNER */}
         <div className="rounded-xl border border-jp-blue-300 bg-gradient-to-r from-jp-blue-900 to-jp-ink p-6 text-white shadow-xs flex flex-wrap items-center justify-between gap-6">
           <div className="space-y-1.5">
@@ -433,6 +449,7 @@ export default function AdminRilisPage() {
           </div>
         </div>
       </div>
+      )}
     </AdminLayout>
   );
 }

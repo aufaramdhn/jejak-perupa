@@ -15,7 +15,7 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const baseStyles =
-    "inline-flex items-center font-medium tracking-wide rounded-md transition-colors font-sans";
+    "inline-flex items-center font-medium tracking-wide rounded-md transition-colors font-sans whitespace-nowrap shrink-0";
 
   const variantStyles = {
     lime: "bg-jp-lime text-jp-ink font-semibold",

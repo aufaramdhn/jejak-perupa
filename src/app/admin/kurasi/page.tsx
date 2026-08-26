@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useMemo, useTransition } from "react";
 import { AdminLayout } from "@/components/templates/admin/AdminLayout";
 import { Heading2, Heading3, Paragraph } from "@/components/atoms/typography/Typography";
 import { Badge } from "@/components/atoms/typography/Badge";
 import { Button } from "@/components/atoms/form/Button";
+import { TablePagination } from "@/components/molecules/navigation/TablePagination";
 import { PeruChanCallout } from "@/components/molecules/peruchan/PeruChanCallout";
 import { CurationCardSkeleton } from "@/components/organisms/admin/CurationCardSkeleton";
 import { useCategories } from "@/lib/categoryContext";
@@ -176,6 +177,8 @@ export default function AdminKurasiPage() {
   };
 
   const [statusFilter, setStatusFilter] = useState<string>("Semua");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
 
@@ -189,13 +192,21 @@ export default function AdminKurasiPage() {
   const handleStatusChange = (status: string) => {
     startTransition(() => {
       setStatusFilter(status);
+      setCurrentPage(1);
     });
   };
 
-  const filteredSubmissions = submissions.filter((sub) => {
-    if (statusFilter === "Semua") return true;
-    return sub.status === statusFilter;
-  });
+  const filteredSubmissions = useMemo(() => {
+    if (statusFilter === "Semua") return submissions;
+    return submissions.filter((sub) => sub.status === statusFilter);
+  }, [submissions, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredSubmissions.length / pageSize));
+
+  const paginatedSubmissions = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredSubmissions.slice(start, start + pageSize);
+  }, [filteredSubmissions, currentPage, pageSize]);
 
   return (
     <AdminLayout
@@ -242,62 +253,89 @@ export default function AdminKurasiPage() {
         {(isLoading || isPending) ? (
           <CurationCardSkeleton count={3} />
         ) : filteredSubmissions.length > 0 ? (
-          <div className="grid gap-6">
-            {filteredSubmissions.map((sub) => (
-              <div
-                key={sub.id}
-                className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-7 shadow-2xs space-y-4 hover:border-jp-blue-300 transition"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-jp-ink">
-                        {sub.title}
-                      </span>
-                      <Badge
-                        variant={
-                          sub.status === "Disetujui"
-                            ? "lime"
-                            : sub.status === "Perlu Revisi"
-                            ? "brown"
-                            : "blue"
-                        }
-                        size="sm"
-                      >
-                        {sub.status}
-                      </Badge>
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:gap-6">
+              {paginatedSubmissions.map((sub) => (
+                <div
+                  key={sub.id}
+                  className="rounded-xl border border-jp-gray-300 bg-white p-4 sm:p-6 shadow-2xs space-y-4 hover:border-jp-blue-300 transition"
+                >
+                  {/* CARD HEADER WITH INTEGRATED METADATA & ACTION */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-jp-gray-200/80 pb-4">
+                    <div className="space-y-2 min-w-0 flex-1">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <h3 className="text-base sm:text-lg font-bold text-jp-ink font-heading">
+                          {sub.title}
+                        </h3>
+                        <Badge
+                          variant={
+                            sub.status === "Disetujui"
+                              ? "lime"
+                              : sub.status === "Perlu Revisi"
+                              ? "brown"
+                              : "blue"
+                          }
+                          size="sm"
+                        >
+                          {sub.status}
+                        </Badge>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-jp-gray-600 font-mono">
+                        <div>
+                          <span className="text-jp-gray-400">Penulis:</span>{" "}
+                          <span className="font-bold text-jp-ink">{sub.author}</span>
+                        </div>
+                        <span className="text-jp-gray-300 hidden sm:inline">·</span>
+                        <div>
+                          <span className="text-jp-gray-400">Kategori:</span>{" "}
+                          <span className="font-bold text-jp-blue-900">{sub.category}</span>
+                        </div>
+                        <span className="text-jp-gray-300 hidden sm:inline">·</span>
+                        <div>
+                          <span className="text-jp-gray-400">Diterima:</span>{" "}
+                          <span className="font-bold text-jp-gray-700">{sub.date}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-jp-gray-500 font-mono">
-                      <span>Penulis: {sub.author}</span>
-                      <span>·</span>
-                      <span>Kategori: {sub.category}</span>
-                      <span>·</span>
-                      <span>Diterima: {sub.date}</span>
-                    </div>
+
+                    <Button
+                      variant="primary"
+                      size="md"
+                      onClick={() => handleOpenReview(sub)}
+                      className="rounded-lg w-full md:w-auto shrink-0 py-2.5 px-4 h-10 font-bold text-xs sm:text-sm cursor-pointer shadow-xs"
+                    >
+                      <Eye className="h-4 w-4 mr-1.5" />
+                      Buka Lembar Kurasi
+                    </Button>
                   </div>
 
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => handleOpenReview(sub)}
-                    className="rounded-lg"
-                  >
-                    <Eye className="h-4 w-4 mr-1.5" />
-                    Buka Lembar Kurasi
-                  </Button>
+                  <p className="text-xs sm:text-sm text-jp-gray-700 font-prose leading-relaxed border-l-2 border-jp-blue-700 pl-3.5">
+                    {sub.excerpt}
+                  </p>
+
+                  {sub.peruChanTip && (
+                    <div className="rounded-lg border border-jp-blue-100 bg-jp-blue-50/50 p-3 text-xs text-jp-blue-900 font-prose italic">
+                      <strong>Catatan Peru-Chan Tersemat:</strong> &ldquo;{sub.peruChanTip}&rdquo;
+                    </div>
+                  )}
                 </div>
+              ))}
+            </div>
 
-                <p className="text-xs text-jp-gray-700 font-prose leading-relaxed border-l-2 border-jp-gray-200 pl-3">
-                  {sub.excerpt}
-                </p>
-
-                {sub.peruChanTip && (
-                  <div className="rounded-lg border border-jp-blue-100 bg-jp-blue-50/50 p-3 text-xs text-jp-blue-900 font-prose italic">
-                    <strong>Catatan Peru-Chan Tersemat:</strong> &ldquo;{sub.peruChanTip}&rdquo;
-                  </div>
-                )}
-              </div>
-            ))}
+            {/* UNIFIED RESPONSIVE PAGINATION */}
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredSubmissions.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setCurrentPage(1);
+              }}
+              itemName="naskah"
+            />
           </div>
         ) : (
           <div className="rounded-xl border border-dashed border-jp-gray-300 bg-white p-12 text-center text-jp-gray-500">

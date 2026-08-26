@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useTransition } from "react";
 import { Badge } from "@/components/atoms/typography/Badge";
 import { Button } from "@/components/atoms/form/Button";
+import { DatePicker } from "@/components/atoms/form/DatePicker";
 import { AdminChartSkeleton } from "@/components/organisms/admin/AdminChartSkeleton";
 import {
   TrendingUp,
@@ -269,19 +270,17 @@ export function AdminAnalyticsChart() {
             <span>Pilih Rentang Tanggal:</span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
+          <div className="flex items-center gap-2 flex-wrap">
+            <DatePicker
               value={customStartDate}
-              onChange={(e) => handleCustomDateChange(e.target.value, customEndDate)}
-              className="rounded-md border border-jp-gray-300 bg-white px-2.5 py-1 text-xs font-mono font-bold text-jp-ink focus:border-jp-blue-700 outline-none"
+              onChange={(val) => handleCustomDateChange(val, customEndDate)}
+              placeholder="Tanggal Mulai"
             />
             <span className="text-xs text-jp-gray-500 font-bold">s/d</span>
-            <input
-              type="date"
+            <DatePicker
               value={customEndDate}
-              onChange={(e) => handleCustomDateChange(customStartDate, e.target.value)}
-              className="rounded-md border border-jp-gray-300 bg-white px-2.5 py-1 text-xs font-mono font-bold text-jp-ink focus:border-jp-blue-700 outline-none"
+              onChange={(val) => handleCustomDateChange(customStartDate, val)}
+              placeholder="Tanggal Akhir"
             />
           </div>
 

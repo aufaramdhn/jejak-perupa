@@ -5,11 +5,13 @@ import { AdminLayout } from "@/components/templates/admin/AdminLayout";
 import { Heading2, Heading3, Paragraph } from "@/components/atoms/typography/Typography";
 import { Input } from "@/components/atoms/form/Input";
 import { Button } from "@/components/atoms/form/Button";
+import { ColorPicker } from "@/components/atoms/form/ColorPicker";
 import { Badge } from "@/components/atoms/typography/Badge";
 import { Modal } from "@/components/atoms/feedback/Modal";
 import { ImageDualInput } from "@/components/molecules/editor/ImageDualInput";
 import { PeruChanMascotSlider } from "@/components/organisms/peruchan/PeruChanMascotSlider";
 import { PeruChanTipBanner } from "@/components/organisms/peruchan/PeruChanTipBanner";
+import { AdminSettingsSkeleton } from "@/components/organisms/admin/AdminSettingsSkeleton";
 import { useSiteSettings } from "@/lib/siteContext";
 import { useModal } from "@/lib/modalContext";
 import { MascotSlideItem, PeruChanQuoteItem } from "@/lib/data/siteSettings";
@@ -26,6 +28,7 @@ import {
   Share2,
   CheckCircle,
   Eye,
+  EyeOff,
   MessageSquareQuote,
   Check,
   X,
@@ -54,6 +57,23 @@ export default function AdminPengaturanPage() {
 
   // Active topbar sub-nav tab state
   const [activeTab, setActiveTab] = useState<SettingsTabId>("slideshow");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleTabChange = (tabId: SettingsTabId) => {
+    if (tabId === activeTab) return;
+    setIsLoading(true);
+    setActiveTab(tabId);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 250);
+  };
 
   // Local form state for Site Info
   const [siteName, setSiteName] = useState(settings.siteName);
@@ -94,7 +114,7 @@ export default function AdminPengaturanPage() {
   const [slideSubtitle, setSlideSubtitle] = useState("");
   const [slideQuote, setSlideQuote] = useState("");
   const [slideImageUrl, setSlideImageUrl] = useState("");
-  const [slideAccent, setSlideAccent] = useState<"blue" | "brown" | "lime">("blue");
+  const [slideAccent, setSlideAccent] = useState<string>("#182C4A");
   const [slideImageMode, setSlideImageMode] = useState<"official" | "custom">("official");
 
   // Quotes Library modal/form state
@@ -105,6 +125,10 @@ export default function AdminPengaturanPage() {
   const [quoteImageSrc, setQuoteImageSrc] = useState("/images/mascot/peruchan-drawing.png");
   const [quoteIsActive, setQuoteIsActive] = useState(true);
   const [quoteImageMode, setQuoteImageMode] = useState<"official" | "custom">("official");
+
+  // Toggle preview visibility states
+  const [showSlideshowPreview, setShowSlideshowPreview] = useState(false);
+  const [showQuotesPreview, setShowQuotesPreview] = useState(false);
 
   // 4 Official Mascot Poses
   const officialMascotPoses = [
@@ -178,7 +202,7 @@ export default function AdminPengaturanPage() {
     setSlideSubtitle("");
     setSlideQuote("");
     setSlideImageUrl("/images/mascot/peruchan-excited.png");
-    setSlideAccent("blue");
+    setSlideAccent("#182C4A");
     setSlideImageMode("official");
     setIsSlideModalOpen(true);
   };
@@ -189,7 +213,7 @@ export default function AdminPengaturanPage() {
     setSlideSubtitle(slide.subtitle);
     setSlideQuote(slide.quote);
     setSlideImageUrl(slide.imageUrl || "");
-    setSlideAccent(slide.accentColor || "blue");
+    setSlideAccent(slide.accentColor || "#182C4A");
 
     const isOfficial = officialMascotPoses.some((p) => p.src === slide.imageUrl);
     setSlideImageMode(isOfficial ? "official" : "custom");
@@ -406,7 +430,7 @@ export default function AdminPengaturanPage() {
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={cn(
                   "flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs md:text-sm font-bold transition whitespace-nowrap cursor-pointer",
                   isActive
@@ -433,8 +457,13 @@ export default function AdminPengaturanPage() {
           })}
         </div>
 
-        {/* TAB CONTENT 1: SLIDESHOW KARAKTER PERU-CHAN */}
-        {activeTab === "slideshow" && (
+        {/* LOADING SKELETON OR TAB CONTENT */}
+        {isLoading ? (
+          <AdminSettingsSkeleton activeTab={activeTab} />
+        ) : (
+          <>
+            {/* TAB CONTENT 1: SLIDESHOW KARAKTER PERU-CHAN */}
+            {activeTab === "slideshow" && (
           <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-8 shadow-2xs space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-jp-gray-100 pb-4">
               <div>
@@ -446,16 +475,38 @@ export default function AdminPengaturanPage() {
                 </p>
               </div>
 
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                onClick={handleOpenAddSlide}
-                className="rounded-lg"
-              >
-                <Plus className="h-4 w-4 mr-1.5" />
-                Tambah Slide Pose Baru
-              </Button>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowSlideshowPreview(!showSlideshowPreview)}
+                  className="rounded-lg text-xs font-bold border-jp-blue-300 text-jp-blue-900 hover:bg-jp-blue-50 cursor-pointer"
+                >
+                  {showSlideshowPreview ? (
+                    <>
+                      <EyeOff className="h-3.5 w-3.5 mr-1.5" />
+                      Sembunyikan Pratinjau
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-3.5 w-3.5 mr-1.5" />
+                      Lihat Pratinjau
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={handleOpenAddSlide}
+                  className="rounded-lg font-bold text-xs cursor-pointer"
+                >
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Tambah Slide Pose Baru
+                </Button>
+              </div>
             </div>
 
             {/* SLIDES GRID */}
@@ -537,16 +588,29 @@ export default function AdminPengaturanPage() {
               ))}
             </div>
 
-            {/* LIVE PREVIEW SLIDER */}
-            <div className="rounded-xl border border-jp-blue-200 bg-jp-blue-50/40 p-5 space-y-3">
-              <div className="flex items-center gap-2 font-mono text-xs font-bold text-jp-blue-900 uppercase tracking-wider">
-                <Eye className="h-4 w-4" />
-                Pratinjau Langsung Slideshow Peru-Chan (1:1)
+            {/* TOGGLEABLE LIVE PREVIEW SLIDER */}
+            {showSlideshowPreview && (
+              <div className="rounded-xl border border-jp-blue-200 bg-jp-blue-50/50 p-6 space-y-4 animate-in fade-in zoom-in-98 duration-200">
+                <div className="flex items-center justify-between border-b border-jp-blue-200/80 pb-3">
+                  <div className="flex items-center gap-2 font-mono text-xs font-bold text-jp-blue-900 uppercase tracking-wider">
+                    <Eye className="h-4 w-4" />
+                    Pratinjau Langsung Slideshow Peru-Chan (1:1)
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowSlideshowPreview(false)}
+                    className="text-xs font-semibold text-jp-blue-700 hover:text-jp-blue-900 hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <EyeOff className="h-3.5 w-3.5" />
+                    Sembunyikan
+                  </button>
+                </div>
+
+                <div className="w-full flex items-center justify-center py-2">
+                  <PeruChanMascotSlider autoPlayInterval={5000} className="mx-auto shadow-md" />
+                </div>
               </div>
-              <div className="max-w-2xl mx-auto py-2">
-                <PeruChanMascotSlider autoPlayInterval={5000} />
-              </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -563,16 +627,38 @@ export default function AdminPengaturanPage() {
                 </p>
               </div>
 
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                onClick={handleOpenAddQuote}
-                className="rounded-lg"
-              >
-                <Plus className="h-4 w-4 mr-1.5" />
-                Tambah Kutipan Baru
-              </Button>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowQuotesPreview(!showQuotesPreview)}
+                  className="rounded-lg text-xs font-bold border-jp-blue-300 text-jp-blue-900 hover:bg-jp-blue-50 cursor-pointer"
+                >
+                  {showQuotesPreview ? (
+                    <>
+                      <EyeOff className="h-3.5 w-3.5 mr-1.5" />
+                      Sembunyikan Pratinjau
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-3.5 w-3.5 mr-1.5" />
+                      Lihat Pratinjau
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={handleOpenAddQuote}
+                  className="rounded-lg font-bold text-xs cursor-pointer"
+                >
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Tambah Kutipan Baru
+                </Button>
+              </div>
             </div>
 
             {/* QUOTES LIST */}
@@ -656,16 +742,34 @@ export default function AdminPengaturanPage() {
               ))}
             </div>
 
-            {/* LIVE PREVIEW OF GAME TIPS SLIDESHOW */}
-            <div className="rounded-xl border border-jp-blue-200 bg-jp-blue-50/40 p-5 space-y-3">
-              <div className="flex items-center gap-2 font-mono text-xs font-bold text-jp-blue-900 uppercase tracking-wider">
-                <Eye className="h-4 w-4" />
-                Pratinjau Live Banner Tips Beranda (Auto-Slideshow)
+            {/* TOGGLEABLE LIVE PREVIEW OF GAME TIPS SLIDESHOW */}
+            {showQuotesPreview && (
+              <div className="rounded-xl border border-jp-blue-200 bg-jp-blue-50/50 p-6 space-y-4 animate-in fade-in zoom-in-98 duration-200">
+                <div className="flex items-center justify-between border-b border-jp-blue-200/80 pb-3">
+                  <div className="flex items-center gap-2 font-mono text-xs font-bold text-jp-blue-900 uppercase tracking-wider">
+                    <Eye className="h-4 w-4" />
+                    Pratinjau Live Banner Tips Beranda (Auto-Slideshow)
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowQuotesPreview(false)}
+                    className="text-xs font-semibold text-jp-blue-700 hover:text-jp-blue-900 hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <EyeOff className="h-3.5 w-3.5" />
+                    Sembunyikan
+                  </button>
+                </div>
+
+                <div className="w-full flex items-center justify-center py-2">
+                  <div className="w-full max-w-4xl">
+                    <PeruChanTipBanner
+                      autoPlayInterval={4000}
+                      className="px-0 sm:px-0 lg:px-0 pb-0 lg:pb-0 mx-auto"
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="pt-2">
-                <PeruChanTipBanner autoPlayInterval={4000} />
-              </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -833,79 +937,107 @@ export default function AdminPengaturanPage() {
             </div>
           </form>
         )}
+          </>
+        )}
 
-        {/* MODAL EDIT / TAMBAH SLIDE MASCOT */}
+        {/* MODAL EDIT / TAMBAH SLIDE MASCOT (2-COLUMN RESPONSIVE LAYOUT) */}
         {isSlideModalOpen && (
-          <Modal isOpen={true} onClose={() => setIsSlideModalOpen(false)} maxWidth="lg">
-            <div className="space-y-5 p-6 md:p-7 font-sans">
-              <div className="flex items-center justify-between border-b border-jp-gray-200 pb-3">
-                <Heading3 className="text-lg text-jp-ink">
-                  {editingSlideId ? "Edit Pose Karakter Peru-Chan" : "Tambah Pose Karakter Peru-Chan"}
-                </Heading3>
-                <button
-                  type="button"
-                  onClick={() => setIsSlideModalOpen(false)}
-                  className="text-jp-gray-400 hover:text-jp-ink p-1 cursor-pointer"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+          <Modal isOpen={true} onClose={() => setIsSlideModalOpen(false)} maxWidth="3xl">
+            {/* STICKY MODAL HEADER */}
+            <div className="flex items-center justify-between border-b border-jp-gray-200 bg-jp-paper/80 px-6 py-4 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-jp-blue-900 text-white shadow-2xs">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <div>
+                  <Heading3 className="text-base sm:text-lg text-jp-ink font-heading font-bold">
+                    {editingSlideId ? "Edit Pose Karakter Peru-Chan" : "Tambah Pose Karakter Peru-Chan"}
+                  </Heading3>
+                  <p className="text-[11px] text-jp-gray-500 font-sans">
+                    Konfigurasi naskah motivasi dan pose visual untuk hero beranda.
+                  </p>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsSlideModalOpen(false)}
+                className="rounded-lg p-1.5 text-jp-gray-400 hover:bg-jp-gray-100 hover:text-jp-ink transition cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
 
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                    Judul Pose / Ekspresi <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="text"
-                    required
-                    value={slideTitle}
-                    onChange={(e) => setSlideTitle(e.target.value)}
-                    placeholder="Contoh: Peru-Chan : Eksplorasi Sketsa"
-                  />
+            {/* SCROLLABLE 2-COLUMN MODAL BODY */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-7 space-y-6 font-sans">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                {/* LEFT COLUMN: TEXT CONTENT & COLOR SELECTION */}
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-jp-ink font-sans">
+                      Judul Pose / Ekspresi <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      required
+                      value={slideTitle}
+                      onChange={(e) => setSlideTitle(e.target.value)}
+                      placeholder="Contoh: Peru-Chan : Eksplorasi Sketsa"
+                      className="text-xs rounded-lg w-full"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-jp-ink font-sans">
+                      Sub-Judul / Label Tag
+                    </label>
+                    <Input
+                      type="text"
+                      value={slideSubtitle}
+                      onChange={(e) => setSlideSubtitle(e.target.value)}
+                      placeholder="Contoh: CATATAN PRAKTIK STUDIO"
+                      className="text-xs rounded-lg w-full"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-jp-ink font-sans">
+                      Kutipan Motivasi / Tips Maskot <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      required
+                      value={slideQuote}
+                      onChange={(e) => setSlideQuote(e.target.value)}
+                      placeholder="Tuliskan kutipan penyemangat belajar atau tips berkarya..."
+                      className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none font-prose leading-relaxed shadow-2xs"
+                    />
+                  </div>
+
+                  {/* CUSTOM COLOR PICKER */}
+                  <div className="space-y-1.5 pt-1">
+                    <ColorPicker
+                      label="Pilihan Aksen Warna (Kuratorial & Kustom)"
+                      value={slideAccent}
+                      onChange={(newHex) => setSlideAccent(newHex)}
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                    Sub-Judul / Label Tag
-                  </label>
-                  <Input
-                    type="text"
-                    value={slideSubtitle}
-                    onChange={(e) => setSlideSubtitle(e.target.value)}
-                    placeholder="Contoh: CATATAN PRAKTIK STUDIO"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                    Kutipan Motivasi / Tips Maskot <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={slideQuote}
-                    onChange={(e) => setSlideQuote(e.target.value)}
-                    placeholder="Tuliskan kutipan penyemangat belajar atau tips berkarya..."
-                    className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none font-prose"
-                  />
-                </div>
-
-                {/* POSE SELECTION MODE: OFFICIAL VS CUSTOM UPLOAD/URL */}
-                <div className="space-y-2.5 pt-1">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                {/* RIGHT COLUMN: MASCOT POSE SELECTION / UPLOAD */}
+                <div className="space-y-4 border-t md:border-t-0 md:border-l border-jp-gray-200 pt-4 md:pt-0 md:pl-6">
+                  <div className="space-y-2.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-jp-ink font-sans">
                       Sumber Gambar Pose Karakter
                     </label>
-                    <div className="flex items-center gap-1 rounded-md bg-jp-paper p-0.5 border border-jp-gray-200">
+                    <div className="grid grid-cols-2 gap-1 rounded-lg bg-jp-paper p-1 border border-jp-gray-200 shadow-2xs">
                       <button
                         type="button"
                         onClick={() => setSlideImageMode("official")}
                         className={cn(
-                          "rounded px-2.5 py-0.5 text-[11px] font-bold font-mono transition cursor-pointer",
+                          "rounded-md py-1.5 text-center text-xs font-bold font-mono transition cursor-pointer",
                           slideImageMode === "official"
                             ? "bg-jp-blue-900 text-white shadow-2xs"
-                            : "text-jp-gray-500 hover:text-jp-ink"
+                            : "text-jp-gray-600 hover:text-jp-ink"
                         )}
                       >
                         Pose Resmi
@@ -914,195 +1046,204 @@ export default function AdminPengaturanPage() {
                         type="button"
                         onClick={() => setSlideImageMode("custom")}
                         className={cn(
-                          "rounded px-2.5 py-0.5 text-[11px] font-bold font-mono transition cursor-pointer",
+                          "rounded-md py-1.5 text-center text-xs font-bold font-mono transition cursor-pointer",
                           slideImageMode === "custom"
                             ? "bg-jp-blue-900 text-white shadow-2xs"
-                            : "text-jp-gray-500 hover:text-jp-ink"
+                            : "text-jp-gray-600 hover:text-jp-ink"
                         )}
                       >
                         + Pose Kustom / Unggah
                       </button>
                     </div>
-                  </div>
 
-                  {slideImageMode === "official" ? (
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      {officialMascotPoses.map((pose) => (
-                        <button
-                          key={pose.src}
-                          type="button"
-                          onClick={() => setSlideImageUrl(pose.src)}
-                          className={cn(
-                            "flex flex-col items-center gap-1.5 rounded-lg border p-2 text-center transition cursor-pointer",
-                            slideImageUrl === pose.src
-                              ? "border-jp-blue-900 bg-jp-blue-50 ring-2 ring-jp-blue-900/30"
-                              : "border-jp-gray-200 bg-white hover:bg-jp-paper"
-                          )}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={pose.src}
-                            alt={pose.shortLabel}
-                            width={64}
-                            height={64}
-                            loading="lazy"
-                            decoding="async"
-                            className="h-16 object-contain"
-                          />
-                          <span className="text-[10px] font-bold text-jp-ink font-mono">
-                            {pose.shortLabel}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <ImageDualInput
-                      label="Unggah atau Masukkan URL Pose Peru-Chan Baru"
-                      value={slideImageUrl}
-                      onChange={setSlideImageUrl}
-                      placeholderUrl="https://domain.com/peruchan-pose-baru.png"
-                      helperGuideline="Format PNG transparan sangat direkomendasikan, resolusi minimal 300×300 px, ukuran maksimal 2 MB."
-                      minWidth={200}
-                      minHeight={200}
-                      maxSizeBytes={2 * 1024 * 1024}
-                      maxSizeLabel="2 MB"
-                      previewObjectFit="contain"
-                      previewClassName="h-16 w-16 bg-white p-1"
-                    />
-                  )}
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                    Pilihan Aksen Warna
-                  </label>
-                  <div className="flex gap-2">
-                    {(["blue", "brown", "lime"] as const).map((accent) => (
-                      <button
-                        key={accent}
-                        type="button"
-                        onClick={() => setSlideAccent(accent)}
-                        className={cn(
-                          "flex-1 rounded-lg py-2 text-xs font-bold border transition cursor-pointer uppercase font-mono",
-                          slideAccent === accent
-                            ? "border-jp-ink bg-jp-paper text-jp-ink shadow-xs"
-                            : "border-jp-gray-200 bg-white text-jp-gray-500 hover:bg-jp-gray-50"
-                        )}
-                      >
-                        {accent}
-                      </button>
-                    ))}
+                    {slideImageMode === "official" ? (
+                      <div className="space-y-2.5">
+                        <div className="grid grid-cols-2 gap-2.5">
+                          {officialMascotPoses.map((pose) => {
+                            const isSelected = slideImageUrl === pose.src;
+                            return (
+                              <button
+                                key={pose.src}
+                                type="button"
+                                onClick={() => setSlideImageUrl(pose.src)}
+                                className={cn(
+                                  "flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-center transition cursor-pointer shadow-2xs",
+                                  isSelected
+                                    ? "border-jp-blue-900 bg-jp-blue-50/70 ring-2 ring-jp-blue-900/30"
+                                    : "border-jp-gray-200 bg-white hover:bg-jp-paper"
+                                )}
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={pose.src}
+                                  alt={pose.shortLabel}
+                                  width={72}
+                                  height={72}
+                                  loading="lazy"
+                                  decoding="async"
+                                  className="h-16 w-16 object-contain"
+                                />
+                                <span className="text-[11px] font-bold text-jp-ink font-mono">
+                                  {pose.shortLabel}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      <ImageDualInput
+                        label="Unggah atau Masukkan URL Pose Peru-Chan Baru"
+                        value={slideImageUrl}
+                        onChange={setSlideImageUrl}
+                        placeholderUrl="https://domain.com/peruchan-pose-baru.png"
+                        helperGuideline="Format PNG transparan sangat direkomendasikan, resolusi minimal 300×300 px, ukuran maksimal 2 MB."
+                        minWidth={200}
+                        minHeight={200}
+                        maxSizeBytes={2 * 1024 * 1024}
+                        maxSizeLabel="2 MB"
+                        previewObjectFit="contain"
+                        previewClassName="h-16 w-16 bg-white p-1"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-jp-gray-100">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsSlideModalOpen(false)}
-                  className="rounded-lg"
-                >
-                  Batal
-                </Button>
-                <Button
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  onClick={handleSaveSlideModal}
-                  className="rounded-lg"
-                >
-                  Simpan Slide
-                </Button>
-              </div>
+            {/* STICKY MODAL FOOTER */}
+            <div className="flex items-center justify-end gap-2.5 border-t border-jp-gray-200 bg-jp-paper/80 px-6 py-3.5 shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsSlideModalOpen(false)}
+                className="rounded-lg text-xs font-bold cursor-pointer"
+              >
+                Batal
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={handleSaveSlideModal}
+                className="rounded-lg font-bold text-xs cursor-pointer shadow-xs"
+              >
+                Simpan Slide
+              </Button>
             </div>
           </Modal>
         )}
 
-        {/* MODAL EDIT / TAMBAH QUOTE TIPS (GAME LOADING STYLE) */}
+        {/* MODAL EDIT / TAMBAH QUOTE TIPS (2-COLUMN RESPONSIVE LAYOUT) */}
         {isQuoteModalOpen && (
-          <Modal isOpen={true} onClose={() => setIsQuoteModalOpen(false)} maxWidth="lg">
-            <div className="space-y-5 p-6 md:p-7 font-sans">
-              <div className="flex items-center justify-between border-b border-jp-gray-200 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-jp-blue-100 text-jp-blue-900">
-                    <MessageSquareQuote className="h-4 w-4" />
-                  </div>
-                  <Heading3 className="text-lg text-jp-ink">
+          <Modal isOpen={true} onClose={() => setIsQuoteModalOpen(false)} maxWidth="3xl">
+            {/* STICKY MODAL HEADER */}
+            <div className="flex items-center justify-between border-b border-jp-gray-200 bg-jp-paper/80 px-6 py-4 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-jp-blue-100 text-jp-blue-900 shadow-2xs">
+                  <MessageSquareQuote className="h-4 w-4" />
+                </div>
+                <div>
+                  <Heading3 className="text-base sm:text-lg text-jp-ink font-heading font-bold">
                     {editingQuoteId ? "Edit Kutipan Tips Peru-Chan" : "Tambah Kutipan Tips Baru"}
                   </Heading3>
+                  <p className="text-[11px] text-jp-gray-500 font-sans">
+                    Kutipan motivasi dan tips belajar seni beranda.
+                  </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsQuoteModalOpen(false)}
-                  className="text-jp-gray-400 hover:text-jp-ink p-1 cursor-pointer"
-                >
-                  <X className="h-4 w-4" />
-                </button>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsQuoteModalOpen(false)}
+                className="rounded-lg p-1.5 text-jp-gray-400 hover:bg-jp-gray-100 hover:text-jp-ink transition cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
 
-              <div className="space-y-4">
-                {/* QUOTE TEXT */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                    Teks Kutipan / Tips <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={quoteText}
-                    onChange={(e) => setQuoteText(e.target.value)}
-                    placeholder="Contoh: Jangan takut mencoba warna kontras di kanvasmu. Keberanian eksperimen adalah awal karakter rupa!"
-                    className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none font-heading italic text-base leading-relaxed"
-                  />
-                </div>
+            {/* SCROLLABLE 2-COLUMN MODAL BODY */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-7 space-y-6 font-sans">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                {/* LEFT COLUMN: TEXT CONTENT */}
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-jp-ink font-sans">
+                      Teks Kutipan / Tips <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={4}
+                      required
+                      value={quoteText}
+                      onChange={(e) => setQuoteText(e.target.value)}
+                      placeholder="Contoh: Jangan takut mencoba warna kontras di kanvasmu. Keberanian eksperimen adalah awal karakter rupa!"
+                      className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2.5 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none font-heading italic leading-relaxed shadow-2xs"
+                    />
+                  </div>
 
-                {/* CATEGORY BADGE & PRESETS */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-                    Label Kategori Tips
-                  </label>
-                  <Input
-                    type="text"
-                    value={quoteCategoryBadge}
-                    onChange={(e) => setQuoteCategoryBadge(e.target.value)}
-                    placeholder="Contoh: Catatan Santai Peru-Chan"
-                  />
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {quoteCategoryPresets.map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => setQuoteCategoryBadge(preset)}
-                        className={cn(
-                          "rounded-md px-2 py-0.5 text-[10px] font-bold font-mono transition cursor-pointer border",
-                          quoteCategoryBadge === preset
-                            ? "bg-jp-blue-900 text-white border-jp-blue-900"
-                            : "bg-jp-paper text-jp-gray-600 border-jp-gray-200 hover:bg-white"
-                        )}
-                      >
-                        {preset}
-                      </button>
-                    ))}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-jp-ink font-sans">
+                      Label Kategori Tips
+                    </label>
+                    <Input
+                      type="text"
+                      value={quoteCategoryBadge}
+                      onChange={(e) => setQuoteCategoryBadge(e.target.value)}
+                      placeholder="Contoh: Catatan Santai Peru-Chan"
+                      className="text-xs rounded-lg w-full"
+                    />
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {quoteCategoryPresets.map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setQuoteCategoryBadge(preset)}
+                          className={cn(
+                            "rounded-md px-2 py-0.5 text-[10px] font-bold font-mono transition cursor-pointer border",
+                            quoteCategoryBadge === preset
+                              ? "bg-jp-blue-900 text-white border-jp-blue-900 shadow-2xs"
+                              : "bg-jp-paper text-jp-gray-600 border-jp-gray-200 hover:bg-white"
+                          )}
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ACTIVE STATUS TOGGLE */}
+                  <div className="flex items-center gap-2 pt-2">
+                    <input
+                      type="checkbox"
+                      id="quoteActiveCheck"
+                      checked={quoteIsActive}
+                      onChange={(e) => setQuoteIsActive(e.target.checked)}
+                      className="h-4 w-4 rounded border-jp-gray-300 text-jp-blue-900 focus:ring-jp-blue-700 cursor-pointer"
+                    />
+                    <label
+                      htmlFor="quoteActiveCheck"
+                      className="text-xs font-bold text-jp-ink cursor-pointer font-sans"
+                    >
+                      Aktifkan kutipan ini dalam tayangan beranda
+                    </label>
                   </div>
                 </div>
 
-                {/* POSE SELECTION MODE: OFFICIAL VS CUSTOM UPLOAD/URL */}
-                <div className="space-y-2.5 pt-1">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
+                {/* RIGHT COLUMN: MASCOT POSE SELECTION */}
+                <div className="space-y-4 border-t md:border-t-0 md:border-l border-jp-gray-200 pt-4 md:pt-0 md:pl-6">
+                  <div className="space-y-2.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-jp-ink font-sans">
                       Pilih Pose Karakter Peru-Chan
                     </label>
-                    <div className="flex items-center gap-1 rounded-md bg-jp-paper p-0.5 border border-jp-gray-200">
+                    <div className="grid grid-cols-2 gap-1 rounded-lg bg-jp-paper p-1 border border-jp-gray-200 shadow-2xs">
                       <button
                         type="button"
                         onClick={() => setQuoteImageMode("official")}
                         className={cn(
-                          "rounded px-2.5 py-0.5 text-[11px] font-bold font-mono transition cursor-pointer",
+                          "rounded-md py-1.5 text-center text-xs font-bold font-mono transition cursor-pointer",
                           quoteImageMode === "official"
                             ? "bg-jp-blue-900 text-white shadow-2xs"
-                            : "text-jp-gray-500 hover:text-jp-ink"
+                            : "text-jp-gray-600 hover:text-jp-ink"
                         )}
                       >
                         Pose Resmi
@@ -1111,102 +1252,89 @@ export default function AdminPengaturanPage() {
                         type="button"
                         onClick={() => setQuoteImageMode("custom")}
                         className={cn(
-                          "rounded px-2.5 py-0.5 text-[11px] font-bold font-mono transition cursor-pointer",
+                          "rounded-md py-1.5 text-center text-xs font-bold font-mono transition cursor-pointer",
                           quoteImageMode === "custom"
                             ? "bg-jp-blue-900 text-white shadow-2xs"
-                            : "text-jp-gray-500 hover:text-jp-ink"
+                            : "text-jp-gray-600 hover:text-jp-ink"
                         )}
                       >
                         + Pose Kustom / Unggah
                       </button>
                     </div>
+
+                    {quoteImageMode === "official" ? (
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {officialMascotPoses.map((pose) => {
+                          const isSelected = quoteImageSrc === pose.src;
+                          return (
+                            <button
+                              key={pose.src}
+                              type="button"
+                              onClick={() => setQuoteImageSrc(pose.src)}
+                              className={cn(
+                                "flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-center transition cursor-pointer shadow-2xs",
+                                isSelected
+                                  ? "border-jp-blue-900 bg-jp-blue-50/70 ring-2 ring-jp-blue-900/30"
+                                  : "border-jp-gray-200 bg-white hover:bg-jp-paper"
+                              )}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={pose.src}
+                                alt={pose.shortLabel}
+                                width={64}
+                                height={64}
+                                loading="lazy"
+                                decoding="async"
+                                className="h-16 w-16 object-contain"
+                              />
+                              <span className="text-[11px] font-bold text-jp-ink font-mono">
+                                {pose.shortLabel}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <ImageDualInput
+                        label="Unggah atau Masukkan URL Pose Peru-Chan"
+                        value={quoteImageSrc}
+                        onChange={setQuoteImageSrc}
+                        placeholderUrl="https://domain.com/peruchan-pose.png"
+                        helperGuideline="Format PNG transparan sangat direkomendasikan, resolusi minimal 200×200 px, ukuran maksimal 2 MB."
+                        minWidth={128}
+                        minHeight={128}
+                        maxSizeBytes={2 * 1024 * 1024}
+                        maxSizeLabel="2 MB"
+                        previewObjectFit="contain"
+                        previewClassName="h-16 w-16 bg-white p-1"
+                      />
+                    )}
                   </div>
-
-                  {quoteImageMode === "official" ? (
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      {officialMascotPoses.map((pose) => (
-                        <button
-                          key={pose.src}
-                          type="button"
-                          onClick={() => setQuoteImageSrc(pose.src)}
-                          className={cn(
-                            "flex flex-col items-center gap-1.5 rounded-lg border p-2 text-center transition cursor-pointer",
-                            quoteImageSrc === pose.src
-                              ? "border-jp-blue-900 bg-jp-blue-50 ring-2 ring-jp-blue-900/30"
-                              : "border-jp-gray-200 bg-white hover:bg-jp-paper"
-                          )}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={pose.src}
-                            alt={pose.shortLabel}
-                            width={56}
-                            height={56}
-                            loading="lazy"
-                            decoding="async"
-                            className="h-14 object-contain"
-                          />
-                          <span className="text-[10px] font-bold text-jp-ink font-mono">
-                            {pose.shortLabel}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <ImageDualInput
-                      label="Unggah atau Masukkan URL Pose Peru-Chan Baru"
-                      value={quoteImageSrc}
-                      onChange={setQuoteImageSrc}
-                      placeholderUrl="https://domain.com/peruchan-custom.png"
-                      helperGuideline="Format PNG transparan sangat direkomendasikan, resolusi minimal 300×300 px, ukuran maksimal 2 MB."
-                      minWidth={200}
-                      minHeight={200}
-                      maxSizeBytes={2 * 1024 * 1024}
-                      maxSizeLabel="2 MB"
-                      previewObjectFit="contain"
-                      previewClassName="h-16 w-16 bg-white p-1"
-                    />
-                  )}
-                </div>
-
-                {/* ACTIVE STATUS TOGGLE */}
-                <div className="flex items-center gap-2 pt-1">
-                  <input
-                    type="checkbox"
-                    id="quoteActiveCheck"
-                    checked={quoteIsActive}
-                    onChange={(e) => setQuoteIsActive(e.target.checked)}
-                    className="h-4 w-4 rounded border-jp-gray-300 text-jp-blue-900 focus:ring-jp-blue-700 cursor-pointer"
-                  />
-                  <label
-                    htmlFor="quoteActiveCheck"
-                    className="text-xs font-bold text-jp-ink cursor-pointer"
-                  >
-                    Aktifkan kutipan ini dalam tayangan beranda
-                  </label>
                 </div>
               </div>
+            </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-jp-gray-100">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsQuoteModalOpen(false)}
-                  className="rounded-lg"
-                >
-                  Batal
-                </Button>
-                <Button
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  onClick={handleSaveQuoteModal}
-                  className="rounded-lg"
-                >
-                  Simpan Kutipan
-                </Button>
-              </div>
+            {/* STICKY MODAL FOOTER */}
+            <div className="flex items-center justify-end gap-2.5 border-t border-jp-gray-200 bg-jp-paper/80 px-6 py-3.5 shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsQuoteModalOpen(false)}
+                className="rounded-lg text-xs font-bold cursor-pointer"
+              >
+                Batal
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={handleSaveQuoteModal}
+                className="rounded-lg font-bold text-xs cursor-pointer shadow-xs"
+              >
+                Simpan Kutipan
+              </Button>
             </div>
           </Modal>
         )}

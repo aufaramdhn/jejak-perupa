@@ -4,7 +4,7 @@ export interface MascotSlideItem {
   subtitle: string;
   quote: string;
   imageUrl?: string;
-  accentColor: "blue" | "brown" | "lime";
+  accentColor: string;
   isActive: boolean;
   order: number;
 }
@@ -15,7 +15,7 @@ export interface PeruChanQuoteItem {
   categoryBadge: string;
   authorNote?: string;
   imageSrc: string;
-  accentColor?: "blue" | "brown" | "lime";
+  accentColor?: string;
   isActive: boolean;
   order: number;
 }

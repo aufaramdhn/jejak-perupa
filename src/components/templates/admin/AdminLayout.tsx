@@ -75,6 +75,20 @@ export function AdminLayout({
     }
   }, [isMounted, currentUser, router]);
 
+  // Mobile sidebar body scroll lock
+  useEffect(() => {
+    if (mobileSidebarOpen) {
+      const origHtml = document.documentElement.style.overflow;
+      const origBody = document.body.style.overflow;
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.documentElement.style.overflow = origHtml;
+        document.body.style.overflow = origBody;
+      };
+    }
+  }, [mobileSidebarOpen]);
+
   const handleLogout = async () => {
     const confirmed = await confirm({
       title: "Konfirmasi Keluar dari Panel Admin",
@@ -188,8 +202,11 @@ export function AdminLayout({
       {/* MOBILE BACKDROP */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 touch-none overscroll-none lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
+          onTouchMove={(e) => {
+            if (e.target === e.currentTarget) e.preventDefault();
+          }}
         />
       )}
 
@@ -457,10 +474,10 @@ export function AdminLayout({
         </header>
 
         {/* WORKSPACE PAGE CONTENT */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-8 lg:p-10 space-y-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 lg:p-10 space-y-6 sm:space-y-8 w-full max-w-full overflow-x-hidden">
           {/* OPTIONAL PAGE HEADER BANNER */}
           {(title || actionButton) && (
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-jp-gray-300 pb-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-jp-gray-300 pb-5">
               <div>
                 <h1 className="font-heading text-2xl md:text-3xl font-bold text-jp-ink">
                   {title}
@@ -472,7 +489,7 @@ export function AdminLayout({
                 )}
               </div>
 
-              {actionButton && <div>{actionButton}</div>}
+              {actionButton && <div className="w-full sm:w-auto shrink-0">{actionButton}</div>}
             </div>
           )}
 

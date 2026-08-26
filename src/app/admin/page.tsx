@@ -104,8 +104,12 @@ export default function AdminOverviewPage() {
       title="Ringkasan & Analitik Platform"
       subtitle="Pantau dinamika pembaca, perkembangan artikel kuratorial, dan evaluasi naskah masuk."
       actionButton={
-        <Link href="/admin/kurasi">
-          <Button variant="primary" size="sm" className="rounded-lg">
+        <Link href="/admin/kurasi" className="w-full sm:w-auto block">
+          <Button
+            variant="primary"
+            size="md"
+            className="rounded-lg w-full sm:w-auto py-2.5 px-4 h-10 font-bold text-xs sm:text-sm shadow-xs cursor-pointer"
+          >
             <Eye className="h-4 w-4 mr-1.5" />
             Buka Meja Kurasi (2)
           </Button>
@@ -114,7 +118,7 @@ export default function AdminOverviewPage() {
     >
       <div className="space-y-8 font-sans">
         {/* RELEASE PHASE STATUS BAR */}
-        <div className="rounded-xl border border-jp-blue-200 bg-jp-blue-50/70 p-4 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+        <div className="rounded-xl border border-jp-blue-200 bg-jp-blue-50/70 p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-jp-blue-900 text-white shadow-2xs">
               <SlidersHorizontal className="h-4 w-4" />
@@ -139,14 +143,14 @@ export default function AdminOverviewPage() {
             </div>
           </div>
 
-          <Link href="/admin/rilis">
+          <Link href="/admin/rilis" className="w-full sm:w-auto block shrink-0">
             <Button
               type="button"
               variant="outline"
-              size="sm"
-              className="rounded-lg text-xs border-jp-blue-300 bg-white text-jp-blue-900 hover:bg-jp-blue-50"
+              size="md"
+              className="rounded-lg text-xs sm:text-sm font-bold border-jp-blue-300 bg-white text-jp-blue-900 hover:bg-jp-blue-50 w-full sm:w-auto py-2.5 px-4 h-10 cursor-pointer"
             >
-              <SlidersHorizontal className="h-3 w-3 mr-1.5" />
+              <SlidersHorizontal className="h-4 w-4 mr-1.5" />
               Kelola Rilis & Sakelar Fitur
             </Button>
           </Link>
@@ -258,15 +262,15 @@ export default function AdminOverviewPage() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-2 items-start">
+          <div className="grid gap-6 lg:grid-cols-2 items-start">
             {/* TOP PERFORMING ARTICLES */}
-            <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-7 shadow-2xs space-y-5">
-              <div className="flex items-center justify-between border-b border-jp-gray-200 pb-3">
+            <div className="rounded-xl border border-jp-gray-300 bg-white p-4 sm:p-6 md:p-7 shadow-2xs space-y-4 sm:space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-jp-gray-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-blue-100 text-jp-blue-900 text-xs font-bold">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-blue-100 text-jp-blue-900 text-xs font-bold shrink-0">
                     <TrendingUp className="h-3.5 w-3.5" />
                   </span>
-                  <Heading3 className="text-lg text-jp-ink">
+                  <Heading3 className="text-base sm:text-lg text-jp-ink font-bold">
                     Artikel Paling Banyak Dipelajari
                   </Heading3>
                 </div>
@@ -278,33 +282,33 @@ export default function AdminOverviewPage() {
                 </Link>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5 sm:space-y-3">
                 {topArticles.map((art, idx) => (
                   <div
                     key={art.title}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-jp-gray-200 bg-jp-paper/30 p-3.5 hover:border-jp-blue-300 transition"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 rounded-lg border border-jp-gray-200 bg-jp-paper/30 p-3 sm:p-3.5 hover:border-jp-blue-300 transition"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="font-mono text-xs font-bold text-jp-gray-400 w-5 text-center shrink-0">
+                    <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 min-w-0">
+                      <span className="font-mono text-xs font-bold text-jp-gray-400 w-5 text-center shrink-0 pt-0.5 sm:pt-0">
                         #{idx + 1}
                       </span>
                       <div className="min-w-0">
-                        <div className="truncate text-xs font-bold text-jp-ink">
+                        <div className="text-xs font-bold text-jp-ink line-clamp-1">
                           {art.title}
                         </div>
-                        <div className="flex items-center gap-2 text-[11px] text-jp-gray-500 font-mono">
+                        <div className="flex items-center gap-2 text-[11px] text-jp-gray-500 font-mono mt-0.5">
                           <span>{art.category}</span>
-                          <span>·</span>
+                          <span>-</span>
                           <span>{art.readTime} baca</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="text-right shrink-0">
+                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-1 text-right shrink-0 border-t sm:border-t-0 border-jp-gray-100 pt-1.5 sm:pt-0">
                       <div className="font-mono text-xs font-bold text-jp-ink">
-                        {art.views.toLocaleString()}
+                        {art.views.toLocaleString()} tayangan
                       </div>
-                      <div className="text-[10px] font-bold text-green-700 font-mono">
+                      <div className="text-[10px] font-bold text-green-700 font-mono bg-green-50 px-1.5 py-0.5 rounded border border-green-200">
                         {art.trend}
                       </div>
                     </div>
@@ -314,13 +318,13 @@ export default function AdminOverviewPage() {
             </div>
 
             {/* PENDING CURATION QUEUE QUICK CARD */}
-            <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-7 shadow-2xs space-y-5">
-              <div className="flex items-center justify-between border-b border-jp-gray-200 pb-3">
+            <div className="rounded-xl border border-jp-gray-300 bg-white p-4 sm:p-6 md:p-7 shadow-2xs space-y-4 sm:space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-jp-gray-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-brown-100 text-jp-brown-900 text-xs font-bold">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-jp-brown-100 text-jp-brown-900 text-xs font-bold shrink-0">
                     <Eye className="h-3.5 w-3.5" />
                   </span>
-                  <Heading3 className="text-lg text-jp-ink">
+                  <Heading3 className="text-base sm:text-lg text-jp-ink font-bold">
                     Antrean Kurasi Editorial
                   </Heading3>
                 </div>
@@ -333,23 +337,25 @@ export default function AdminOverviewPage() {
                 {pendingSubmissions.map((sub) => (
                   <div
                     key={sub.id}
-                    className="rounded-lg border border-jp-gray-200 bg-jp-paper/40 p-4 space-y-2 hover:border-jp-brown-300 transition"
+                    className="rounded-lg border border-jp-gray-200 bg-jp-paper/40 p-3.5 sm:p-4 space-y-2.5 hover:border-jp-brown-300 transition"
                   >
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                       <span className="text-xs font-bold text-jp-ink">
                         {sub.title}
                       </span>
-                      <Badge variant="outline" size="sm">
+                      <Badge variant="outline" size="sm" className="self-start">
                         {sub.category}
                       </Badge>
                     </div>
-                    <div className="flex items-center justify-between text-[11px] text-jp-gray-500 font-mono">
-                      <span>Oleh: {sub.author}</span>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-jp-gray-500 font-mono">
+                      <span>Penulis: {sub.author}</span>
                       <span>{sub.date}</span>
                     </div>
+
                     <div className="pt-2 flex justify-end">
-                      <Link href="/admin/kurasi">
-                        <Button variant="outline" size="sm" className="rounded-lg text-xs py-1 h-7">
+                      <Link href="/admin/kurasi" className="w-full sm:w-auto">
+                        <Button variant="outline" size="sm" className="rounded-lg text-xs py-1 h-8 w-full sm:w-auto">
                           Buka & Tinjau Naskah →
                         </Button>
                       </Link>
