@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { useSiteSettings } from "@/lib/siteContext";
 import { Badge } from "@/components/atoms/typography/Badge";
 import {
@@ -128,14 +129,13 @@ export function PeruChanMascotSlider({
         <div className="flex items-center justify-center py-1">
           {currentSlide.imageUrl ? (
             <div className="relative flex h-44 sm:h-56 w-full items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={currentSlide.imageUrl}
                 alt={currentSlide.title}
                 width={320}
                 height={220}
-                loading="lazy"
-                decoding="async"
+                priority={currentIndex === 0}
+                sizes="(max-width: 640px) 280px, 320px"
                 className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-102"
               />
             </div>

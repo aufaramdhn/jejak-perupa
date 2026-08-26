@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { useSiteSettings } from "@/lib/siteContext";
 import { Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -118,16 +119,13 @@ export function PeruChanTipBanner({
             {/* MASCOT IMAGE */}
             <div className="flex justify-center shrink-0">
               {currentQuote.imageSrc && !imageError ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={currentQuote.imageSrc}
                   alt="Peru-Chan"
                   width={90}
                   height={90}
-                  loading="lazy"
-                  decoding="async"
                   className={cn(
-                    "max-h-20 sm:max-h-24 object-contain transition-all duration-300 transform",
+                    "max-h-20 sm:max-h-24 w-auto object-contain transition-all duration-300 transform",
                     isAnimating ? "scale-95 opacity-50" : "scale-100 opacity-100"
                   )}
                   onError={() => setImageError(true)}

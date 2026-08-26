@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Heading2, Heading3, Paragraph, SectionLabel } from "@/components/atoms/typography/Typography";
 import { Button } from "@/components/atoms/form/Button";
 import { ArrowRight } from "lucide-react";
@@ -51,16 +52,14 @@ export function ArtistHeroCard({
 
       <div className="mt-8 grid gap-8 md:grid-cols-[320px_1fr]">
         {/* FOTO */}
-        <div className="overflow-hidden rounded-xl bg-jp-brown-100/70 border border-jp-gray-300 shadow-2xs">
+        <div className="relative overflow-hidden rounded-xl bg-jp-brown-100/70 border border-jp-gray-300 shadow-2xs min-h-[300px]">
           {photoUrl && !imageError ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={photoUrl}
               alt={artistName}
               width={320}
               height={400}
-              loading="lazy"
-              decoding="async"
+              sizes="(max-width: 768px) 100vw, 320px"
               className="h-full min-h-[300px] w-full object-cover"
               onError={() => setImageError(true)}
             />

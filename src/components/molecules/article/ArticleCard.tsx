@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Clock } from "lucide-react";
 import { Badge } from "@/components/atoms/typography/Badge";
 import { cn } from "@/lib/utils";
@@ -40,16 +41,13 @@ export function ArticleCard({
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-jp-blue-50">
         {imageUrl && !imageError ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={imageUrl}
             alt={title}
-            width={640}
-            height={400}
-            loading="lazy"
-            decoding="async"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className={cn(
-              "h-full w-full object-cover transition-all duration-500 group-hover:scale-105",
+              "object-cover transition-all duration-500 group-hover:scale-105",
               imageLoaded ? "opacity-100" : "opacity-0"
             )}
             onLoad={() => setImageLoaded(true)}
