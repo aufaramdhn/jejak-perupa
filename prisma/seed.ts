@@ -12,7 +12,65 @@ import { communitiesSeeder } from "../src/lib/data/seeders/communitiesSeeder";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Memulai proses seeding data Jejak Perupa melalui Prisma ORM...");
+  console.log("Memulai proses konfigurasi database & seeding Jejak Perupa...");
+
+  // 0. KONFIGURASI SUPABASE STORAGE & ROW LEVEL SECURITY (RLS)
+  const sqlCommands = [
+    `INSERT INTO storage.buckets (id, name, public) VALUES ('jejak-perupa-media', 'jejak-perupa-media', true) ON CONFLICT (id) DO UPDATE SET public = true`,
+    `ALTER TABLE IF EXISTS public.articles DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.site_settings DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.categories DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.artists DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.artworks DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.glossary_terms DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.art_communities DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.art_events DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.art_submissions DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.users DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.tags DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.article_tags DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.artist_timelines DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.artist_relations DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.learning_paths DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.learning_nodes DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.quizzes DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.quiz_questions DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.user_progress DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.user_bookmarks DISABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS public.comments DISABLE ROW LEVEL SECURITY`,
+    `DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Access for jejak-perupa-media'
+      ) THEN
+        CREATE POLICY "Public Access for jejak-perupa-media" ON storage.objects FOR SELECT USING (bucket_id = 'jejak-perupa-media');
+      END IF;
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Upload for jejak-perupa-media'
+      ) THEN
+        CREATE POLICY "Public Upload for jejak-perupa-media" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'jejak-perupa-media');
+      END IF;
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Update for jejak-perupa-media'
+      ) THEN
+        CREATE POLICY "Public Update for jejak-perupa-media" ON storage.objects FOR UPDATE USING (bucket_id = 'jejak-perupa-media');
+      END IF;
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Delete for jejak-perupa-media'
+      ) THEN
+        CREATE POLICY "Public Delete for jejak-perupa-media" ON storage.objects FOR DELETE USING (bucket_id = 'jejak-perupa-media');
+      END IF;
+    END $$;`,
+  ];
+
+  for (const cmd of sqlCommands) {
+    try {
+      await prisma.$executeRawUnsafe(cmd);
+    } catch (err: any) {
+      console.warn(`Peringatan saat menjalankan SQL: ${err.message}`);
+    }
+  }
+  console.log("✓ Bucket storage & tabel-tabel PostgreSQL berhasil dikonfigurasi.");
 
   const studentPasswordHash = bcrypt.hashSync("PelajarSeni123!", 10);
   const curatorPasswordHash = bcrypt.hashSync("KuratorSeni123!", 10);
@@ -127,109 +185,111 @@ async function main() {
       quotes: siteSettingsSeeder.quotes as any,
     },
   });
-  console.log("✓ Site Settings & Pilar Platform berhasil di-seed.");
+  console.log("✓ Pengaturan situs default berhasil di-seed.");
 
   // 4. SEED ARTISTS DARI SEEDER
   const artistMap = new Map<string, string>();
-  for (const art of artistsSeeder) {
-    const fullBioMd = Array.isArray(art.fullBiography)
-      ? art.fullBiography.join("\n\n")
-      : (art.fullBiography || art.shortBio);
-
-    const created = await prisma.artist.upsert({
-      where: { slug: art.slug },
+  for (const a of artistsSeeder) {
+    const fullBio = Array.isArray(a.fullBiography) ? a.fullBiography.join("\n\n") : a.shortBio;
+    const createdArtist = await prisma.artist.upsert({
+      where: { slug: a.slug },
       update: {
-        name: art.name,
-        birthYear: art.birthYear,
-        deathYear: art.deathYear,
-        originCity: art.originCity,
-        artMovement: art.artMovement,
-        studioDiscipline: art.studioDiscipline,
-        shortBio: art.shortBio,
-        fullBiographyMarkdown: fullBioMd,
-        photoUrl: art.photoUrl || (art as any).imageUrl || null,
-        isFeatured: art.isFeatured || false,
+        name: a.name,
+        birthYear: a.birthYear,
+        deathYear: a.deathYear || null,
+        originCity: a.originCity,
+        artMovement: a.artMovement,
+        studioDiscipline: a.studioDiscipline,
+        shortBio: a.shortBio,
+        fullBiographyMarkdown: fullBio,
+        photoUrl: a.photoUrl || null,
+        isFeatured: true,
       },
       create: {
-        id: art.id,
-        name: art.name,
-        slug: art.slug,
-        birthYear: art.birthYear,
-        deathYear: art.deathYear,
-        originCity: art.originCity,
-        artMovement: art.artMovement,
-        studioDiscipline: art.studioDiscipline,
-        shortBio: art.shortBio,
-        fullBiographyMarkdown: fullBioMd,
-        photoUrl: art.photoUrl || (art as any).imageUrl || null,
-        isFeatured: art.isFeatured || false,
+        id: a.id,
+        name: a.name,
+        slug: a.slug,
+        birthYear: a.birthYear,
+        deathYear: a.deathYear || null,
+        originCity: a.originCity,
+        artMovement: a.artMovement,
+        studioDiscipline: a.studioDiscipline,
+        shortBio: a.shortBio,
+        fullBiographyMarkdown: fullBio,
+        photoUrl: a.photoUrl || null,
+        isFeatured: true,
       },
     });
-    artistMap.set(art.id, created.id);
-    artistMap.set(art.slug, created.id);
+    artistMap.set(a.slug, createdArtist.id);
+    artistMap.set(a.id, createdArtist.id);
   }
-  console.log(`✓ ${artistsSeeder.length} Maestro Seniman berhasil di-seed.`);
+  console.log(`✓ ${artistsSeeder.length} Seniman maestro berhasil di-seed.`);
 
   // 5. SEED ARTWORKS DARI SEEDER
-  for (const work of artworksSeeder) {
-    const dbArtistId = artistMap.get(work.artistId) || artistMap.get((work as any).artistSlug) || work.artistId;
-    const artistExists = await prisma.artist.findUnique({ where: { id: dbArtistId } });
-    if (artistExists) {
-      const closeLooking = {
-        focalPoints: work.focalPoints || [],
-        colorPalette: work.colorPalette || [],
-        description: work.description || "",
-      };
+  for (const art of artworksSeeder) {
+    let artistId = artistMap.get(art.artistId) || artistMap.get(art.slug) || (artistsSeeder[0] ? artistsSeeder[0].id : undefined);
 
+    if (artistId) {
       await prisma.artwork.upsert({
-        where: { slug: work.slug },
+        where: { slug: art.slug },
         update: {
-          title: work.title,
-          yearCreated: work.yearCreated,
-          mediumMaterial: work.mediumMaterial,
-          dimensions: work.dimensions,
-          currentLocation: work.currentLocation,
-          highResImageUrl: work.highResImageUrl,
-          thumbnailUrl: work.thumbnailUrl,
-          isFeatured: work.isFeatured || false,
-          closeLookingData: closeLooking as any,
+          title: art.title,
+          yearCreated: art.yearCreated,
+          mediumMaterial: art.mediumMaterial,
+          dimensions: art.dimensions || null,
+          currentLocation: art.currentLocation,
+          highResImageUrl: art.highResImageUrl,
+          thumbnailUrl: art.thumbnailUrl || null,
+          closeLookingData: {
+            focalPoints: art.focalPoints,
+            colorPalette: art.colorPalette,
+            description: art.description,
+          } as any,
+          isFeatured: art.isFeatured || false,
         },
         create: {
-          id: work.id,
-          artistId: dbArtistId,
-          title: work.title,
-          slug: work.slug,
-          yearCreated: work.yearCreated,
-          mediumMaterial: work.mediumMaterial,
-          dimensions: work.dimensions,
-          currentLocation: work.currentLocation,
-          highResImageUrl: work.highResImageUrl,
-          thumbnailUrl: work.thumbnailUrl,
-          isFeatured: work.isFeatured || false,
-          closeLookingData: closeLooking as any,
+          id: art.id,
+          artistId: artistId,
+          title: art.title,
+          slug: art.slug,
+          yearCreated: art.yearCreated,
+          mediumMaterial: art.mediumMaterial,
+          dimensions: art.dimensions || null,
+          currentLocation: art.currentLocation,
+          highResImageUrl: art.highResImageUrl,
+          thumbnailUrl: art.thumbnailUrl || null,
+          closeLookingData: {
+            focalPoints: art.focalPoints,
+            colorPalette: art.colorPalette,
+            description: art.description,
+          } as any,
+          isFeatured: art.isFeatured || false,
         },
       });
     }
   }
-  console.log(`✓ ${artworksSeeder.length} Karya Seni representatif berhasil di-seed.`);
+  console.log(`✓ ${artworksSeeder.length} Masterpiece karya seni berhasil di-seed.`);
 
   // 6. SEED ARTICLES DARI SEEDER
   for (const article of articlesSeeder) {
-    const dbCatId =
-      categoryMap.get(article.categoryId) ||
-      (await prisma.category.findFirst({ where: { name: article.category } }))?.id ||
-      categoryMap.values().next().value;
+    const dbCatId = categoryMap.get(article.categoryId) || categoryMap.get("sejarah-seni") || categoriesSeeder[0].id;
+
+    const contentMd = article.contentSections
+      ? article.contentSections
+          .map((sec) => `## ${sec.heading}\n\n${sec.paragraphs.join("\n\n")}`)
+          .join("\n\n")
+      : article.excerpt;
 
     if (dbCatId) {
-      const contentMd = article.contentSections
-        .map((s) => `## ${s.number}. ${s.heading}\n\n${s.paragraphs.join("\n\n")}`)
-        .join("\n\n");
-
       await prisma.article.upsert({
         where: { slug: article.slug },
         update: {
           title: article.title,
           excerpt: article.excerpt,
+          category: article.category,
+          categoryVariant: article.categoryVariant || "blue",
+          readTime: article.readTime || "5 menit membaca",
+          publishedDate: article.publishedDate || "26 Agustus 2026",
           contentMarkdown: contentMd,
           authorName: article.authorName,
           coverImageUrl: article.coverImageUrl,
@@ -238,8 +298,10 @@ async function main() {
           headerGradientHeight: article.headerGradientHeight,
           readTimeMinutes: article.readTimeMinutes,
           peruChanTip: article.peruChanTip,
+          peruChanTipTitle: article.peruChanTipTitle || "Catatan Editorial Peru-Chan",
           tocItems: article.tocItems as any,
           contentSections: article.contentSections as any,
+          references: article.references as any,
           relatedSlugs: article.relatedSlugs as any,
           status: ArticleStatus.PUBLISHED,
         },
@@ -248,6 +310,10 @@ async function main() {
           title: article.title,
           slug: article.slug,
           excerpt: article.excerpt,
+          category: article.category,
+          categoryVariant: article.categoryVariant || "blue",
+          readTime: article.readTime || "5 menit membaca",
+          publishedDate: article.publishedDate || "26 Agustus 2026",
           contentMarkdown: contentMd,
           authorName: article.authorName,
           coverImageUrl: article.coverImageUrl,
@@ -258,8 +324,10 @@ async function main() {
           categoryId: dbCatId,
           status: ArticleStatus.PUBLISHED,
           peruChanTip: article.peruChanTip,
+          peruChanTipTitle: article.peruChanTipTitle || "Catatan Editorial Peru-Chan",
           tocItems: article.tocItems as any,
           contentSections: article.contentSections as any,
+          references: article.references as any,
           relatedSlugs: article.relatedSlugs as any,
         },
       });
@@ -322,7 +390,7 @@ async function main() {
   }
   console.log(`✓ ${communitiesSeeder.length} Komunitas Seni berhasil di-seed.`);
 
-  console.log("\n Seluruh data Seeder Jejak Perupa berhasil di-seed ke basis data via Prisma!");
+  console.log("\n✓ Seluruh data Seeder Jejak Perupa berhasil di-seed ke basis data via Prisma!");
 }
 
 main()

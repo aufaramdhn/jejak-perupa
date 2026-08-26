@@ -71,17 +71,19 @@ model User {
   id            String          @id @default(uuid())
   name          String
   email         String          @unique
-  passwordHash  String?
+  passwordHash  String?         @map("password_hash")
   institution   String?
-  avatarUrl     String?
+  avatarUrl     String?         @map("avatar_url")
   role          Role            @default(READER)
   bio           String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @default(now()) @updatedAt @map("updated_at")
 
   bookmarks     UserBookmark[]
   progress      UserProgress[]
   comments      Comment[]
+
+  @@map("users")
 }
 
 // 2. KATEGORI DAN TAKSONOMI
@@ -90,21 +92,25 @@ model Category {
   name        String
   slug        String    @unique
   description String?
-  iconName    String?
-  colorHex    String?
-  orderIndex  Int       @default(0)
-  createdAt   DateTime  @default(now())
+  iconName    String?   @map("icon_name")
+  colorHex    String?   @map("color_hex")
+  orderIndex  Int       @default(0) @map("order_index")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
   articles    Article[]
+
+  @@map("categories")
 }
 
 model Tag {
   id        String       @id @default(uuid())
   name      String
   slug      String       @unique
-  createdAt DateTime     @default(now())
+  createdAt DateTime     @default(now()) @map("created_at")
 
   articles  ArticleTag[]
+
+  @@map("tags")
 }
 
 // 3. ARTIKEL EDUKASI
@@ -113,31 +119,37 @@ model Article {
   title                 String
   slug                  String             @unique
   excerpt               String
-  contentMarkdown       String
-  authorName            String?
-  coverImageUrl         String?
-  headerBgImageUrl      String?
-  headerGradientOpacity Int?               @default(85)
-  headerGradientHeight  Int?               @default(80)
-  readTimeMinutes       Int                @default(5)
-  peruChanTip           String?
-  peruChanStickerType   PeruChanSticker    @default(PROFILE)
-  tocItems              Json?
-  contentSections       Json?
-  relatedSlugs          Json?
+  category              String?            @map("category")
+  categoryVariant       String?            @default("blue") @map("category_variant")
+  readTime              String?            @default("5 menit membaca") @map("read_time")
+  readTimeMinutes       Int                @default(5) @map("read_time_minutes")
+  publishedDate         String?            @map("published_date")
+  authorName            String?            @map("author_name")
+  coverImageUrl         String?            @map("cover_image_url")
+  headerBgImageUrl      String?            @map("header_bg_image_url")
+  headerGradientOpacity Int?               @default(85) @map("header_gradient_opacity")
+  headerGradientHeight  Int?               @default(80) @map("header_gradient_height")
+  featuredArtistSlug    String?            @map("featured_artist_slug")
+  peruChanTip           String?            @map("peru_chan_tip")
+  peruChanTipTitle      String?            @map("peru_chan_tip_title")
+  peruChanStickerType   PeruChanSticker    @default(PROFILE) @map("peru_chan_sticker_type")
+  tocItems              Json?              @map("toc_items")
+  contentSections       Json?              @map("content_sections")
+  references            Json?              @map("references")
+  relatedSlugs          Json?              @map("related_slugs")
+  contentMarkdown       String?            @default("") @map("content_markdown")
   status                ArticleStatus      @default(PUBLISHED)
-  viewCount             Int                @default(0)
-  publishedAt           DateTime?
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
+  viewCount             Int                @default(0) @map("view_count")
+  publishedAt           DateTime?          @map("published_at")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @default(now()) @updatedAt @map("updated_at")
 
-  categoryId            String
-  category              Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId            String?            @map("category_id")
+  categoryRel           Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-  featuredArtistId      String?
+  featuredArtistId      String?            @map("featured_artist_id")
   featuredArtist        Artist?            @relation(fields: [featuredArtistId], references: [id], onDelete: SetNull)
 
-  references            ArticleReference[]
   tags                  ArticleTag[]
   bookmarks             UserBookmark[]
   quizzes               Quiz[]
@@ -147,100 +159,94 @@ model Article {
 
   @@index([slug])
   @@index([categoryId])
-}
-
-model ArticleReference {
-  id          String     @id @default(uuid())
-  articleId   String
-  article     Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  citation    String
-  sourceType  SourceType @default(BOOK)
-  externalUrl String?
-  orderIndex  Int        @default(0)
-
-  @@index([articleId])
+  @@map("articles")
 }
 
 model ArticleTag {
-  articleId String
-  tagId     String
+  articleId String  @map("article_id")
+  tagId     String  @map("tag_id")
   article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
   tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([articleId, tagId])
+  @@map("article_tags")
 }
 
 // 4. SENIMAN DAN KARYA SENI
 model Artist {
-  id                   String           @id @default(uuid())
-  name                 String
-  slug                 String           @unique
-  birthYear            Int
-  deathYear            Int?
-  originCity           String
-  artMovement          String
-  studioDiscipline     String
-  shortBio             String
-  fullBiographyMarkdown String
-  photoUrl             String?
-  isFeatured           Boolean          @default(false)
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+  id                    String           @id @default(uuid())
+  name                  String
+  slug                  String           @unique
+  birthYear             Int              @map("birth_year")
+  deathYear             Int?             @map("death_year")
+  originCity            String           @map("origin_city")
+  artMovement           String           @map("art_movement")
+  studioDiscipline      String           @map("studio_discipline")
+  shortBio              String           @map("short_bio")
+  fullBiographyMarkdown String           @map("full_biography_markdown")
+  photoUrl              String?          @map("photo_url")
+  isFeatured            Boolean          @default(false) @map("is_featured")
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @default(now()) @updatedAt @map("updated_at")
 
-  artworks             Artwork[]
-  timelines            ArtistTimeline[]
-  articles             Article[]
-  outgoingRelations    ArtistRelation[] @relation("FromArtist")
-  incomingRelations    ArtistRelation[] @relation("ToArtist")
+  artworks              Artwork[]
+  timelines             ArtistTimeline[]
+  articles              Article[]
+  outgoingRelations     ArtistRelation[] @relation("FromArtist")
+  incomingRelations     ArtistRelation[] @relation("ToArtist")
 
   @@index([slug])
+  @@map("artists")
 }
 
 model ArtistTimeline {
   id          String   @id @default(uuid())
-  artistId    String
+  artistId    String   @map("artist_id")
   artist      Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
   year        Int
   title       String
   description String
-  imageUrl    String?
-  orderIndex  Int      @default(0)
+  imageUrl    String?  @map("image_url")
+  orderIndex  Int      @default(0) @map("order_index")
 
   @@index([artistId])
+  @@map("artist_timelines")
 }
 
 model ArtistRelation {
   id           String       @id @default(uuid())
-  fromArtistId String
-  toArtistId   String
+  fromArtistId String       @map("from_artist_id")
+  toArtistId   String       @map("to_artist_id")
   fromArtist   Artist       @relation("FromArtist", fields: [fromArtistId], references: [id], onDelete: Cascade)
   toArtist     Artist       @relation("ToArtist", fields: [toArtistId], references: [id], onDelete: Cascade)
-  relationType RelationType @default(PENGARUH)
+  relationType RelationType @default(PENGARUH) @map("relation_type")
   description  String
 
   @@index([fromArtistId])
   @@index([toArtistId])
+  @@map("artist_relations")
 }
 
 model Artwork {
   id               String         @id @default(uuid())
-  artistId         String
+  artistId         String         @map("artist_id")
   artist           Artist         @relation(fields: [artistId], references: [id], onDelete: Cascade)
   title            String
   slug             String         @unique
-  yearCreated      Int
-  mediumMaterial   String
+  yearCreated      Int            @map("year_created")
+  mediumMaterial   String         @map("medium_material")
   dimensions       String?
-  currentLocation  String
-  highResImageUrl  String
-  thumbnailUrl     String?
-  closeLookingData Json?          // Berisi focal points, color palette, composition notes
-  isFeatured       Boolean        @default(false)
-  createdAt        DateTime       @default(now())
+  currentLocation  String         @map("current_location")
+  highResImageUrl  String         @map("high_res_image_url")
+  thumbnailUrl     String?        @map("thumbnail_url")
+  closeLookingData Json?          @map("close_looking_data")
+  isFeatured       Boolean        @default(false) @map("is_featured")
+  createdAt        DateTime       @default(now()) @map("created_at")
 
   glossaryTerms    GlossaryTerm[]
 
   @@index([artistId])
+  @@map("artworks")
 }
 
 // 5. KAMUS DAN GLOSARIUM SENI
@@ -248,21 +254,22 @@ model GlossaryTerm {
   id                     String    @id @default(uuid())
   term                   String
   slug                   String    @unique
-  phoneticSpelling       String?
-  letterGroup            String    // A-Z
+  phoneticSpelling       String?   @map("phonetic_spelling")
+  letterGroup            String    @map("letter_group")
   category               String
-  definitionShort        String
-  definitionFullMarkdown String
-  createdAt              DateTime  @default(now())
+  definitionShort        String    @map("definition_short")
+  definitionFullMarkdown String    @map("definition_full_markdown")
+  createdAt              DateTime  @default(now()) @map("created_at")
 
-  exampleArtworkId       String?
+  exampleArtworkId       String?   @map("example_artwork_id")
   exampleArtwork         Artwork?  @relation(fields: [exampleArtworkId], references: [id], onDelete: SetNull)
 
-  relatedArticleId       String?
+  relatedArticleId       String?   @map("related_article_id")
   relatedArticle         Article?  @relation(fields: [relatedArticleId], references: [id], onDelete: SetNull)
 
   @@index([slug])
   @@index([letterGroup])
+  @@map("glossary_terms")
 }
 
 // 6. KURIKULUM JALUR BELAJAR
@@ -270,88 +277,96 @@ model LearningPath {
   id          String         @id @default(uuid())
   title       String
   slug        String         @unique
-  targetLevel TargetLevel    @default(PEMULA)
+  targetLevel TargetLevel    @default(PEMULA) @map("target_level")
   description String
-  iconName    String?
-  orderIndex  Int            @default(0)
-  createdAt   DateTime       @default(now())
+  iconName    String?        @map("icon_name")
+  orderIndex  Int            @default(0) @map("order_index")
+  createdAt   DateTime       @default(now()) @map("created_at")
 
   nodes       LearningNode[]
+
+  @@map("learning_paths")
 }
 
 model LearningNode {
   id          String         @id @default(uuid())
-  pathId      String
+  pathId      String         @map("path_id")
   path        LearningPath   @relation(fields: [pathId], references: [id], onDelete: Cascade)
-  articleId   String
+  articleId   String         @map("article_id")
   article     Article        @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  orderIndex  Int            @default(0)
-  isMandatory Boolean        @default(true)
+  orderIndex  Int            @default(0) @map("order_index")
+  isMandatory Boolean        @default(true) @map("is_mandatory")
 
   userProgress UserProgress[]
 
   @@index([pathId])
+  @@map("learning_nodes")
 }
 
 // 7. KUIS DAN INTERAKSI PENGGUNA
 model Quiz {
   id        String         @id @default(uuid())
-  articleId String
+  articleId String         @map("article_id")
   article   Article        @relation(fields: [articleId], references: [id], onDelete: Cascade)
   title     String
-  createdAt DateTime       @default(now())
+  createdAt DateTime       @default(now()) @map("created_at")
 
   questions QuizQuestion[]
 
   @@index([articleId])
+  @@map("quizzes")
 }
 
 model QuizQuestion {
   id                     String          @id @default(uuid())
-  quizId                 String
+  quizId                 String          @map("quiz_id")
   quiz                   Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  questionText           String
-  optionsJson            Json            // Array opsi jawaban string
-  correctIndex           Int
-  explanationText        String
-  peruChanReactionSticker PeruChanSticker @default(HAPPY)
+  questionText           String          @map("question_text")
+  optionsJson            Json            @map("options_json")
+  correctIndex           Int             @map("correct_index")
+  explanationText        String          @map("explanation_text")
+  peruChanReactionSticker PeruChanSticker @default(HAPPY) @map("peru_chan_reaction_sticker")
 
   @@index([quizId])
+  @@map("quiz_questions")
 }
 
 model UserProgress {
   id             String       @id @default(uuid())
-  userId         String
+  userId         String       @map("user_id")
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  learningNodeId String
+  learningNodeId String       @map("learning_node_id")
   learningNode   LearningNode @relation(fields: [learningNodeId], references: [id], onDelete: Cascade)
-  completedAt    DateTime     @default(now())
+  completedAt    DateTime     @default(now()) @map("completed_at")
 
   @@unique([userId, learningNodeId])
+  @@map("user_progress")
 }
 
 model UserBookmark {
   id        String   @id @default(uuid())
-  userId    String
+  userId    String   @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  articleId String
+  articleId String   @map("article_id")
   article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@unique([userId, articleId])
+  @@map("user_bookmarks")
 }
 
 model Comment {
   id          String   @id @default(uuid())
-  userId      String
+  userId      String   @map("user_id")
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  articleId   String
+  articleId   String   @map("article_id")
   article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
   content     String
-  isApproved  Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  isApproved  Boolean  @default(true) @map("is_approved")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   @@index([articleId])
+  @@map("comments")
 }
 
 // 8. ACARA, KOMUNITAS, DAN KONTRIBUSI
@@ -359,17 +374,18 @@ model ArtEvent {
   id              String    @id @default(uuid())
   title           String
   slug            String    @unique
-  eventType       EventType @default(PAMERAN)
+  eventType       EventType @default(PAMERAN) @map("event_type")
   organizer       String
-  startDate       DateTime
-  endDate         DateTime
-  venueName       String
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime  @map("end_date")
+  venueName       String    @map("venue_name")
   city            String
-  coverUrl        String?
-  registrationUrl String?
-  createdAt       DateTime  @default(now())
+  coverUrl        String?   @map("cover_url")
+  registrationUrl String?   @map("registration_url")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   @@index([slug])
+  @@map("art_events")
 }
 
 model ArtCommunity {
@@ -379,45 +395,50 @@ model ArtCommunity {
   city        String
   province    String
   description String
-  logoUrl     String?
-  websiteUrl  String?
-  createdAt   DateTime @default(now())
+  logoUrl     String?  @map("logo_url")
+  websiteUrl  String?  @map("website_url")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   @@index([slug])
+  @@map("art_communities")
 }
 
 model ArtSubmission {
   id               String           @id @default(uuid())
-  contributorName  String
-  contributorEmail String
+  contributorName  String           @map("contributor_name")
+  contributorEmail String           @map("contributor_email")
   title            String
-  contentMarkdown  String
+  contentMarkdown  String           @map("content_markdown")
   status           SubmissionStatus @default(PENDING)
-  reviewerNotes    String?
-  createdAt        DateTime         @default(now())
+  reviewerNotes    String?          @map("reviewer_notes")
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  @@map("art_submissions")
 }
 
 // 9. PENGATURAN DAN KONFIGURASI SITUS
 model SiteSetting {
   id                String   @id @default("primary")
-  siteName          String   @default("JEJAK PERUPA")
-  siteTagline       String   @default("Catatan Perjalanan Pelajar Seni Rupa")
-  logoInitials      String   @default("JP")
-  logoImageUrl      String?  @default("")
-  faviconUrl        String?  @default("")
-  heroEditionBadge  String?  @default("Arsip & Wacana Seni Rupa Nusantara : Edisi 2026")
-  heroHeadline      String?  @default("Catatan Perjalanan & Arsip Seni Rupa Nusantara")
-  heroDescription   String?  @default("Eksplorasi bahasa rupa, analisis mendalam karya maestro Indonesia, ensiklopedia istilah, serta kurikulum mandiri bagi pelajar, pendidik, dan pengkaji seni.")
-  aboutTitle        String?  @default("Tentang Platform Jejak Perupa")
-  aboutVision       String?  @default("Membuka gerbang eksplorasi bahasa rupa, apresiasi karya maestro nusantara, dan dokumentasi kuratorial yang bersahabat bagi pembelajar seni di seluruh Indonesia.")
-  aboutMission      String?  @default("Menghadirkan arsip yang hidup, interaktif, dan mudah diakses tanpa mengurangi wibawa akademik dan nilai estetika seni rupa Indonesia.")
-  aboutPhilosophy   String?  @default("Seni rupa dipandang bukan hanya sebagai keterampilan teknis menghasilkan bentuk, melainkan medium dialektika pemikiran, catatan zaman, dan ekspresi batin manusia.")
-  aboutPillars      Json?
-  contactEmail      String?  @default("redaksi@jejakperupa.id")
-  instagramUrl      String?  @default("https://instagram.com/jejakperupa")
-  footerDescription String?  @default("Platform edukasi terbuka, dokumentasi kuratorial, dan ensiklopedia visual seni rupa Indonesia.")
-  footerCopyright   String?  @default("Hak Cipta © 2026 Jejak Perupa. Seluruh hak cipta dilindungi.")
-  mascotSlides      Json?
-  quotes            Json?
-  updatedAt         DateTime @updatedAt
+  siteName          String   @default("JEJAK PERUPA") @map("site_name")
+  siteTagline       String   @default("Catatan Perjalanan Pelajar Seni Rupa") @map("site_tagline")
+  logoInitials      String   @default("JP") @map("logo_initials")
+  logoImageUrl      String?  @default("") @map("logo_image_url")
+  faviconUrl        String?  @default("") @map("favicon_url")
+  heroEditionBadge  String?  @default("Arsip & Wacana Seni Rupa Nusantara : Edisi 2026") @map("hero_edition_badge")
+  heroHeadline      String?  @default("Catatan Perjalanan & Arsip Seni Rupa Nusantara") @map("hero_headline")
+  heroDescription   String?  @default("Eksplorasi bahasa rupa, analisis mendalam karya maestro Indonesia, ensiklopedia istilah, serta kurikulum mandiri bagi pelajar, pendidik, dan pengkaji seni.") @map("hero_description")
+  aboutTitle        String?  @default("Tentang Platform Jejak Perupa") @map("about_title")
+  aboutVision       String?  @default("Membuka gerbang eksplorasi bahasa rupa, apresiasi karya maestro nusantara, dan dokumentasi kuratorial yang bersahabat bagi pembelajar seni di seluruh Indonesia.") @map("about_vision")
+  aboutMission      String?  @default("Menghadirkan arsip yang hidup, interaktif, dan mudah diakses tanpa mengurangi wibawa akademik dan nilai estetika seni rupa Indonesia.") @map("about_mission")
+  aboutPhilosophy   String?  @default("Seni rupa dipandang bukan hanya sebagai keterampilan teknis menghasilkan bentuk, melainkan medium dialektika pemikiran, catatan zaman, dan ekspresi batin manusia.") @map("about_philosophy")
+  aboutPillars      Json?    @map("about_pillars")
+  contactEmail      String?  @default("redaksi@jejakperupa.id") @map("contact_email")
+  instagramUrl      String?  @default("https://instagram.com/jejakperupa") @map("instagram_url")
+  footerDescription String?  @default("Platform edukasi terbuka, dokumentasi kuratorial, dan ensiklopedia visual seni rupa Indonesia.") @map("footer_description")
+  footerCopyright   String?  @default("Hak Cipta © 2026 Jejak Perupa. Seluruh hak cipta dilindungi.") @map("footer_copyright")
+  mascotSlides      Json?    @map("mascot_slides")
+  quotes            Json?    @map("quotes")
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("site_settings")
 }
