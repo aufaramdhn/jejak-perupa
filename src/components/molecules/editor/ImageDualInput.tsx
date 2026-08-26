@@ -10,7 +10,10 @@ import {
   CheckCircle2,
   AlertTriangle,
   Info,
+  Loader2,
+  CloudUpload,
 } from "lucide-react";
+import { uploadImageToSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
 export interface ImageDualInputProps {
@@ -19,11 +22,12 @@ export interface ImageDualInputProps {
   onChange: (value: string) => void;
   placeholderUrl?: string;
   helperGuideline?: string;
+  folder?: string;
   minWidth?: number;
   minHeight?: number;
   recommendedAspect?: string;
-  maxSizeBytes?: number; // default 2MB = 2097152
-  maxSizeLabel?: string; // "2 MB"
+  maxSizeBytes?: number; // default 5MB
+  maxSizeLabel?: string; // "5 MB"
   acceptedTypes?: string; // default "image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon"
   className?: string;
   previewClassName?: string;
@@ -36,11 +40,12 @@ export function ImageDualInput({
   onChange,
   placeholderUrl = "https://domain.com/gambar.jpg",
   helperGuideline,
+  folder = "uploads",
   minWidth,
   minHeight,
   recommendedAspect,
-  maxSizeBytes = 2 * 1024 * 1024,
-  maxSizeLabel = "2 MB",
+  maxSizeBytes = 5 * 1024 * 1024,
+  maxSizeLabel = "5 MB",
   acceptedTypes = "image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon,image/vnd.microsoft.icon",
   className,
   previewClassName,
@@ -50,6 +55,8 @@ export function ImageDualInput({
   const [activeTab, setActiveTab] = useState<"file" | "url">("file");
   const [urlInput, setUrlInput] = useState(value && !value.startsWith("data:") ? value : "");
   const [dragOver, setDragOver] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatusText, setUploadStatusText] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [validationWarning, setValidationWarning] = useState<string | null>(null);
   const [imageMeta, setImageMeta] = useState<{ width: number; height: number; sizeKb?: number } | null>(null);
@@ -103,7 +110,7 @@ export function ImageDualInput({
     img.src = value;
   }, [value, minWidth, minHeight]);
 
-  const handleFileProcess = (file: File) => {
+  const handleFileProcess = async (file: File) => {
     setValidationError(null);
     setValidationWarning(null);
 
@@ -128,28 +135,62 @@ export function ImageDualInput({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
-      setImageMeta({
-        width: 0,
-        height: 0,
-        sizeKb: Math.round(file.size / 1024),
-      });
-      onChange(dataUrl);
-    };
-    reader.readAsDataURL(file);
+    // Attempt upload to Supabase Storage if configured
+    if (isSupabaseConfigured()) {
+      try {
+        setIsUploading(true);
+        setUploadStatusText("Mengunggah berkas ke Supabase Cloud Storage...");
+        const publicUrl = await uploadImageToSupabase(file, folder);
+        setImageMeta({
+          width: 0,
+          height: 0,
+          sizeKb: Math.round(file.size / 1024),
+        });
+        onChange(publicUrl);
+        setUrlInput(publicUrl);
+        setUploadStatusText(null);
+      } catch (err: any) {
+        console.error("Supabase Upload Error:", err);
+        setValidationError(
+          err.message || "Gagal mengunggah ke Cloud Storage. Menggunakan penyimpanan draf lokal..."
+        );
+        // Fallback to FileReader
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataUrl = e.target?.result as string;
+          onChange(dataUrl);
+        };
+        reader.readAsDataURL(file);
+      } finally {
+        setIsUploading(false);
+      }
+    } else {
+      // Local development fallback (FileReader base64)
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        setImageMeta({
+          width: 0,
+          height: 0,
+          sizeKb: Math.round(file.size / 1024),
+        });
+        onChange(dataUrl);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
+    if (isUploading) return;
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleFileProcess(e.dataTransfer.files[0]);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isUploading) return;
     if (e.target.files && e.target.files.length > 0) {
       handleFileProcess(e.target.files[0]);
     }
@@ -230,14 +271,16 @@ export function ImageDualInput({
         <div
           onDragOver={(e) => {
             e.preventDefault();
-            setDragOver(true);
+            if (!isUploading) setDragOver(true);
           }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => !isUploading && fileInputRef.current?.click()}
           className={cn(
             "relative flex flex-col items-center justify-center rounded-xl border border-dashed p-6 text-center transition cursor-pointer",
-            dragOver
+            isUploading
+              ? "border-jp-blue-400 bg-jp-blue-50/40 pointer-events-none cursor-wait"
+              : dragOver
               ? "border-jp-blue-900 bg-jp-blue-50/70"
               : "border-jp-gray-300 bg-white hover:border-jp-blue-600 hover:bg-jp-paper/40"
           )}
@@ -247,19 +290,34 @@ export function ImageDualInput({
             type="file"
             accept={acceptedTypes}
             onChange={handleFileChange}
+            disabled={isUploading}
             className="hidden"
           />
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-jp-blue-50 text-jp-blue-900 mb-2">
-            <Upload className="h-5 w-5" />
-          </div>
+          {isUploading ? (
+            <div className="flex flex-col items-center justify-center space-y-2 py-1">
+              <Loader2 className="h-7 w-7 text-jp-blue-700 animate-spin" />
+              <div className="text-xs font-bold text-jp-blue-900 font-sans">
+                {uploadStatusText || "Mengunggah berkas ke Cloud Storage..."}
+              </div>
+              <p className="text-[11px] text-jp-gray-500 font-mono">
+                Menghasilkan tautan CDN publik permanen...
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-jp-blue-50 text-jp-blue-900 mb-2">
+                <Upload className="h-5 w-5" />
+              </div>
 
-          <div className="text-xs md:text-sm font-semibold text-jp-ink">
-            Pilih berkas dari perangkat atau seret gambar ke area ini
-          </div>
-          <p className="mt-1 text-xs text-jp-gray-500 font-mono">
-            Format: PNG, JPG, WebP, SVG, atau ICO (Maksimal {maxSizeLabel})
-          </p>
+              <div className="text-xs md:text-sm font-semibold text-jp-ink">
+                Pilih berkas dari perangkat atau seret gambar ke area ini
+              </div>
+              <p className="mt-1 text-xs text-jp-gray-500 font-mono">
+                Format: PNG, JPG, WebP, SVG, atau ICO (Maksimal {maxSizeLabel})
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <div className="flex gap-2">
@@ -290,7 +348,7 @@ export function ImageDualInput({
         </div>
       )}
 
-      {/* GUIDELINE HELPER TEXT (UNBOXED PLAIN EDITORIAL CAPTION) */}
+      {/* GUIDELINE HELPER TEXT */}
       {helperGuideline && (
         <p className="flex items-start gap-1.5 text-xs text-jp-gray-600 font-prose leading-relaxed">
           <Info className="h-3.5 w-3.5 text-jp-blue-700 shrink-0 mt-0.5" />
@@ -354,7 +412,12 @@ export function ImageDualInput({
                   {imageMeta.sizeKb} KB
                 </span>
               ) : null}
-              {value.startsWith("data:") ? (
+              {value.includes("supabase.co") ? (
+                <span className="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-sans font-medium flex items-center gap-1">
+                  <CloudUpload className="h-3 w-3 text-emerald-600" />
+                  Supabase Cloud CDN
+                </span>
+              ) : value.startsWith("data:") ? (
                 <span className="bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 font-sans font-medium">
                   Berkas Lokal
                 </span>

@@ -7,39 +7,14 @@ import { CategorySection } from "@/components/organisms/exploration/CategorySect
 import { ArtistHeroCard } from "@/components/organisms/artwork/ArtistHeroCard";
 import { PeruChanTipBanner } from "@/components/organisms/peruchan/PeruChanTipBanner";
 import { PeruChanMascotSlider } from "@/components/organisms/peruchan/PeruChanMascotSlider";
-import { Heading1, Heading2, Paragraph, SectionLabel } from "@/components/atoms/typography/Typography";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Heading1, Heading2, Paragraph } from "@/components/atoms/typography/Typography";
+import { artService } from "@/lib/services/artService";
+import { ArrowRight } from "lucide-react";
 
 export default function HomePage() {
-  const latestArticles = [
-    {
-      title: "Mengenal Program Studi Seni Rupa Murni",
-      slug: "seni-rupa-murni",
-      excerpt:
-        "Mengenal Seni Rupa Murni, kehidupan perkuliahannya, 4 studio utama, hingga berbagai kemungkinan profesi setelah lulus.",
-      category: "Pendidikan",
-      categoryVariant: "lime" as const,
-      readTime: "8 menit membaca",
-    },
-    {
-      title: "Mengenal Dasar Teknik Cat Air",
-      slug: "dasar-teknik-cat-air",
-      excerpt:
-        "Prinsip dasar yang penting dipelajari sebelum bereksperimen dengan transparansi pigmen dan basah-pada-kering.",
-      category: "Teknik",
-      categoryVariant: "blue" as const,
-      readTime: "6 menit membaca",
-    },
-    {
-      title: "Mengapa Kita Perlu Belajar Sejarah Seni?",
-      slug: "mengapa-belajar-sejarah-seni",
-      excerpt:
-        "Sejarah bukan sekadar menghafal tahun dan nama tokoh, melainkan membaca evolusi gagasan dan peradaban manusia.",
-      category: "Sejarah",
-      categoryVariant: "brown" as const,
-      readTime: "7 menit membaca",
-    },
-  ];
+  const allArticles = artService.getAllArticles();
+  const latestArticles = allArticles.slice(0, 3);
+  const featuredArtist = artService.getFeaturedArtists()[0] || artService.getAllArtists()[0];
 
   return (
     <MainPublicLayout>
@@ -85,14 +60,16 @@ export default function HomePage() {
       <CategorySection />
 
       {/* SENIMAN UNGGULAN */}
-      <div id="seniman">
-        <ArtistHeroCard
-          artistName="Raden Saleh"
-          lifespan="1811 - 1880"
-          bio="Pelopor seni lukis modern Indonesia dengan gaya Romantisisme dramatis. Perjalanan panjangnya di Eropa dan dedikasinya pada identitas nusantara meninggalkan jejak abadi dalam sejarah seni rupa dunia."
-          profileHref="/seniman/raden-saleh"
-        />
-      </div>
+      {featuredArtist && (
+        <div id="seniman">
+          <ArtistHeroCard
+            artistName={featuredArtist.name}
+            lifespan={`${featuredArtist.birthYear} - ${featuredArtist.deathYear || "Sekarang"}`}
+            bio={featuredArtist.shortBio}
+            profileHref={`/seniman/${featuredArtist.slug}`}
+          />
+        </div>
+      )}
 
       {/* TIPS PERU-CHAN BANNER */}
       <PeruChanTipBanner

@@ -12,6 +12,11 @@ import { Button } from "@/components/atoms/form/Button";
 import { Skeleton } from "@/components/atoms/feedback/Skeleton";
 import { PeruChanCallout } from "@/components/molecules/peruchan/PeruChanCallout";
 import { artService } from "@/lib/services/artService";
+import { articlesData, type ArticleFullData } from "@/lib/data/articles";
+import { artistsData } from "@/lib/data/artists";
+import { glossaryData } from "@/lib/data/glossary";
+import { agendaEventsData } from "@/lib/data/agenda";
+import { submissionsSeeder } from "@/lib/data/seeders/submissionsSeeder";
 import { useModal } from "@/lib/modalContext";
 import { useFeatureFlags } from "@/lib/featureFlagsContext";
 import {
@@ -25,8 +30,6 @@ import {
   Sparkles,
   ArrowRight,
   TrendingUp,
-  AlertCircle,
-  Layers,
   SlidersHorizontal,
   ShieldCheck,
 } from "lucide-react";
@@ -36,68 +39,41 @@ export default function AdminOverviewPage() {
   const { alert } = useModal();
   const { activePreset, enabledCount, totalCount } = useFeatureFlags();
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  const [articles, setArticles] = useState<ArticleFullData[]>(articlesData);
+  const [artists, setArtists] = useState(artistsData);
+  const [terms, setTerms] = useState(glossaryData);
+  const [events, setEvents] = useState(agendaEventsData);
 
   useEffect(() => {
+    setMounted(true);
+    setArticles(artService.getAllArticles());
+    setArtists(artService.getAllArtists());
+    setTerms(artService.getAllGlossaryTerms());
+    setEvents(artService.getAllEvents());
+
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 450);
     return () => clearTimeout(timer);
   }, []);
 
-  const articles = artService.getAllArticles();
-  const artists = artService.getAllArtists();
-  const terms = artService.getAllGlossaryTerms();
-  const events = artService.getAllEvents();
+  const topArticles = articles.slice(0, 4).map((art, idx) => ({
+    title: art.title,
+    category: art.category,
+    views: 3420 - idx * 480,
+    readTime: `${art.readTimeMinutes || 7} mnt`,
+    trend: `+${24 - idx * 5}%`,
+  }));
 
-  // Top 5 popular articles
-  const topArticles = [
-    {
-      title: "Mengenal Program Studi Seni Rupa Murni",
-      category: "Pendidikan Seni",
-      views: 3420,
-      readTime: "8 mnt",
-      trend: "+24%",
-    },
-    {
-      title: "Romantisisme Raden Saleh: Antara Jawa dan Eropa",
-      category: "Sejarah Seni",
-      views: 2890,
-      readTime: "7 mnt",
-      trend: "+19%",
-    },
-    {
-      title: "Mengenal Dasar Teknik Cat Air & Transparansi",
-      category: "Teknik Seni",
-      views: 2410,
-      readTime: "6 mnt",
-      trend: "+12%",
-    },
-    {
-      title: "Mengapa Kita Perlu Belajar Sejarah Seni?",
-      category: "Teori Seni",
-      views: 1980,
-      readTime: "7 mnt",
-      trend: "+8%",
-    },
-  ];
-
-  // Quick submissions queue
-  const pendingSubmissions = [
-    {
-      id: "sub-1",
-      title: "Membaca Garis dan Ekspresi dalam Sketsa Revolusi",
-      author: "Dian Sastro (Mahasiswa Seni Rupa)",
-      category: "Sejarah Seni",
-      date: "24 Agustus 2026",
-    },
-    {
-      id: "sub-2",
-      title: "Eksplorasi Pigmen Alami Tanah Liat di Studio Keramik",
-      author: "Budi Santoso (Pengkaji Kriya)",
-      category: "Teknik Seni",
-      date: "22 Agustus 2026",
-    },
-  ];
+  const pendingSubmissions = submissionsSeeder.slice(0, 2).map((sub) => ({
+    id: sub.id,
+    title: sub.title,
+    author: sub.author,
+    category: sub.category,
+    date: sub.date,
+  }));
 
   return (
     <AdminLayout
@@ -171,8 +147,8 @@ export default function AdminOverviewPage() {
                 </span>
               </div>
               <div className="flex items-baseline justify-between">
-                <span className="font-mono text-3xl font-extrabold text-jp-ink">
-                  {articles.length}
+                <span suppressHydrationWarning className="font-mono text-3xl font-extrabold text-jp-ink">
+                  {mounted ? articles.length : articlesData.length}
                 </span>
                 <span className="text-xs font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-md border border-green-200">
                   +4 Bulan Ini
@@ -190,8 +166,8 @@ export default function AdminOverviewPage() {
                 </span>
               </div>
               <div className="flex items-baseline justify-between">
-                <span className="font-mono text-3xl font-extrabold text-jp-ink">
-                  {artists.length}
+                <span suppressHydrationWarning className="font-mono text-3xl font-extrabold text-jp-ink">
+                  {mounted ? artists.length : artistsData.length}
                 </span>
                 <span className="text-xs font-bold text-jp-brown-800 bg-jp-brown-50 px-2 py-0.5 rounded-md border border-jp-brown-200">
                   Arsip Lengkap
@@ -209,8 +185,8 @@ export default function AdminOverviewPage() {
                 </span>
               </div>
               <div className="flex items-baseline justify-between">
-                <span className="font-mono text-3xl font-extrabold text-jp-ink">
-                  {terms.length}
+                <span suppressHydrationWarning className="font-mono text-3xl font-extrabold text-jp-ink">
+                  {mounted ? terms.length : glossaryData.length}
                 </span>
                 <span className="text-xs font-bold text-jp-gray-600 bg-jp-paper px-2 py-0.5 rounded-md border border-jp-gray-200">
                   Entri Bahasa Rupa

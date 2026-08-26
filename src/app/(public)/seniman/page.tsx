@@ -27,7 +27,13 @@ export default function SenimanDirectoryPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const movements = ["Semua", "Romantisisme", "Ekspresionisme", "Realisme dan Naturalisme"];
+  const movements = React.useMemo(() => {
+    const set = new Set<string>();
+    allArtists.forEach((a) => {
+      if (a.artMovement) set.add(a.artMovement);
+    });
+    return ["Semua", ...Array.from(set)];
+  }, [allArtists]);
 
   const handleMovementChange = (mov: string) => {
     startTransition(() => {

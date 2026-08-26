@@ -1,80 +1,28 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Heading2, Heading3, Paragraph } from "@/components/atoms/typography/Typography";
-import { Input } from "@/components/atoms/form/Input";
-import { Select } from "@/components/atoms/form/Select";
-import { Button } from "@/components/atoms/form/Button";
-import dynamic from "next/dynamic";
-import { Badge } from "@/components/atoms/typography/Badge";
-import { RichEditorSkeleton } from "@/components/molecules/editor/RichEditorSkeleton";
-import { PeruChanCallout } from "@/components/molecules/peruchan/PeruChanCallout";
 import { QuickAddCategoryModal } from "@/components/molecules/modals/QuickAddCategoryModal";
-import { ImageDualInput } from "@/components/molecules/editor/ImageDualInput";
 import { useCategories } from "@/lib/categoryContext";
 import { useModal } from "@/lib/modalContext";
 import { useAuth } from "@/lib/auth";
+import { History } from "lucide-react";
+import { artService } from "@/lib/services/artService";
+import { type ArticleFullData } from "@/lib/data/articles";
 
-const RichTextEditor = dynamic(
-  () => import("@/components/molecules/editor/RichTextEditor").then((mod) => mod.RichTextEditor),
-  {
-    ssr: false,
-    loading: () => <RichEditorSkeleton />,
-  }
-);
 import {
-  Send,
-  CheckCircle,
-  ArrowLeft,
-  Plus,
-  Trash2,
-  ChevronUp,
-  ChevronDown,
-  Eye,
-  Edit3,
-  BookOpen,
-  Clock,
-  FileText,
-  RotateCcw,
-  Sparkles,
-  Save,
-  AlertTriangle,
-  History,
-  Home,
-  ChevronRight,
-  User,
-  Calendar,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  ChapterItem,
+  ReferenceItem,
+  ArticleEditorFormData,
+  ArticleGeneralMetaSection,
+  ArticleCoverMediaSection,
+  ArticleChaptersManager,
+  ArticleReferencesManager,
+  ArticleEditorStickyBar,
+  ArticleEditorPreview,
+} from "./articles/editor";
 
-export interface ChapterItem {
-  id: string;
-  title: string;
-  content: string;
-}
-
-export interface ReferenceItem {
-  id: string;
-  citation: string;
-}
-
-export interface ArticleEditorFormData {
-  title: string;
-  authorName: string;
-  category: string;
-  readTime: string;
-  excerpt: string;
-  coverImageUrl?: string;
-  headerBgImageUrl?: string;
-  headerGradientOpacity?: number;
-  headerGradientHeight?: number;
-  chapters: ChapterItem[];
-  references: ReferenceItem[];
-  peruChanTip?: string;
-  peruChanTheme?: "blue" | "brown" | "lime";
-}
+export type { ChapterItem, ReferenceItem, ArticleEditorFormData };
 
 export interface ArticleEditorFormProps {
   mode: "admin-create" | "admin-edit" | "public-contribute";
@@ -84,6 +32,74 @@ export interface ArticleEditorFormProps {
   onSave?: (data: ArticleEditorFormData, isDraft: boolean) => Promise<void> | void;
 }
 
+const DUMMY_ARTICLES_POOL = [
+  {
+    title: "Dinamika Estetika Seni Rupa Modern Indonesia: Antara Tradisi dan Emansipasi",
+    excerpt: "Menelusuri lintasan dialektika seni rupa modern Indonesia, transformasi gaya lukisan pasca-kolonial, serta rekonstruksi identitas kebudayaan nusantara.",
+    authorPrefix: "Kurator Riset",
+    category: "Sejarah Seni",
+    readTime: "7 menit membaca",
+    coverImageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=80",
+    headerBgImageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=1600&auto=format&fit=crop&q=80",
+    peruChanTip: "Pelajari struktur karya seni rupa secara menyeluruh dari goresan sketsa hingga narasi kuratorialnya!",
+    peruChanTheme: "blue" as const,
+    chapters: [
+      {
+        title: "Prolog: Jejak Awal Bahasa Rupa Nusantara",
+        content: "<p>Seni rupa modern di Indonesia tidak lahir dari ruang hampa, melainkan bertumpu pada sedimentasi visual tradisi yang kaya. Dari ornamen candi hingga seni wayang, prinsip komposisi ruang selalu mencerminkan kosmologi masyarakat pemiliknya.</p><p>Perjumpaan dengan teknik akademis Barat pada abad ke-19 memantik dialektika baru yang mempertemukan sensibilitas lokal dengan perspektif linier.</p>",
+        peruChanTip: "Cermati bagaimana seniman nusantara menggabungkan bidang datar dekoratif dengan ilusi kedalaman ruang tiga dimensi!",
+        peruChanTheme: "blue" as const,
+      },
+      {
+        title: "Gerakan Romantisisme & Raden Saleh",
+        content: "<p>Raden Saleh Syarif Bustaman menjadi figur perintis yang mengintegrasikan teknik cat minyak akademis Eropa dengan jiwa perlawanan Timur. Sapuan kuasnya yang dramatis dalam lukisan perburuan dan peristiwa sejarah menjadi tonggak emansipasi visual.</p><p>Melalui kepekaan pencahayaan chiaroscuro dan dinamika komposisi diagonal, karya-karyanya melampaui sekadar representasi realisme visual.</p>",
+        peruChanTip: "Perhatikan ketebalan impasto dan kontras cahaya chiaroscuro pada bagian figur utama untuk menangkap letupan emosi karya!",
+        peruChanTheme: "brown" as const,
+      },
+      {
+        title: "Epilog: Menemukan Kembali Identitas Visual",
+        content: "<p>Memasuki era kontemporer, tantangan perupa muda adalah bagaimana mendefinisikan kembali identitas lokal tanpa terjebak dalam eksotisme semu. Eksplorasi medium baru, instalasi spasial, dan keterlibatan komunitas membuka horizon baru pembelajaran seni.</p>",
+        peruChanTip: "Selalu berani bereksperimen dengan percampuran medium dan jangan takut membuat sapuan kuas pertama yang ekspresif!",
+        peruChanTheme: "lime" as const,
+      },
+    ],
+    references: [
+      "Soekmono, R. (1973). Pengantar Sejarah Kebudayaan Indonesia 2. Kanisius.",
+      "Holt, Claire. (1967). Art in Indonesia: Continuities and Change. Cornell University Press.",
+      "Kusnadi. (1980). Sejarah Seni Rupa Indonesia. Balai Pustaka.",
+    ],
+  },
+  {
+    title: "Mendalami Teknik Impasto & Ekspresionisme Murni Bersama Maestro Affandi",
+    excerpt: "Membedah teknik melukis langsung dari tube cat, sapuan plototan jari yang dinamis, dan letupan energi spiritual dalam karya maestro seni lukis Indonesia.",
+    authorPrefix: "Eksplorasi Studio",
+    category: "Teknik & Eksplorasi",
+    readTime: "6 menit membaca",
+    coverImageUrl: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=80",
+    headerBgImageUrl: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=1600&auto=format&fit=crop&q=80",
+    peruChanTip: "Ekspresionisme menuntut keberanian intuisi dan kepekaan ritme gerak tubuh saat menggoreskan warna!",
+    peruChanTheme: "brown" as const,
+    chapters: [
+      {
+        title: "Karakter Garis dan Tubuh yang Menyatu",
+        content: "<p>Bagi Affandi, proses melukis adalah kerja kinetik yang melibatkan seluruh energi raga. Menggantikan kuas dengan telapak tangan dan remasan jemari langsung di atas kanvas basah menghasilkan tekstur impasto bergelombang yang khas.</p><p>Garis-garis meliuk yang tercipta bukan sekadar kontur visual, melainkan jejak getaran emosi sang pelukis saat berhadapan langsung dengan objek hidup.</p>",
+        peruChanTip: "Gunakan pasta tekstur atau cat akrilik tebal jika ingin melatih teknik impasto tanpa merusak kuas halus!",
+        peruChanTheme: "brown" as const,
+      },
+      {
+        title: "Simbol Matahari, Kaki, dan Tangan",
+        content: "<p>Dalam repertoar visual Affandi, matahari menjadi personifikasi daya hidup semesta, tangan melambangkan daya cipta berkarya, dan kaki merefleksikan pijakan kerakyatan yang kokoh.</p><p>Trinitas simbolik ini berulang kali hadir dalam potret diri maupun pemandangan alam perdesaan nusantara.</p>",
+        peruChanTip: "Kembangkan simbol personal dalam karya seni Anda sebagai penanda narasi autentik perjalanan berkarya!",
+        peruChanTheme: "lime" as const,
+      },
+    ],
+    references: [
+      "Affandi. (1987). Catatan Seorang Pelukis. Yayasan Affandi.",
+      "Spanjaard, Helena. (2000). Exploring Modern Indonesian Art. KIT Publishers.",
+    ],
+  },
+];
+
 export function ArticleEditorForm({
   mode,
   initialData,
@@ -92,90 +108,83 @@ export function ArticleEditorForm({
   onSave,
 }: ArticleEditorFormProps) {
   const router = useRouter();
+  const { alert, confirm } = useModal();
+  const { categories } = useCategories();
   const { currentUser } = useAuth();
-  const { confirm, alert } = useModal();
 
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Form Fields
+  // 1. Form States
   const [title, setTitle] = useState(initialData?.title || "");
   const [authorName, setAuthorName] = useState(
-    initialData?.authorName ||
-      (currentUser ? `${currentUser.name} (${currentUser.institution || currentUser.roleLabel})` : "")
+    initialData?.authorName || currentUser?.name || "Kurator Redaksi Jejak Perupa"
   );
   const [category, setCategory] = useState(initialData?.category || "Pendidikan Seni");
-  const [readTime, setReadTime] = useState(initialData?.readTime || "6 menit membaca");
+  const [readTime, setReadTime] = useState(initialData?.readTime || "5 menit membaca");
   const [excerpt, setExcerpt] = useState(initialData?.excerpt || "");
   const [coverImageUrl, setCoverImageUrl] = useState(initialData?.coverImageUrl || "");
   const [headerBgImageUrl, setHeaderBgImageUrl] = useState(initialData?.headerBgImageUrl || "");
-  const [headerGradientOpacity, setHeaderGradientOpacity] = useState(initialData?.headerGradientOpacity ?? 85);
-  const [headerGradientHeight, setHeaderGradientHeight] = useState(initialData?.headerGradientHeight ?? 80);
+  const [headerGradientOpacity, setHeaderGradientOpacity] = useState<number>(
+    initialData?.headerGradientOpacity ?? 85
+  );
+  const [headerGradientHeight, setHeaderGradientHeight] = useState<number>(
+    initialData?.headerGradientHeight ?? 80
+  );
+
   const [chapters, setChapters] = useState<ChapterItem[]>(
     initialData?.chapters && initialData.chapters.length > 0
       ? initialData.chapters
-      : [{ id: "chap-1", title: "", content: "" }]
+      : [
+          {
+            id: "chap-init-1",
+            title: "Pengantar & Latar Belakang",
+            content: "<p>Tuliskan pengantar wacana atau pendahuluan topik di sini...</p>",
+          },
+        ]
   );
+
   const [references, setReferences] = useState<ReferenceItem[]>(
     initialData?.references || []
   );
+
   const [peruChanTip, setPeruChanTip] = useState(initialData?.peruChanTip || "");
-  const [peruChanTheme, setPeruChanTheme] = useState<"blue" | "brown" | "lime">(
-    initialData?.peruChanTheme || "blue"
-  );
+  const [peruChanTheme, setPeruChanTheme] = useState<"blue" | "brown" | "lime">("blue");
 
-  const { approvedCategories } = useCategories();
-
-  // Auto-Save & Recovery State
-  const [draftDetected, setDraftDetected] = useState<boolean>(false);
-  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
+  // 2. Draft Autosave & Recovery
   const [lastAutoSaveTime, setLastAutoSaveTime] = useState<string | null>(null);
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const isInitialMount = useRef(true);
+  const [draftDetected, setDraftDetected] = useState(false);
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Validation Errors State
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Dynamic Category Options from Context
-  const categoryOptions = useMemo(() => {
-    return approvedCategories.map((c) => ({
-      value: c.name,
-      label: c.name,
-    }));
-  }, [approvedCategories]);
-
-  // 1. CHECK FOR SAVED DRAFT ON MOUNT
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.data && (parsed.data.title || parsed.data.excerpt || parsed.data.chapters?.some((c: any) => c.title || c.content))) {
-          // If we are creating or if the draft has different data
-          setDraftDetected(true);
-          setDraftSavedAt(parsed.savedAt || "Sesi Sebelumnya");
+        if (parsed && (parsed.title || (parsed.chapters && parsed.chapters.length > 0))) {
+          if (!initialData?.title) {
+            setDraftDetected(true);
+            setDraftSavedAt(parsed.savedAt || "Sesi Sebelumnya");
+          }
         }
       }
     } catch (e) {
-      console.warn("Failed to check draft", e);
+      console.warn("Gagal memeriksa draf lokal", e);
     }
-  }, [storageKey]);
+  }, [storageKey, initialData]);
 
-  // 2. AUTO-SAVE TO LOCALSTORAGE AS USER TYPES
+  // Debounced auto-save
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
 
-    const timer = setTimeout(() => {
-      try {
-        const payload = {
-          savedAt: new Date().toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          data: {
+    autoSaveTimerRef.current = setTimeout(() => {
+      if (title.trim() || excerpt.trim()) {
+        try {
+          const now = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+          const payload = {
             title,
             authorName,
             category,
@@ -189,16 +198,19 @@ export function ArticleEditorForm({
             references,
             peruChanTip,
             peruChanTheme,
-          },
-        };
-        localStorage.setItem(storageKey, JSON.stringify(payload));
-        setLastAutoSaveTime(payload.savedAt);
-      } catch (e) {
-        console.warn("Auto-save failed", e);
+            savedAt: now,
+          };
+          localStorage.setItem(storageKey, JSON.stringify(payload));
+          setLastAutoSaveTime(now);
+        } catch (e) {
+          console.warn("Gagal menyimpan draf otomatis", e);
+        }
       }
-    }, 800);
+    }, 1500);
 
-    return () => clearTimeout(timer);
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
   }, [
     title,
     authorName,
@@ -216,50 +228,87 @@ export function ArticleEditorForm({
     storageKey,
   ]);
 
-  // RESTORE DRAFT ACTION
   const handleRestoreDraft = () => {
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.data) {
-          setTitle(parsed.data.title || "");
-          setAuthorName(parsed.data.authorName || "");
-          setCategory(parsed.data.category || "Pendidikan Seni");
-          setReadTime(parsed.data.readTime || "6 menit membaca");
-          setExcerpt(parsed.data.excerpt || "");
-          setCoverImageUrl(parsed.data.coverImageUrl || "");
-          setHeaderBgImageUrl(parsed.data.headerBgImageUrl || "");
-          setHeaderGradientOpacity(parsed.data.headerGradientOpacity ?? 85);
-          setHeaderGradientHeight(parsed.data.headerGradientHeight ?? 80);
-          if (parsed.data.chapters && parsed.data.chapters.length > 0) {
-            setChapters(parsed.data.chapters);
-          }
-          if (parsed.data.references) {
-            setReferences(parsed.data.references);
-          }
-          setPeruChanTip(parsed.data.peruChanTip || "");
-          setPeruChanTheme(parsed.data.peruChanTheme || "blue");
-          setDraftDetected(false);
-          setErrors({});
-          alert({
-            title: "Draf Berhasil Dipulihkan",
-            message: `Seluruh tulisan dari sesi ${draftSavedAt} telah dimuat kembali ke lembar editor.`,
-            type: "success",
-          });
-        }
+        if (parsed.title) setTitle(parsed.title);
+        if (parsed.authorName) setAuthorName(parsed.authorName);
+        if (parsed.category) setCategory(parsed.category);
+        if (parsed.readTime) setReadTime(parsed.readTime);
+        if (parsed.excerpt) setExcerpt(parsed.excerpt);
+        if (parsed.coverImageUrl) setCoverImageUrl(parsed.coverImageUrl);
+        if (parsed.headerBgImageUrl) setHeaderBgImageUrl(parsed.headerBgImageUrl);
+        if (parsed.headerGradientOpacity !== undefined) setHeaderGradientOpacity(parsed.headerGradientOpacity);
+        if (parsed.headerGradientHeight !== undefined) setHeaderGradientHeight(parsed.headerGradientHeight);
+        if (parsed.chapters) setChapters(parsed.chapters);
+        if (parsed.references) setReferences(parsed.references);
+        if (parsed.peruChanTip) setPeruChanTip(parsed.peruChanTip);
+        if (parsed.peruChanTheme) setPeruChanTheme(parsed.peruChanTheme);
+
+        setDraftDetected(false);
+        alert({
+          title: "Draf Dipulihkan",
+          message: "Data naskah Anda dari sesi sebelumnya berhasil dimuat kembali.",
+          type: "success",
+        });
       }
     } catch (e) {
-      console.warn("Failed to restore draft", e);
+      console.warn("Gagal memulihkan draf", e);
     }
   };
 
-  // DISCARD DRAFT ACTION
-  const handleDiscardDraft = async () => {
+  const handleDiscardDraft = () => {
+    localStorage.removeItem(storageKey);
+    setDraftDetected(false);
+  };
+
+  // 3. Quick Fill Dev Feature
+  const handleQuickFillDev = () => {
+    const randomTopic = DUMMY_ARTICLES_POOL[Math.floor(Math.random() * DUMMY_ARTICLES_POOL.length)];
+    const randomAuthor = `${randomTopic.authorPrefix} ${currentUser?.name || "Redaksi Jejak Perupa"}`;
+
+    setTitle(randomTopic.title);
+    setAuthorName(randomAuthor);
+    setCategory(randomTopic.category);
+    setReadTime(randomTopic.readTime);
+    setExcerpt(randomTopic.excerpt);
+    setCoverImageUrl(randomTopic.coverImageUrl);
+    setHeaderBgImageUrl(randomTopic.headerBgImageUrl);
+    setHeaderGradientOpacity(85);
+    setHeaderGradientHeight(80);
+    setPeruChanTip(randomTopic.peruChanTip);
+    setPeruChanTheme(randomTopic.peruChanTheme);
+
+    const mappedChapters: ChapterItem[] = randomTopic.chapters.map((ch, idx) => ({
+      id: `chap-${Date.now()}-${idx + 1}`,
+      title: ch.title,
+      content: ch.content,
+      peruChanTip: ch.peruChanTip,
+      peruChanTheme: ch.peruChanTheme,
+    }));
+    setChapters(mappedChapters);
+
+    const mappedRefs: ReferenceItem[] = randomTopic.references.map((r, idx) => ({
+      id: `ref-${Date.now()}-${idx + 1}`,
+      citation: r,
+    }));
+    setReferences(mappedRefs);
+
+    setErrors({});
+    alert({
+      title: "Data Naskah Berhasil Diisi!",
+      message: `Form terisi otomatis dengan materi kuratorial "${randomTopic.title}".`,
+      type: "success",
+    });
+  };
+
+  const handleClearForm = async () => {
     const confirmed = await confirm({
-      title: "Buang Draf Sebelumnya?",
-      message: "Draf yang tersimpan di memori peramban akan dihapus secara permanen.",
-      confirmLabel: "Ya, Buang Draf",
+      title: "Kosongkan Formulir?",
+      message: "Seluruh isian naskah dan bab akan dikosongkan. Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Kosongkan",
       cancelLabel: "Batal",
       variant: "danger",
       iconType: "trash",
@@ -267,76 +316,67 @@ export function ArticleEditorForm({
 
     if (confirmed) {
       localStorage.removeItem(storageKey);
-      setDraftDetected(false);
-      setDraftSavedAt(null);
-    }
-  };
-
-  // CLEAR ALL FORM FIELDS
-  const handleClearForm = async () => {
-    const confirmed = await confirm({
-      title: "Bersihkan Seluruh Lembar Kerja?",
-      message: "Semua isian judul, bab, dan rujukan akan dikosongkan kembali.",
-      confirmLabel: "Bersihkan",
-      cancelLabel: "Batal",
-      variant: "warning",
-      iconType: "trash",
-    });
-
-    if (confirmed) {
       setTitle("");
       setExcerpt("");
       setCoverImageUrl("");
-      setChapters([{ id: `chap-${Date.now()}`, title: "", content: "" }]);
+      setHeaderBgImageUrl("");
+      setChapters([
+        {
+          id: `chap-${Date.now()}-1`,
+          title: "Pengantar & Latar Belakang",
+          content: "<p>Tuliskan pengantar naskah...</p>",
+        },
+      ]);
       setReferences([]);
       setPeruChanTip("");
       setErrors({});
-      localStorage.removeItem(storageKey);
-      setLastAutoSaveTime(null);
     }
   };
 
-  // CHAPTER MANAGEMENT
+  // 4. Chapter Management
   const handleAddChapter = () => {
-    const newChap: ChapterItem = {
-      id: `chap-${Date.now()}`,
-      title: "",
-      content: "",
-    };
-    setChapters([...chapters, newChap]);
+    const newIdx = chapters.length + 1;
+    setChapters((prev) => [
+      ...prev,
+      {
+        id: `chap-${Date.now()}-${newIdx}`,
+        title: `Bab ${newIdx}: Subjudul Pembahasan`,
+        content: "<p>Tuliskan uraian pembahasan bab ini di sini...</p>",
+      },
+    ]);
   };
 
   const handleUpdateChapter = (
     id: string,
-    field: "title" | "content",
-    val: string
+    fieldOrObj: string | Partial<ChapterItem>,
+    value?: string
   ) => {
-    setChapters(
-      chapters.map((ch) => (ch.id === id ? { ...ch, [field]: val } : ch))
+    setChapters((prev) =>
+      prev.map((ch) => {
+        if (ch.id !== id) return ch;
+        if (typeof fieldOrObj === "string" && value !== undefined) {
+          return { ...ch, [fieldOrObj]: value };
+        } else if (typeof fieldOrObj === "object") {
+          return { ...ch, ...fieldOrObj };
+        }
+        return ch;
+      })
     );
-    // Clear specific error if typing
-    if (errors[`chapter_${field}_${id}`]) {
-      setErrors((prev) => {
-        const copy = { ...prev };
-        delete copy[`chapter_${field}_${id}`];
-        return copy;
-      });
-    }
   };
 
   const handleDeleteChapter = async (id: string, idx: number) => {
     if (chapters.length <= 1) {
       alert({
         title: "Tidak Dapat Menghapus",
-        message: "Naskah artikel minimal harus memiliki 1 bab pembahasan.",
-        type: "warning",
+        message: "Naskah minimal harus memiliki 1 bab pembahasan.",
+        type: "error",
       });
       return;
     }
 
     const confirmed = await confirm({
-      title: `Hapus Bab ${idx + 1}?`,
-      message: "Isi teks dan judul bab ini akan dihapus dari lembar kerja.",
+      title: "Hapus Bab Ini?",
+      message: `Bab ${idx + 1} dan seluruh isinya akan dihapus dari naskah.`,
       confirmLabel: "Hapus Bab",
       cancelLabel: "Batal",
       variant: "danger",
@@ -344,58 +384,51 @@ export function ArticleEditorForm({
     });
 
     if (confirmed) {
-      setChapters(chapters.filter((ch) => ch.id !== id));
+      setChapters((prev) => prev.filter((ch) => ch.id !== id));
     }
   };
 
-  const handleMoveChapter = (idx: number, dir: "up" | "down") => {
-    if (
-      (dir === "up" && idx === 0) ||
-      (dir === "down" && idx === chapters.length - 1)
-    )
-      return;
-    const targetIdx = dir === "up" ? idx - 1 : idx + 1;
-    const reordered = [...chapters];
-    const temp = reordered[idx];
-    reordered[idx] = reordered[targetIdx];
-    reordered[targetIdx] = temp;
-    setChapters(reordered);
+  const handleMoveChapter = (idx: number, direction: "up" | "down") => {
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= chapters.length) return;
+
+    setChapters((prev) => {
+      const copy = [...prev];
+      const temp = copy[idx];
+      copy[idx] = copy[targetIdx];
+      copy[targetIdx] = temp;
+      return copy;
+    });
   };
 
-  // REFERENCE MANAGEMENT
+  // 5. Reference Management
   const handleAddReference = () => {
-    setReferences([...references, { id: `ref-${Date.now()}`, citation: "" }]);
+    setReferences((prev) => [
+      ...prev,
+      {
+        id: `ref-${Date.now()}-${prev.length + 1}`,
+        citation: "",
+      },
+    ]);
   };
 
-  const handleUpdateReference = (id: string, val: string) => {
-    setReferences(
-      references.map((r) => (r.id === id ? { ...r, citation: val } : r))
+  const handleUpdateReference = (id: string, citation: string) => {
+    setReferences((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, citation } : r))
     );
   };
 
   const handleDeleteReference = (id: string) => {
-    setReferences(references.filter((r) => r.id !== id));
+    setReferences((prev) => prev.filter((r) => r.id !== id));
   };
 
-  // VALIDATION LOGIC WITH AUTO-FOCUS AND SCROLL
-  const validateForm = (): boolean => {
+  // 6. Validation & Submit
+  const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
-    if (!title.trim() || title.trim().length < 5) {
-      newErrors["field-title"] = "Judul artikel wajib diisi minimal 5 karakter.";
-    }
-
-    if (!authorName.trim()) {
-      newErrors["field-author"] = "Nama penulis / afiliasi wajib diisi.";
-    }
-
-    if (!excerpt.trim() || excerpt.trim().length < 15) {
-      newErrors["field-excerpt"] = "Ringkasan / ekserp wajib diisi minimal 15 karakter.";
-    }
-
-    if (!readTime.trim()) {
-      newErrors["field-readtime"] = "Estimasi durasi baca wajib ditentukan.";
-    }
+    if (!title.trim()) newErrors["field-title"] = "Judul artikel wajib diisi.";
+    if (!authorName.trim()) newErrors["field-author"] = "Nama penulis wajib diisi.";
+    if (!excerpt.trim()) newErrors["field-excerpt"] = "Ringkasan eksekutif wajib diisi.";
+    if (!readTime.trim()) newErrors["field-readtime"] = "Estimasi waktu baca wajib diisi.";
 
     chapters.forEach((ch, idx) => {
       if (!ch.title.trim()) {
@@ -410,7 +443,6 @@ export function ArticleEditorForm({
 
     const errorKeys = Object.keys(newErrors);
     if (errorKeys.length > 0) {
-      // Auto-focus first error field
       const firstErrorId = errorKeys[0];
       const element = document.getElementById(firstErrorId);
       if (element) {
@@ -422,7 +454,7 @@ export function ArticleEditorForm({
 
       alert({
         title: "Formulir Belum Lengkap",
-        message: "Mohon lengkapi bagian yang ditandai garis merah sebelum menyimpan atau menerbitkan naskah.",
+        message: "Mohon lengkapi bagian yang ditandai garis merah sebelum menyimpan naskah.",
         type: "warning",
       });
       return false;
@@ -431,7 +463,6 @@ export function ArticleEditorForm({
     return true;
   };
 
-  // SUBMIT / PUBLISH ACTION
   const handleSubmit = async (isDraft: boolean = false) => {
     if (!isDraft) {
       const isValid = validateForm();
@@ -439,6 +470,69 @@ export function ArticleEditorForm({
     }
 
     setIsSubmitting(true);
+
+    const slug =
+      title
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-") || `artikel-${Date.now()}`;
+
+    const newArticleData: ArticleFullData = {
+      id: initialData?.title
+        ? artService.getArticleBySlug(slug)?.id || `art-${Date.now()}`
+        : `art-${Date.now()}`,
+      title,
+      slug,
+      excerpt,
+      category,
+      categoryId: `cat-${category.toLowerCase().replace(/\s+/g, "-")}`,
+      categoryVariant: "lime",
+      readTime,
+      readTimeMinutes: parseInt(readTime) || 7,
+      publishedDate: new Date().toLocaleDateString("id-ID", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      authorName: authorName || (currentUser?.name ? `${currentUser.name}` : "Kurator Jejak Perupa"),
+      coverImageUrl,
+      headerBgImageUrl,
+      headerGradientOpacity,
+      headerGradientHeight,
+      peruChanTip,
+      peruChanTipTitle: "Catatan Editorial Peru-Chan",
+      tocItems: chapters.map((ch, idx) => ({
+        id: ch.id,
+        title: ch.title,
+        number: (idx + 1).toString().padStart(2, "0"),
+      })),
+      contentSections: chapters.map((ch, idx) => ({
+        id: ch.id,
+        number: (idx + 1).toString().padStart(2, "0"),
+        heading: ch.title,
+        paragraphs: ch.content
+          .replace(/<p>/g, "")
+          .split("</p>")
+          .map((p) => p.replace(/<[^>]*>/g, "").trim())
+          .filter((p) => p.length > 0),
+        peruChanTip: ch.peruChanTip,
+        peruChanTheme: ch.peruChanTheme,
+      })),
+      references: references
+        .filter((r) => r.citation.trim().length > 0)
+        .map((r) => ({
+          citation: r.citation,
+          sourceType: "Akademik",
+        })),
+      relatedSlugs: [],
+    };
+
+    if (mode === "admin-create") {
+      await artService.addArticle(newArticleData);
+    } else if (mode === "admin-edit") {
+      await artService.updateArticle(slug, newArticleData);
+    }
 
     const formData: ArticleEditorFormData = {
       title,
@@ -459,7 +553,6 @@ export function ArticleEditorForm({
     if (onSave) {
       await onSave(formData, isDraft);
     } else {
-      // Default success action
       localStorage.removeItem(storageKey);
       await alert({
         title: isDraft ? "Draf Berhasil Disimpan" : "Naskah Berhasil Disimpan",
@@ -476,9 +569,16 @@ export function ArticleEditorForm({
     setIsSubmitting(false);
   };
 
+  const categoryOptions = useMemo(() => {
+    return categories.map((c) => ({
+      label: c.name,
+      value: c.name,
+    }));
+  }, [categories]);
+
   return (
     <div className="space-y-6 font-sans">
-      {/* 1. DRAFT RECOVERY ALERT BANNER (IF UNSAVED DRAFT DETECTED) */}
+      {/* 1. DRAFT RECOVERY ALERT BANNER */}
       {draftDetected && (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 md:p-5 shadow-xs flex flex-wrap items-center justify-between gap-4 animate-in fade-in duration-200">
           <div className="flex items-center gap-3">
@@ -496,795 +596,109 @@ export function ArticleEditorForm({
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
+            <button
               type="button"
-              variant="outline"
-              size="sm"
               onClick={handleDiscardDraft}
-              className="border-amber-300 bg-white text-amber-900 hover:bg-amber-100 rounded-lg text-xs"
+              className="border border-amber-300 bg-white text-amber-900 hover:bg-amber-100 rounded-lg text-xs px-3 py-1.5 font-semibold cursor-pointer"
             >
               Buang Draf
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              variant="secondary"
-              size="sm"
               onClick={handleRestoreDraft}
-              className="rounded-lg text-xs bg-amber-700 hover:bg-amber-800 text-white"
+              className="rounded-lg text-xs bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 font-semibold cursor-pointer shadow-2xs"
             >
               Pulihkan Draf
-            </Button>
+            </button>
           </div>
         </div>
       )}
 
-      {/* 2. TOP ACTION HEADER & AUTO-SAVE INDICATOR (RESPONSIVE MOBILE ERGONOMICS) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 pb-4 border-b border-jp-gray-300">
-        <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
-          <Link href={backUrl}>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="rounded-lg text-xs"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1.5" />
-              Kembali
-            </Button>
-          </Link>
+      {/* 2. TOP ACTION HEADER & STICKY CONTROLS */}
+      <ArticleEditorStickyBar
+        backUrl={backUrl}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        lastAutoSaveTime={lastAutoSaveTime}
+        mode={mode}
+        onQuickFillDev={handleQuickFillDev}
+        onClearForm={handleClearForm}
+        onSubmit={handleSubmit}
+      />
 
-          {lastAutoSaveTime && (
-            <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-green-800">
-              <CheckCircle className="h-3.5 w-3.5 text-green-600" />
-              <span>Tersimpan otomatis ({lastAutoSaveTime})</span>
-            </div>
-          )}
-        </div>
-
-        {/* TAB TOGGLE & ACTIONS (FULL-WIDTH 2 COLUMNS ON MOBILE, INLINE ON DESKTOP) */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto">
-          {/* TABS (2 COLS FULL WIDTH ON MOBILE) */}
-          <div className="grid grid-cols-2 sm:flex items-center gap-1 rounded-lg bg-jp-gray-200/60 p-1 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={() => setActiveTab("write")}
-              className={cn(
-                "flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold rounded-md transition cursor-pointer font-sans w-full",
-                activeTab === "write"
-                  ? "bg-white text-jp-blue-900 shadow-2xs font-bold"
-                  : "text-jp-gray-600 hover:text-jp-ink"
-              )}
-            >
-              <Edit3 className="h-3.5 w-3.5" />
-              <span>Tulis Naskah</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("preview")}
-              className={cn(
-                "flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold rounded-md transition cursor-pointer font-sans w-full",
-                activeTab === "preview"
-                  ? "bg-white text-jp-blue-900 shadow-2xs font-bold"
-                  : "text-jp-gray-600 hover:text-jp-ink"
-              )}
-            >
-              <Eye className="h-3.5 w-3.5" />
-              <span>Pratinjau</span>
-            </button>
-          </div>
-
-          {/* ACTION BUTTONS (2 COLS FULL WIDTH ON MOBILE) */}
-          <div
-            className={cn(
-              "w-full sm:w-auto items-center gap-2",
-              mode === "public-contribute" ? "grid grid-cols-2 sm:flex" : "grid grid-cols-3 sm:flex"
-            )}
-          >
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleClearForm}
-              className="rounded-lg text-xs w-full justify-center py-2 sm:py-1.5"
-            >
-              <RotateCcw className="h-3.5 w-3.5 mr-1" />
-              Reset
-            </Button>
-
-            {mode !== "public-contribute" && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleSubmit(true)}
-                className="rounded-lg text-xs w-full justify-center py-2 sm:py-1.5"
-              >
-                <Save className="h-3.5 w-3.5 mr-1" />
-                Simpan Draf
-              </Button>
-            )}
-
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={() => handleSubmit(false)}
-              className="rounded-lg text-xs font-bold w-full justify-center py-2 sm:py-1.5"
-            >
-              <Send className="h-3.5 w-3.5 mr-1.5" />
-              {mode === "public-contribute" ? "Kirim Naskah" : "Terbitkan Artikel"}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. MAIN EDITOR CONTENT CANVAS */}
+      {/* 3. MAIN EDITOR CONTENT OR PREVIEW */}
       {activeTab === "write" ? (
         <div className="space-y-8">
-          {/* SECTION A: METADATA UTAMA ARTIKEL */}
-          <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-8 shadow-2xs space-y-6">
-            <div className="border-b border-jp-gray-200 pb-3">
-              <div className="font-mono text-xs font-bold text-jp-blue-700">
-                Bagian 1
-              </div>
-              <Heading2 className="text-xl text-jp-ink mt-0.5">
-                Metadata & Identitas Naskah
-              </Heading2>
-            </div>
+          <ArticleGeneralMetaSection
+            title={title}
+            setTitle={setTitle}
+            authorName={authorName}
+            setAuthorName={setAuthorName}
+            category={category}
+            setCategory={setCategory}
+            categoryOptions={categoryOptions}
+            readTime={readTime}
+            setReadTime={setReadTime}
+            excerpt={excerpt}
+            setExcerpt={setExcerpt}
+            errors={errors}
+            onClearError={(fieldId) => {
+              setErrors((prev) => {
+                const copy = { ...prev };
+                delete copy[fieldId];
+                return copy;
+              });
+            }}
+            onOpenCategoryModal={() => setIsCategoryModalOpen(true)}
+            mode={mode}
+          />
 
-            <div className="grid gap-6 sm:grid-cols-2">
-              {/* JUDUL ARTIKEL */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-jp-ink">
-                  Judul Artikel <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="field-title"
-                  type="text"
-                  value={title}
-                  onChange={(e) => {
-                    setTitle(e.target.value);
-                    if (errors["field-title"]) {
-                      setErrors((prev) => {
-                        const copy = { ...prev };
-                        delete copy["field-title"];
-                        return copy;
-                      });
-                    }
-                  }}
-                  placeholder="Contoh: Mengapa Kita Perlu Belajar Sejarah Seni Rupa?"
-                  className={cn(
-                    "w-full rounded-lg border bg-white px-4 py-2.5 text-sm md:text-base font-bold text-jp-ink outline-none transition",
-                    errors["field-title"]
-                      ? "border-red-500 ring-2 ring-red-400/50 bg-red-50/20"
-                      : "border-jp-gray-300 focus:border-jp-blue-700"
-                  )}
-                />
-                {errors["field-title"] && (
-                  <p className="text-[11px] font-semibold text-red-600 font-sans">
-                    {errors["field-title"]}
-                  </p>
-                )}
-              </div>
+          <ArticleCoverMediaSection
+            coverImageUrl={coverImageUrl}
+            setCoverImageUrl={setCoverImageUrl}
+            headerBgImageUrl={headerBgImageUrl}
+            setHeaderBgImageUrl={setHeaderBgImageUrl}
+            headerGradientOpacity={headerGradientOpacity}
+            setHeaderGradientOpacity={setHeaderGradientOpacity}
+            headerGradientHeight={headerGradientHeight}
+            setHeaderGradientHeight={setHeaderGradientHeight}
+          />
 
-              {/* PENULIS / AFILIASI */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-jp-ink">
-                  Nama Penulis & Lembaga <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="field-author"
-                  type="text"
-                  value={authorName}
-                  onChange={(e) => {
-                    setAuthorName(e.target.value);
-                    if (errors["field-author"]) {
-                      setErrors((prev) => {
-                        const copy = { ...prev };
-                        delete copy["field-author"];
-                        return copy;
-                      });
-                    }
-                  }}
-                  placeholder="Nama Lengkap (Institusi / Komunitas)"
-                  className={cn(
-                    "w-full rounded-lg border bg-white px-3.5 py-2 text-xs md:text-sm text-jp-ink outline-none transition",
-                    errors["field-author"]
-                      ? "border-red-500 ring-2 ring-red-400/50 bg-red-50/20"
-                      : "border-jp-gray-300 focus:border-jp-blue-700"
-                  )}
-                />
-                {errors["field-author"] && (
-                  <p className="text-[11px] font-semibold text-red-600 font-sans">
-                    {errors["field-author"]}
-                  </p>
-                )}
-              </div>
+          <ArticleChaptersManager
+            chapters={chapters}
+            errors={errors}
+            onAddChapter={handleAddChapter}
+            onUpdateChapter={handleUpdateChapter}
+            onDeleteChapter={handleDeleteChapter}
+            onMoveChapter={handleMoveChapter}
+          />
 
-              {/* KATEGORI ARTIKEL */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-jp-ink">
-                    Kategori Wacana <span className="text-red-500">*</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setIsCategoryModalOpen(true)}
-                    className="text-[11px] font-bold text-jp-blue-700 hover:text-jp-blue-900 flex items-center gap-1 cursor-pointer"
-                  >
-                    <Plus className="h-3 w-3" />
-                    {mode === "public-contribute"
-                      ? "Usulkan Kategori"
-                      : "+ Kategori Baru"}
-                  </button>
-                </div>
-                <Select
-                  options={categoryOptions}
-                  value={category}
-                  onChange={(val) => setCategory(val)}
-                  placeholder="Pilih Kategori..."
-                />
-              </div>
-
-              {/* ESTIMASI WAKTU BACA */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-jp-ink flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-jp-gray-500" />
-                  Estimasi Durasi Baca <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="field-readtime"
-                  type="text"
-                  value={readTime}
-                  onChange={(e) => {
-                    setReadTime(e.target.value);
-                    if (errors["field-readtime"]) {
-                      setErrors((prev) => {
-                        const copy = { ...prev };
-                        delete copy["field-readtime"];
-                        return copy;
-                      });
-                    }
-                  }}
-                  placeholder="Contoh: 7 menit membaca"
-                  className={cn(
-                    "w-full rounded-lg border bg-white px-3.5 py-2 text-xs md:text-sm text-jp-ink outline-none transition",
-                    errors["field-readtime"]
-                      ? "border-red-500 ring-2 ring-red-400/50 bg-red-50/20"
-                      : "border-jp-gray-300 focus:border-jp-blue-700"
-                  )}
-                />
-                {errors["field-readtime"] && (
-                  <p className="text-[11px] font-semibold text-red-600 font-sans">
-                    {errors["field-readtime"]}
-                  </p>
-                )}
-              </div>
-
-              {/* COVER IMAGE DUAL INPUT */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <ImageDualInput
-                  label="Gambar Sampul Artikel (Thumbnail Utama)"
-                  value={coverImageUrl}
-                  onChange={setCoverImageUrl}
-                  placeholderUrl="https://domain.com/gambar-sampul.jpg"
-                  helperGuideline="Rekomendasi rasio 16:9 (minimal 1200×675 px), format JPG, PNG, atau WebP, ukuran maksimal 3 MB."
-                  minWidth={600}
-                  minHeight={338}
-                  maxSizeBytes={3 * 1024 * 1024}
-                  maxSizeLabel="3 MB"
-                  previewClassName="h-20 w-32"
-                />
-              </div>
-
-              {/* HEADER PHOTO & GRADIENT OVERLAY (OPTIONAL CUSTOM HEADER) */}
-              <div className="space-y-4 sm:col-span-2 pt-6 border-t border-jp-gray-200">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-jp-blue-900" />
-                  <h3 className="font-heading text-sm md:text-base font-bold text-jp-ink">
-                    Foto Latar Belakang & Gradasi Header Artikel (Opsional)
-                  </h3>
-                </div>
-
-                <ImageDualInput
-                  label="Foto Latar Belakang Header"
-                  value={headerBgImageUrl}
-                  onChange={setHeaderBgImageUrl}
-                  placeholderUrl="https://domain.com/foto-header-panorama.jpg"
-                  helperGuideline="Rekomendasi rasio horizontal panorama (21:9 atau 16:9), resolusi minimal 1600×600 px hingga 1920×800 px, format JPG, PNG, atau WebP berkualitas tinggi, ukuran maksimal 3 MB."
-                  minWidth={1200}
-                  minHeight={400}
-                  maxSizeBytes={3 * 1024 * 1024}
-                  maxSizeLabel="3 MB"
-                  previewClassName="h-20 w-44"
-                />
-
-                {headerBgImageUrl && (
-                  <div className="grid gap-6 sm:grid-cols-2 pt-3 border-t border-jp-gray-200">
-                    {/* SLIDE BAR 1: OPACITY */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-jp-ink">
-                          Intensitas Gradasi Putih Pelindung Teks
-                        </label>
-                        <span className="font-mono text-xs font-bold bg-jp-blue-900 text-white px-2 py-0.5 rounded">
-                          {headerGradientOpacity}%
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min="30"
-                        max="100"
-                        step="5"
-                        value={headerGradientOpacity}
-                        onChange={(e) => setHeaderGradientOpacity(Number(e.target.value))}
-                        className="w-full accent-jp-blue-900 cursor-pointer h-2 bg-jp-gray-300 rounded-lg"
-                      />
-                      <p className="text-[11px] text-jp-gray-500 font-prose">
-                        Semakin tinggi nilai persentase, semakin pekat lapisan putih pelindung teks di atas gambar.
-                      </p>
-                    </div>
-
-                    {/* SLIDE BAR 2: HEIGHT SPREAD */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-jp-ink">
-                          Ketinggian Sebaran Gradasi
-                        </label>
-                        <span className="font-mono text-xs font-bold bg-jp-blue-900 text-white px-2 py-0.5 rounded">
-                          {headerGradientHeight}%
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min="40"
-                        max="100"
-                        step="5"
-                        value={headerGradientHeight}
-                        onChange={(e) => setHeaderGradientHeight(Number(e.target.value))}
-                        className="w-full accent-jp-blue-900 cursor-pointer h-2 bg-jp-gray-300 rounded-lg"
-                      />
-                      <p className="text-[11px] text-jp-gray-500 font-prose">
-                        Mengatur ketinggian titik peralihan kabut gradasi putih dari bawah menuju foto asli di atas.
-                      </p>
-                    </div>
-
-                    {/* LIVE HEADER PREVIEW MOCKUP */}
-                    <div className="sm:col-span-2 space-y-2 pt-2">
-                      <div className="text-xs font-bold font-mono text-jp-blue-900 flex items-center gap-1.5">
-                        <Eye className="h-3.5 w-3.5" />
-                        Pratinjau Langsung Efek Gradasi Header
-                      </div>
-                      <div className="relative rounded-xl border border-jp-gray-300 overflow-hidden shadow-xs bg-jp-paper">
-                        {/* IMAGE BACKDROP */}
-                        <div
-                          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-300"
-                          style={{ backgroundImage: `url(${headerBgImageUrl})` }}
-                        />
-                        {/* SIGNATURE EDITORIAL PAPER & SOFT BLUE GRADIENT OVERLAY */}
-                        <div
-                          className="absolute inset-0 pointer-events-none transition-all duration-300"
-                          style={{
-                            background: `linear-gradient(to top, #FAFAF7 0%, rgba(250, 250, 247, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, rgba(238, 245, 255, 0.45) 100%)`,
-                          }}
-                        />
-                        {/* SAMPLE CONTENT (IDENTICAL TO ARTICLE DETAIL PAGE) */}
-                        <div className="relative z-10 p-6 md:p-8 space-y-4">
-                          {/* BREADCRUMB */}
-                          <div className="flex items-center gap-1.5 text-xs text-jp-gray-500 font-sans">
-                            <Home className="h-3.5 w-3.5 text-jp-gray-400" />
-                            <span>Beranda</span>
-                            <ChevronRight className="h-3 w-3 text-jp-gray-400" />
-                            <span>Artikel</span>
-                            <ChevronRight className="h-3 w-3 text-jp-gray-400" />
-                            <span className="font-bold text-jp-blue-900">{category || "Pendidikan Seni"}</span>
-                          </div>
-
-                          {/* CATEGORY & ARCHIVE BADGE */}
-                          <div className="flex items-center gap-2.5">
-                            <span className="rounded-md bg-jp-lime px-2.5 py-0.5 text-xs font-bold text-jp-ink">
-                              {category || "Pendidikan Seni"}
-                            </span>
-                            <span className="text-xs font-semibold text-jp-gray-500 font-sans">
-                              Arsip Jejak Perupa
-                            </span>
-                          </div>
-
-                          {/* ARTICLE TITLE */}
-                          <h3 className="font-heading text-2xl md:text-3xl lg:text-4xl font-bold text-jp-ink leading-tight max-w-4xl">
-                            {title || "Mengenal Program Studi: Seni Rupa Murni"}
-                          </h3>
-
-                          {/* EXCERPT */}
-                          <p className="font-prose text-sm md:text-base text-jp-gray-700 leading-relaxed max-w-3xl">
-                            {excerpt || "Sebuah pengantar santai untuk mengenal Seni Rupa Murni, kehidupan perkuliahannya, studio yang dapat dipilih, hingga berbagai kemungkinan profesi setelah lulus."}
-                          </p>
-
-                          {/* AUTHOR META ROW */}
-                          <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-jp-gray-300/80 text-xs text-jp-gray-500 font-sans">
-                            <div className="flex items-center gap-1.5">
-                              <User className="h-3.5 w-3.5 text-jp-gray-400" />
-                              <span className="font-bold text-jp-ink">{authorName || "Jejak Perupa"}</span>
-                            </div>
-                            <span>·</span>
-                            <div className="flex items-center gap-1.5">
-                              <Calendar className="h-3.5 w-3.5 text-jp-gray-400" />
-                              <span>Arsip 2017</span>
-                            </div>
-                            <span>·</span>
-                            <div className="flex items-center gap-1.5">
-                              <Clock className="h-3.5 w-3.5 text-jp-gray-400" />
-                              <span>{readTime || "8 menit membaca"}</span>
-                            </div>
-                            <span>·</span>
-                            <span className="font-mono text-[10px] bg-jp-paper border border-jp-gray-300 px-2 py-0.5 rounded text-jp-gray-600">
-                              Versi arsip
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* EKSERP / RINGKASAN */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-jp-ink">
-                  Ringkasan Ekserp Pembuka <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="field-excerpt"
-                  rows={2}
-                  value={excerpt}
-                  onChange={(e) => {
-                    setExcerpt(e.target.value);
-                    if (errors["field-excerpt"]) {
-                      setErrors((prev) => {
-                        const copy = { ...prev };
-                        delete copy["field-excerpt"];
-                        return copy;
-                      });
-                    }
-                  }}
-                  placeholder="Tuliskan 1-2 kalimat ringkasan yang memikat pembaca mengenai artikel ini..."
-                  className={cn(
-                    "w-full rounded-lg border bg-white px-3.5 py-2.5 text-xs md:text-sm text-jp-ink outline-none transition font-prose",
-                    errors["field-excerpt"]
-                      ? "border-red-500 ring-2 ring-red-400/50 bg-red-50/20"
-                      : "border-jp-gray-300 focus:border-jp-blue-700"
-                  )}
-                />
-                {errors["field-excerpt"] && (
-                  <p className="text-[11px] font-semibold text-red-600 font-sans">
-                    {errors["field-excerpt"]}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* SECTION B: BAB-BAB PEMBAHASAN NARASI */}
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-              <div>
-                <div className="font-mono text-xs font-bold text-jp-blue-700">
-                  Bagian 2
-                </div>
-                <Heading2 className="text-xl text-jp-ink mt-0.5">
-                  Struktur Bab & Isi Pembahasan
-                </Heading2>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddChapter}
-                className="rounded-lg text-xs w-full sm:w-auto justify-center"
-              >
-                <Plus className="h-3.5 w-3.5 mr-1" />
-                Tambah Bab Baru
-              </Button>
-            </div>
-
-            <div className="space-y-6">
-              {chapters.map((ch, idx) => (
-                <div
-                  key={ch.id}
-                  className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-7 shadow-2xs space-y-4"
-                >
-                  {/* CHAPTER HEADER */}
-                  <div className="flex items-center justify-between border-b border-jp-gray-200 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-6 px-2.5 items-center justify-center rounded-md bg-jp-blue-900 font-mono text-xs font-bold text-white">
-                        Bab {idx + 1}
-                      </span>
-                      <span className="text-xs font-semibold text-jp-gray-600 font-sans">
-                        Subjudul Pembahasan
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleMoveChapter(idx, "up")}
-                        disabled={idx === 0}
-                        title="Geser Bab ke Atas"
-                        className="flex h-7 w-7 items-center justify-center rounded-md border border-jp-gray-200 text-jp-gray-600 hover:bg-jp-paper disabled:opacity-30 cursor-pointer"
-                      >
-                        <ChevronUp className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMoveChapter(idx, "down")}
-                        disabled={idx === chapters.length - 1}
-                        title="Geser Bab ke Bawah"
-                        className="flex h-7 w-7 items-center justify-center rounded-md border border-jp-gray-200 text-jp-gray-600 hover:bg-jp-paper disabled:opacity-30 cursor-pointer"
-                      >
-                        <ChevronDown className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteChapter(ch.id, idx)}
-                        title="Hapus Bab Ini"
-                        className="flex h-7 w-7 items-center justify-center rounded-md border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer ml-1"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* CHAPTER TITLE INPUT */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-jp-ink">
-                      Judul Bab {idx + 1} <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id={`chapter_title_${ch.id}`}
-                      type="text"
-                      value={ch.title}
-                      onChange={(e) =>
-                        handleUpdateChapter(ch.id, "title", e.target.value)
-                      }
-                      placeholder={`Contoh: Fondasi Estetika & Anatomi Bentuk`}
-                      className={cn(
-                        "w-full rounded-lg border bg-white px-3.5 py-2 text-xs md:text-sm font-bold text-jp-ink outline-none transition",
-                        errors[`chapter_title_${ch.id}`]
-                          ? "border-red-500 ring-2 ring-red-400/50 bg-red-50/20"
-                          : "border-jp-gray-300 focus:border-jp-blue-700"
-                      )}
-                    />
-                    {errors[`chapter_title_${ch.id}`] && (
-                      <p className="text-[11px] font-semibold text-red-600 font-sans">
-                        {errors[`chapter_title_${ch.id}`]}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* CHAPTER RICH TEXT EDITOR */}
-                  <div className="space-y-1" id={`chapter_content_${ch.id}`}>
-                    <label className="text-xs font-bold text-jp-ink">
-                      Uraian Isi Bab {idx + 1} <span className="text-red-500">*</span>
-                    </label>
-                    <RichTextEditor
-                      value={ch.content}
-                      onChange={(val) =>
-                        handleUpdateChapter(ch.id, "content", val)
-                      }
-                      placeholder="Tuliskan uraian kritis, analisis visual, atau catatan teori..."
-                      rows={8}
-                    />
-                    {errors[`chapter_content_${ch.id}`] && (
-                      <p className="text-[11px] font-semibold text-red-600 font-sans pt-1">
-                        {errors[`chapter_content_${ch.id}`]}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* SECTION C: CATATAN MASKOT PERU-CHAN & DAFTAR PUSTAKA */}
-          <div className="grid gap-8 lg:grid-cols-2 items-start">
-            {/* PERU-CHAN EDITORIAL TIP */}
-            <div className="rounded-xl border border-jp-blue-200 bg-jp-blue-50/40 p-6 space-y-4">
-              <div className="flex items-center gap-2 border-b border-jp-blue-200 pb-3">
-                <Sparkles className="h-4 w-4 text-jp-blue-700" />
-                <span className="font-heading text-sm font-bold text-jp-blue-900">
-                  Catatan Editorial Peru-Chan (Opsional)
-                </span>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-jp-ink">
-                  Kutipan Tips di Akhir Bacaan:
-                </label>
-                <textarea
-                  rows={3}
-                  value={peruChanTip}
-                  onChange={(e) => setPeruChanTip(e.target.value)}
-                  placeholder="Contoh: Selalu perhatikan ketebalan impasto saat menganalisis lukisan era romantisisme!"
-                  className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none font-prose"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-jp-ink">
-                  Aksen Tema Boks Tips:
-                </label>
-                <div className="flex gap-2">
-                  {[
-                    { id: "blue", label: "Biru Klasik", colorBg: "bg-jp-blue-700" },
-                    { id: "brown", label: "Cokelat Arsip", colorBg: "bg-jp-brown-700" },
-                    { id: "lime", label: "Hijau Limau", colorBg: "bg-jp-lime-600" },
-                  ].map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setPeruChanTheme(t.id as any)}
-                      className={cn(
-                        "flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold border transition cursor-pointer font-sans",
-                        peruChanTheme === t.id
-                          ? "border-jp-ink bg-white text-jp-ink shadow-2xs font-bold"
-                          : "border-jp-gray-300 bg-jp-paper text-jp-gray-600 hover:bg-white"
-                      )}
-                    >
-                      <span className={cn("h-2 w-2 rounded-full", t.colorBg)} />
-                      <span>{t.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* DAFTAR PUSTAKA & RUJUKAN */}
-            <div className="rounded-xl border border-jp-gray-300 bg-white p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-jp-gray-200 pb-3">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-jp-gray-600" />
-                  <span className="font-heading text-sm font-bold text-jp-ink">
-                    Daftar Pustaka & Rujukan
-                  </span>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddReference}
-                  className="rounded-lg text-xs py-1 h-7"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Tambah Rujukan
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                {references.length > 0 ? (
-                  references.map((ref, idx) => (
-                    <div key={ref.id} className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-jp-gray-400 w-6 text-center shrink-0">
-                        [{idx + 1}]
-                      </span>
-                      <input
-                        type="text"
-                        value={ref.citation}
-                        onChange={(e) =>
-                          handleUpdateReference(ref.id, e.target.value)
-                        }
-                        placeholder="Contoh: Kusnadi. (1980). Sejarah Seni Rupa Indonesia. Balai Pustaka."
-                        className="flex-1 rounded-lg border border-jp-gray-300 bg-white px-3 py-1.5 text-xs text-jp-ink focus:border-jp-blue-700 outline-none font-prose"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteReference(ref.id)}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-jp-gray-500 font-prose italic py-2">
-                    Belum ada daftar pustaka ditambahkan (opsional).
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+          <ArticleReferencesManager
+            peruChanTip={peruChanTip}
+            setPeruChanTip={setPeruChanTip}
+            peruChanTheme={peruChanTheme}
+            setPeruChanTheme={setPeruChanTheme}
+            references={references}
+            onAddReference={handleAddReference}
+            onUpdateReference={handleUpdateReference}
+            onDeleteReference={handleDeleteReference}
+          />
         </div>
       ) : (
-        /* 4. LIVE PREVIEW TAB (1:1 PUBLIC RENDERING) */
-        <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-10 shadow-2xs space-y-8 max-w-4xl mx-auto">
-          {/* PREVIEW HEADER */}
-          <div className="relative overflow-hidden rounded-xl border border-jp-gray-200 p-6 md:p-8">
-            {headerBgImageUrl && (
-              <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: `url(${headerBgImageUrl})` }}
-              />
-            )}
-            {headerBgImageUrl ? (
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: `linear-gradient(to top, #FAFAF7 0%, rgba(250, 250, 247, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, rgba(238, 245, 255, 0.45) 100%)`,
-                }}
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-b from-jp-blue-50/70 via-jp-paper to-white pointer-events-none" />
-            )}
-
-            <div className="relative z-10 space-y-4">
-              <div className="flex items-center gap-2">
-                <Badge variant="blue">{category}</Badge>
-                <span className="text-xs text-jp-gray-500 font-mono">
-                  {readTime}
-                </span>
-              </div>
-
-              <h1 className="font-heading text-2xl md:text-4xl font-bold text-jp-ink leading-tight">
-                {title || "Judul Artikel Anda Akan Tampil di Sini"}
-              </h1>
-
-              <div className="flex items-center gap-3 text-xs text-jp-gray-600 font-mono">
-                <span>Penulis: {authorName || "Nama Penulis"}</span>
-                <span>·</span>
-                <span>Diterbitkan Hari Ini</span>
-              </div>
-
-              {excerpt && (
-                <p className="font-heading text-base md:text-lg italic text-jp-gray-700 leading-relaxed border-l-4 border-jp-blue-900 pl-4 py-1">
-                  {excerpt}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* PREVIEW CHAPTERS */}
-          <div className="space-y-8">
-            {chapters.map((ch, idx) => (
-              <div key={ch.id} className="space-y-3">
-                <h2 className="font-heading text-xl md:text-2xl font-bold text-jp-ink">
-                  {idx + 1}. {ch.title || `Bab ${idx + 1}`}
-                </h2>
-                <div
-                  className="font-prose text-sm md:text-base leading-relaxed text-jp-gray-800 space-y-3"
-                  dangerouslySetInnerHTML={{
-                    __html:
-                      ch.content ||
-                      "<p class='italic text-jp-gray-400'>Isi uraian bab akan tampil di sini...</p>",
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* PREVIEW PERU-CHAN CALLOUT */}
-          {peruChanTip && (
-            <PeruChanCallout
-              title="Tips Kuratorial Peru-Chan"
-              theme={peruChanTheme}
-            >
-              <p>{peruChanTip}</p>
-            </PeruChanCallout>
-          )}
-
-          {/* PREVIEW REFERENCES */}
-          {references.length > 0 && (
-            <div className="border-t border-jp-gray-200 pt-6 space-y-2">
-              <h3 className="font-heading text-base font-bold text-jp-ink">
-                Daftar Pustaka & Rujukan
-              </h3>
-              <ul className="space-y-1 text-xs font-prose text-jp-gray-700 list-disc pl-5">
-                {references.map((r) => (
-                  <li key={r.id}>{r.citation}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+        <ArticleEditorPreview
+          title={title}
+          authorName={authorName}
+          category={category}
+          readTime={readTime}
+          excerpt={excerpt}
+          headerBgImageUrl={headerBgImageUrl}
+          headerGradientOpacity={headerGradientOpacity}
+          headerGradientHeight={headerGradientHeight}
+          chapters={chapters}
+          references={references}
+          peruChanTip={peruChanTip}
+          peruChanTheme={peruChanTheme}
+        />
       )}
 
       {/* QUICK ADD CATEGORY MODAL */}

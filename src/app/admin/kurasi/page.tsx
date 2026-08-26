@@ -8,6 +8,7 @@ import { Button } from "@/components/atoms/form/Button";
 import { TablePagination } from "@/components/molecules/navigation/TablePagination";
 import { PeruChanCallout } from "@/components/molecules/peruchan/PeruChanCallout";
 import { CurationCardSkeleton } from "@/components/organisms/admin/CurationCardSkeleton";
+import { CurationReviewModal } from "@/components/organisms/admin/curation/CurationReviewModal";
 import { useCategories } from "@/lib/categoryContext";
 import { useModal } from "@/lib/modalContext";
 import {
@@ -23,77 +24,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface SubmissionItem {
-  id: string;
-  title: string;
-  author: string;
-  category: string;
-  date: string;
-  status: "Menunggu Kurasi" | "Disetujui" | "Perlu Revisi";
-  excerpt: string;
-  chapters: { title: string; content: string }[];
-  references: string[];
-  peruChanTip?: string;
-  peruChanTheme?: "blue" | "brown" | "lime";
-}
+import { submissionsSeeder, type SubmissionItem } from "@/lib/data/seeders/submissionsSeeder";
 
 export default function AdminKurasiPage() {
   const { confirm, alert } = useModal();
 
-  const [submissions, setSubmissions] = useState<SubmissionItem[]>([
-    {
-      id: "sub-1",
-      title: "Membaca Garis dan Ekspresi dalam Sketsa Revolusi",
-      author: "Dian Sastro (Mahasiswa Seni Rupa)",
-      category: "Sejarah Seni",
-      date: "24 Agustus 2026",
-      status: "Menunggu Kurasi",
-      excerpt:
-        "Telaah kritis mengenai sketsa-sketsa spontan era 1945-1949 karya pelukis pejuang yang menggunakan kertas koran dan jelaga arang.",
-      chapters: [
-        {
-          title: "Sketsa sebagai Catatan Jurnalistik Perjuangan",
-          content:
-            "Di tengah keterbatasan kanvas dan cat minyak impor pada era revolusi fisik, para pelukis Persagi dan Seniman Indonesia Muda (SIM) turun langsung ke garis depan. Mereka menangkap raut wajah prajurit, pengungsi, dan suasana stasiun kereta api dengan tarikan garis arang yang cepat namun sarat muatan emosional.",
-        },
-        {
-          title: "Karakter Garis Spontan dan Tekstur Kertas Jelaga",
-          content:
-            "Kekuatan utama sketsa revolusi terletak pada kejujuran bentuk. Tidak ada waktu untuk menghaluskan gradasi warna. Setiap goresan garis tunggal harus mampu mendefinisikan anatomi gerak tubuh dan ketegangan ruang secara instan.",
-        },
-      ],
-      references: [
-        "Kusnadi. (1980). *Sejarah Seni Rupa Revolusi Indonesia*. Jakarta: Balai Pustaka.",
-        "Sudjojono, S. (1946). *Seni Loekis, Kesenian, dan Seniman*. Jogjakarta: Indonesia Kesenian.",
-      ],
-      peruChanTip:
-        "Sketsa cepat adalah latihan terbaik untuk melatih kepekaan tangan dan intuisi mata sebelum melukis di kanvas besar!",
-      peruChanTheme: "brown",
-    },
-    {
-      id: "sub-2",
-      title: "Eksplorasi Pigmen Alami Tanah Liat di Studio Keramik",
-      author: "Budi Santoso (Pengkaji Kriya)",
-      category: "Teknik Seni",
-      date: "22 Agustus 2026",
-      status: "Menunggu Kurasi",
-      excerpt:
-        "Metodologi pengolahan tanah liat lokal sebagai glasir dan pewarna organik bersuhu tinggi.",
-      chapters: [
-        {
-          title: "Pengambilan Sampel Mineral Tanah Liat",
-          content:
-            "Eksplorasi material alami memerlukan pemahaman geologis sederhana mengenai kandungan oksida besi pada tanah liat merah daerah Kasongan.",
-        },
-      ],
-      references: [
-        "Gustami, SP. (2000). *Kriya Nusantara: Keramik Tradisi dan Modern*. Yogyakarta: Kanisius.",
-      ],
-      peruChanTip:
-        "Eksperimen pembakaran glasir membutuhkan kesabaran. Catat setiap formula campuran dalam buku jurnal studiomu!",
-      peruChanTheme: "lime",
-    },
-  ]);
+  const [submissions, setSubmissions] = useState<SubmissionItem[]>([...submissionsSeeder]);
 
   const [selectedSub, setSelectedSub] = useState<SubmissionItem | null>(null);
   const [tipDraft, setTipDraft] = useState("");
@@ -344,155 +280,16 @@ export default function AdminKurasiPage() {
         )}
 
         {/* CURATION MODAL DRAWER */}
-        {selectedSub && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs font-sans animate-in fade-in duration-150">
-            <div className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-jp-gray-300 bg-white shadow-2xl">
-              {/* MODAL HEADER */}
-              <div className="flex items-center justify-between border-b border-jp-gray-200 bg-jp-paper px-6 py-4">
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-wider text-jp-blue-700">
-                    Meja Penelaahan Naskah
-                  </div>
-                  <h3 className="font-heading text-lg font-bold text-jp-ink truncate max-w-xl">
-                    {selectedSub.title}
-                  </h3>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedSub(null)}
-                  className="rounded-lg text-jp-gray-400 hover:text-jp-ink p-1 cursor-pointer"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              {/* MODAL BODY (SCROLLABLE) */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
-                {/* CHAPTERS REVIEW */}
-                <div className="space-y-4">
-                  <div className="text-xs font-bold uppercase tracking-wider text-jp-gray-600 font-mono">
-                    Struktur Bab Naskah ({selectedSub.chapters.length} Bab)
-                  </div>
-
-                  {selectedSub.chapters.map((ch, idx) => (
-                    <div
-                      key={ch.title}
-                      className="rounded-xl border border-jp-gray-200 bg-jp-paper/30 p-5 space-y-2"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="flex h-6 px-2 items-center justify-center rounded-md bg-jp-blue-900 font-mono text-[11px] font-bold text-white">
-                          Bab {idx + 1}
-                        </span>
-                        <span className="text-xs font-bold text-jp-ink">
-                          {ch.title}
-                        </span>
-                      </div>
-                      <p className="text-xs text-jp-gray-700 font-prose leading-relaxed whitespace-pre-line">
-                        {ch.content}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CITATIONS REVIEW */}
-                <div className="space-y-2">
-                  <div className="text-xs font-bold uppercase tracking-wider text-jp-gray-600 font-mono">
-                    Daftar Pustaka & Rujukan
-                  </div>
-                  <div className="rounded-lg border border-jp-gray-200 bg-jp-paper/30 p-4 space-y-1 text-xs font-prose text-jp-gray-700">
-                    {selectedSub.references.map((ref, idx) => (
-                      <div key={ref}>
-                        [{idx + 1}] {ref}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* EDITORIAL PERU-CHAN EMBEDDING BOX */}
-                <div className="rounded-xl border border-jp-blue-300 bg-jp-blue-50/60 p-6 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-jp-blue-700" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-jp-blue-900">
-                      Penyematan Catatan Kuratorial Peru-Chan
-                    </span>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-jp-ink">
-                      Teks Tips / Refleksi Maskot untuk Akhir Naskah:
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={tipDraft}
-                      onChange={(e) => setTipDraft(e.target.value)}
-                      placeholder="Tuliskan catatan kuratorial yang membangun dan inspiratif..."
-                      className="w-full rounded-lg border border-jp-gray-300 bg-white px-3.5 py-2 text-xs md:text-sm text-jp-ink focus:border-jp-blue-700 outline-none font-prose"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-jp-ink">
-                      Pilih Aksen Warna Boks Catatan:
-                    </label>
-                    <div className="flex gap-2">
-                      {(["blue", "brown", "lime"] as const).map((accent) => (
-                        <button
-                          key={accent}
-                          type="button"
-                          onClick={() => setThemeDraft(accent)}
-                          className={cn(
-                            "flex-1 rounded-lg py-1.5 text-xs font-bold border transition cursor-pointer uppercase font-mono",
-                            themeDraft === accent
-                              ? "border-jp-ink bg-white text-jp-ink shadow-xs"
-                              : "border-jp-gray-200 bg-jp-paper text-jp-gray-500 hover:bg-white"
-                          )}
-                        >
-                          {accent}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* MODAL ACTIONS */}
-              <div className="flex items-center justify-between border-t border-jp-gray-200 bg-jp-paper px-6 py-4 font-sans">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRequestRevision}
-                  className="rounded-lg"
-                >
-                  Minta Revisi Penulis
-                </Button>
-
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedSub(null)}
-                    className="rounded-lg"
-                  >
-                    Batal
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="sm"
-                    onClick={handleApprove}
-                    className="rounded-lg"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1.5" />
-                    Setujui & Terbitkan Naskah
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <CurationReviewModal
+          submission={selectedSub}
+          onClose={() => setSelectedSub(null)}
+          tipDraft={tipDraft}
+          setTipDraft={setTipDraft}
+          themeDraft={themeDraft}
+          setThemeDraft={setThemeDraft}
+          onApprove={handleApprove}
+          onRequestRevision={handleRequestRevision}
+        />
       </div>
     </AdminLayout>
   );

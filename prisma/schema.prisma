@@ -109,34 +109,41 @@ model Tag {
 
 // 3. ARTIKEL EDUKASI
 model Article {
-  id                  String             @id @default(uuid())
-  title               String
-  slug                String             @unique
-  excerpt             String
-  contentMarkdown     String
-  coverImageUrl       String?
-  readTimeMinutes     Int                @default(5)
-  peruChanTip         String?
-  peruChanStickerType PeruChanSticker    @default(PROFILE)
-  status              ArticleStatus      @default(PUBLISHED)
-  viewCount           Int                @default(0)
-  publishedAt         DateTime?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  id                    String             @id @default(uuid())
+  title                 String
+  slug                  String             @unique
+  excerpt               String
+  contentMarkdown       String
+  authorName            String?
+  coverImageUrl         String?
+  headerBgImageUrl      String?
+  headerGradientOpacity Int?               @default(85)
+  headerGradientHeight  Int?               @default(80)
+  readTimeMinutes       Int                @default(5)
+  peruChanTip           String?
+  peruChanStickerType   PeruChanSticker    @default(PROFILE)
+  tocItems              Json?
+  contentSections       Json?
+  relatedSlugs          Json?
+  status                ArticleStatus      @default(PUBLISHED)
+  viewCount             Int                @default(0)
+  publishedAt           DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
 
-  categoryId          String
-  category            Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId            String
+  category              Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  featuredArtistId    String?
-  featuredArtist      Artist?            @relation(fields: [featuredArtistId], references: [id], onDelete: SetNull)
+  featuredArtistId      String?
+  featuredArtist        Artist?            @relation(fields: [featuredArtistId], references: [id], onDelete: SetNull)
 
-  references          ArticleReference[]
-  tags                ArticleTag[]
-  bookmarks           UserBookmark[]
-  quizzes             Quiz[]
-  comments            Comment[]
-  learningNodes       LearningNode[]
-  glossaryTerms       GlossaryTerm[]
+  references            ArticleReference[]
+  tags                  ArticleTag[]
+  bookmarks             UserBookmark[]
+  quizzes               Quiz[]
+  comments              Comment[]
+  learningNodes         LearningNode[]
+  glossaryTerms         GlossaryTerm[]
 
   @@index([slug])
   @@index([categoryId])
@@ -388,4 +395,29 @@ model ArtSubmission {
   status           SubmissionStatus @default(PENDING)
   reviewerNotes    String?
   createdAt        DateTime         @default(now())
+}
+
+// 9. PENGATURAN DAN KONFIGURASI SITUS
+model SiteSetting {
+  id                String   @id @default("primary")
+  siteName          String   @default("JEJAK PERUPA")
+  siteTagline       String   @default("Catatan Perjalanan Pelajar Seni Rupa")
+  logoInitials      String   @default("JP")
+  logoImageUrl      String?  @default("")
+  faviconUrl        String?  @default("")
+  heroEditionBadge  String?  @default("Arsip & Wacana Seni Rupa Nusantara : Edisi 2026")
+  heroHeadline      String?  @default("Catatan Perjalanan & Arsip Seni Rupa Nusantara")
+  heroDescription   String?  @default("Eksplorasi bahasa rupa, analisis mendalam karya maestro Indonesia, ensiklopedia istilah, serta kurikulum mandiri bagi pelajar, pendidik, dan pengkaji seni.")
+  aboutTitle        String?  @default("Tentang Platform Jejak Perupa")
+  aboutVision       String?  @default("Membuka gerbang eksplorasi bahasa rupa, apresiasi karya maestro nusantara, dan dokumentasi kuratorial yang bersahabat bagi pembelajar seni di seluruh Indonesia.")
+  aboutMission      String?  @default("Menghadirkan arsip yang hidup, interaktif, dan mudah diakses tanpa mengurangi wibawa akademik dan nilai estetika seni rupa Indonesia.")
+  aboutPhilosophy   String?  @default("Seni rupa dipandang bukan hanya sebagai keterampilan teknis menghasilkan bentuk, melainkan medium dialektika pemikiran, catatan zaman, dan ekspresi batin manusia.")
+  aboutPillars      Json?
+  contactEmail      String?  @default("redaksi@jejakperupa.id")
+  instagramUrl      String?  @default("https://instagram.com/jejakperupa")
+  footerDescription String?  @default("Platform edukasi terbuka, dokumentasi kuratorial, dan ensiklopedia visual seni rupa Indonesia.")
+  footerCopyright   String?  @default("Hak Cipta © 2026 Jejak Perupa. Seluruh hak cipta dilindungi.")
+  mascotSlides      Json?
+  quotes            Json?
+  updatedAt         DateTime @updatedAt
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface TablePaginationProps {
@@ -33,6 +33,24 @@ export function TablePagination({
   const startItem = totalItems === 0 ? 0 : (safeCurrentPage - 1) * pageSize + 1;
   const endItem = Math.min(safeCurrentPage * pageSize, totalItems);
 
+  // Custom Select Dropdown State
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
   // Generate visible page numbers with ellipsis
   const pageNumbers = useMemo(() => {
     const pages: (number | string)[] = [];
@@ -61,7 +79,7 @@ export function TablePagination({
         className
       )}
     >
-      {/* LEFT: ITEM RANGE & PER-PAGE SELECTOR */}
+      {/* LEFT: ITEM RANGE & CUSTOM PER-PAGE SELECTOR */}
       <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-jp-gray-600">
         <div className="font-mono">
           Menampilkan{" "}
@@ -73,19 +91,59 @@ export function TablePagination({
           {itemName}
         </div>
 
-        <div className="flex items-center gap-1.5 border-l border-jp-gray-300 pl-3">
+        <div className="flex items-center gap-2 border-l border-jp-gray-300 pl-3">
           <span className="text-jp-gray-500">Tampilkan:</span>
-          <select
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="rounded-lg border border-jp-gray-300 bg-white px-2 py-1 font-mono font-bold text-xs text-jp-ink focus:border-jp-blue-700 focus:outline-none cursor-pointer shadow-2xs"
-          >
-            {pageSizeOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
+
+          {/* CUSTOM DROPDOWN BUTTON & POPUP (NO NATIVE OS BLUE HIGHLIGHT) */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsOpen((prev) => !prev)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg border bg-white px-2.5 py-1 font-mono font-bold text-xs text-jp-ink transition cursor-pointer shadow-2xs",
+                isOpen
+                  ? "border-jp-blue-700 ring-2 ring-jp-blue-500/20"
+                  : "border-jp-gray-300 hover:border-jp-blue-700"
+              )}
+            >
+              <span>{pageSize}</span>
+              <ChevronDown
+                className={cn(
+                  "h-3 w-3 text-jp-gray-500 transition-transform",
+                  isOpen && "rotate-180 text-jp-blue-900"
+                )}
+              />
+            </button>
+
+            {/* CUSTOM DROPDOWN OPTIONS MENU */}
+            {isOpen && (
+              <div className="absolute bottom-full mb-1 left-0 z-50 min-w-[5rem] overflow-hidden rounded-xl border border-jp-gray-200 bg-white p-1 shadow-lg animate-in fade-in zoom-in-95 duration-150">
+                {pageSizeOptions.map((opt) => {
+                  const isSelected = opt === pageSize;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        onPageSizeChange(opt);
+                        setIsOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 font-mono text-xs font-bold transition cursor-pointer text-left",
+                        isSelected
+                          ? "bg-jp-blue-900 text-white"
+                          : "text-jp-gray-700 hover:bg-jp-paper hover:text-jp-ink"
+                      )}
+                    >
+                      <span>{opt}</span>
+                      {isSelected && <Check className="h-3 w-3 text-white" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           <span className="text-jp-gray-500 font-mono">per halaman</span>
         </div>
       </div>
@@ -137,10 +195,10 @@ export function TablePagination({
                 type="button"
                 onClick={() => onPageChange(pageNum)}
                 className={cn(
-                  "flex h-8 min-w-[32px] px-2 items-center justify-center rounded-lg font-mono text-xs transition cursor-pointer shadow-2xs",
+                  "flex h-8 min-w-[2rem] px-2 items-center justify-center rounded-lg font-mono text-xs font-bold transition cursor-pointer shadow-2xs",
                   isActive
-                    ? "bg-jp-blue-900 text-white font-bold shadow-xs"
-                    : "border border-jp-gray-200 bg-white text-jp-gray-700 hover:bg-jp-blue-50 hover:text-jp-blue-900"
+                    ? "bg-jp-blue-900 text-white shadow-xs"
+                    : "border border-jp-gray-200 bg-white text-jp-gray-700 hover:border-jp-blue-600 hover:text-jp-ink"
                 )}
               >
                 {pageNum}

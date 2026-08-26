@@ -27,12 +27,14 @@ import {
   Clock,
 } from "lucide-react";
 
+import { articlesData, type ArticleFullData } from "@/lib/data/articles";
+
 export default function AdminArtikelPage() {
   const { confirm, alert } = useModal();
   const { approvedCategories } = useCategories();
-  const initialArticles = artService.getAllArticles();
 
-  const [articlesList, setArticlesList] = useState(initialArticles);
+  const [articlesList, setArticlesList] = useState<ArticleFullData[]>(articlesData);
+  const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [sortBy, setSortBy] = useState<string>("NEWEST");
@@ -43,6 +45,8 @@ export default function AdminArtikelPage() {
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
+    setMounted(true);
+    setArticlesList(artService.getAllArticles());
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 450);
@@ -138,7 +142,8 @@ export default function AdminArtikelPage() {
     });
 
     if (confirmed) {
-      setArticlesList((prev) => prev.filter((a) => a.slug !== slug));
+      artService.deleteArticle(slug);
+      setArticlesList(artService.getAllArticles());
       await alert({
         title: "Artikel Diarsipkan",
         message: `Artikel "${title}" telah dipindahkan ke arsip.`,
@@ -198,14 +203,14 @@ export default function AdminArtikelPage() {
         <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
           <div className="rounded-xl border border-jp-gray-300 bg-white p-3.5 sm:p-4 shadow-2xs">
             <div className="text-[11px] sm:text-xs text-jp-gray-500 font-medium">Total Naskah</div>
-            <div className="mt-1 font-heading text-xl sm:text-2xl font-bold text-jp-ink">
-              {articlesList.length}
+            <div suppressHydrationWarning className="mt-1 font-heading text-xl sm:text-2xl font-bold text-jp-ink">
+              {mounted ? articlesList.length : articlesData.length}
             </div>
           </div>
 
           <div className="rounded-xl border border-jp-gray-300 bg-white p-3.5 sm:p-4 shadow-2xs">
             <div className="text-[11px] sm:text-xs text-jp-gray-500 font-medium">Kategori Aktif</div>
-            <div className="mt-1 font-heading text-xl sm:text-2xl font-bold text-jp-blue-900">
+            <div suppressHydrationWarning className="mt-1 font-heading text-xl sm:text-2xl font-bold text-jp-blue-900">
               {approvedCategories.length}
             </div>
           </div>
@@ -219,8 +224,8 @@ export default function AdminArtikelPage() {
 
           <div className="rounded-xl border border-jp-gray-300 bg-white p-3.5 sm:p-4 shadow-2xs">
             <div className="text-[11px] sm:text-xs text-jp-gray-500 font-medium">Terfilter Saat Ini</div>
-            <div className="mt-1 font-heading text-xl sm:text-2xl font-bold text-jp-brown-900">
-              {filteredArticles.length}
+            <div suppressHydrationWarning className="mt-1 font-heading text-xl sm:text-2xl font-bold text-jp-brown-900">
+              {mounted ? filteredArticles.length : articlesData.length}
             </div>
           </div>
         </div>

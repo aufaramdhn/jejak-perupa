@@ -1,26 +1,92 @@
-import React from "react";
-import { notFound } from "next/navigation";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import { AdminLayout } from "@/components/templates/admin/AdminLayout";
-import { ArticleEditorForm, ChapterItem, ReferenceItem } from "@/components/organisms/admin/ArticleEditorForm";
+import {
+  ArticleEditorForm,
+  ChapterItem,
+  ReferenceItem,
+} from "@/components/organisms/admin/ArticleEditorForm";
 import { artService } from "@/lib/services/artService";
+import { Button } from "@/components/atoms/form/Button";
+import { ArrowLeft, FileQuestion } from "lucide-react";
 
-export function generateStaticParams() {
-  const articles = artService.getAllArticles();
-  return articles.map((article) => ({
-    slug: article.slug,
-  }));
-}
+export default function AdminEditArtikelPage() {
+  const params = useParams();
+  const slug =
+    typeof params?.slug === "string"
+      ? params.slug
+      : Array.isArray(params?.slug)
+      ? params.slug[0]
+      : "";
 
-export default async function AdminEditArtikelPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const article = artService.getArticleBySlug(slug);
+  const [isLoading, setIsLoading] = useState(true);
+  const [article, setArticle] = useState(() => artService.getArticleBySlug(slug));
+
+  useEffect(() => {
+    if (slug) {
+      const found = artService.getArticleBySlug(slug);
+      setArticle(found);
+      setIsLoading(false);
+    }
+  }, [slug]);
+
+  if (isLoading) {
+    return (
+      <AdminLayout
+        title="Memuat Lembar Editor..."
+        subtitle="Menyiapkan data naskah materi kuratorial..."
+      >
+        <div className="rounded-xl border border-jp-gray-200 bg-white p-12 text-center space-y-3 font-sans">
+          <div className="h-6 w-6 border-2 border-jp-blue-700 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs text-jp-gray-500 font-mono">
+            Memuat draf dan konten artikel...
+          </p>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   if (!article) {
-    notFound();
+    return (
+      <AdminLayout
+        title="Artikel Tidak Ditemukan"
+        subtitle="Naskah dengan tautan slug ini tidak terdaftar di sistem penyimpanan lokal atau resmi."
+      >
+        <div className="rounded-xl border border-jp-gray-200 bg-white p-10 text-center space-y-4 max-w-md mx-auto font-sans">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-jp-paper border border-jp-gray-200 mx-auto text-jp-gray-600">
+            <FileQuestion className="h-6 w-6 text-jp-gray-500" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-jp-ink font-heading">
+              Naskah Tidak Ditemukan
+            </h3>
+            <p className="text-xs text-jp-gray-600 font-prose">
+              Artikel dengan slug{" "}
+              <code className="font-mono bg-jp-paper px-1.5 py-0.5 rounded border text-jp-blue-900 font-bold">
+                {slug}
+              </code>{" "}
+              belum pernah disimpan atau telah dihapus.
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link href="/admin/artikel">
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                className="rounded-lg text-xs"
+              >
+                <ArrowLeft className="h-4 w-4 mr-1.5" />
+                Kembali ke Daftar Artikel
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </AdminLayout>
+    );
   }
 
   // Convert ArticleFullData sections into chapters
@@ -29,6 +95,8 @@ export default async function AdminEditArtikelPage({
       id: sec.id || `sec-${idx}`,
       title: sec.heading,
       content: sec.paragraphs?.map((p) => `<p>${p}</p>`).join("") || "",
+      peruChanTip: sec.peruChanTip || "",
+      peruChanTheme: sec.peruChanTheme || "blue",
     })) || [{ id: "chap-1", title: "", content: "" }];
 
   const initialReferences: ReferenceItem[] =
@@ -50,6 +118,7 @@ export default async function AdminEditArtikelPage({
     chapters: initialChapters,
     references: initialReferences,
     peruChanTip: article.peruChanTip,
+    peruChanTheme: article.categoryVariant === "brown" ? ("brown" as const) : ("blue" as const),
   };
 
   return (
