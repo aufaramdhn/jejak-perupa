@@ -27,9 +27,10 @@ export default function AdminEditArtikelPage() {
 
   useEffect(() => {
     if (slug) {
-      const found = artService.getArticleBySlug(slug);
-      setArticle(found);
-      setIsLoading(false);
+      artService.getArticleBySlugAsync(slug).then((found) => {
+        setArticle(found);
+        setIsLoading(false);
+      });
     }
   }, [slug]);
 
@@ -113,6 +114,7 @@ export default function AdminEditArtikelPage() {
     excerpt: article.excerpt,
     coverImageUrl: article.coverImageUrl,
     headerBgImageUrl: article.headerBgImageUrl,
+    headerBgColor: article.headerBgColor,
     headerGradientOpacity: article.headerGradientOpacity,
     headerGradientHeight: article.headerGradientHeight,
     chapters: initialChapters,

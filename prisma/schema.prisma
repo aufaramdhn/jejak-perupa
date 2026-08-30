@@ -127,6 +127,7 @@ model Article {
   authorName            String?            @map("author_name")
   coverImageUrl         String?            @map("cover_image_url")
   headerBgImageUrl      String?            @map("header_bg_image_url")
+  headerBgColor         String?            @map("header_bg_color")
   headerGradientOpacity Int?               @default(85) @map("header_gradient_opacity")
   headerGradientHeight  Int?               @default(80) @map("header_gradient_height")
   featuredArtistSlug    String?            @map("featured_artist_slug")

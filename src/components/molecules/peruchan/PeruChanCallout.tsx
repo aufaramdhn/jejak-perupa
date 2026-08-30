@@ -65,23 +65,23 @@ export function PeruChanCallout({
       )}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <div className="flex shrink-0 items-center justify-center">
+        <div className="flex shrink-0 items-start justify-center pt-0.5">
           {imageSrc && !imageError ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imageSrc}
               alt="Peru-Chan"
-              width={56}
-              height={56}
+              width={128}
+              height={128}
               loading="lazy"
               decoding="async"
-              className="h-12 w-12 object-contain sm:h-14 sm:w-14"
+              className="h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
               onError={() => setImageError(true)}
             />
           ) : (
             <div
               className={cn(
-                "flex h-11 w-11 items-center justify-center rounded-lg shadow-2xs",
+                "flex h-14 w-14 items-center justify-center rounded-xl shadow-2xs",
                 currentTheme.avatarBg
               )}
             >

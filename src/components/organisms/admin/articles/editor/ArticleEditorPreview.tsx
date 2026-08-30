@@ -12,6 +12,7 @@ interface ArticleEditorPreviewProps {
   readTime: string;
   excerpt: string;
   headerBgImageUrl?: string;
+  headerBgColor?: string;
   headerGradientOpacity?: number;
   headerGradientHeight?: number;
   chapters: ChapterItem[];
@@ -27,6 +28,7 @@ export function ArticleEditorPreview({
   readTime,
   excerpt,
   headerBgImageUrl,
+  headerBgColor,
   headerGradientOpacity = 85,
   headerGradientHeight = 80,
   chapters,
@@ -37,18 +39,27 @@ export function ArticleEditorPreview({
   return (
     <div className="rounded-xl border border-jp-gray-300 bg-white p-6 md:p-10 shadow-2xs space-y-8 max-w-4xl mx-auto font-sans">
       {/* PREVIEW HEADER */}
-      <div className="relative overflow-hidden rounded-xl border border-jp-gray-200 p-6 md:p-8">
+      <div
+        className="relative overflow-hidden rounded-xl border border-jp-gray-200 p-6 md:p-8"
+        style={{ backgroundColor: headerBgColor || undefined }}
+      >
         {headerBgImageUrl && (
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${headerBgImageUrl})` }}
           />
         )}
-        {headerBgImageUrl ? (
+        {headerBgImageUrl && headerBgColor && (
+          <div
+            className="absolute inset-0 pointer-events-none transition-all duration-300 mix-blend-multiply opacity-60"
+            style={{ backgroundColor: headerBgColor }}
+          />
+        )}
+        {headerBgImageUrl || headerBgColor ? (
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: `linear-gradient(to top, #FAFAF7 0%, rgba(250, 250, 247, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, rgba(238, 245, 255, 0.45) 100%)`,
+              background: `linear-gradient(to top, #FAFAF7 0%, rgba(250, 250, 247, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, transparent 100%)`,
             }}
           />
         ) : (

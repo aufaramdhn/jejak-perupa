@@ -135,10 +135,52 @@ export function ArticleChaptersManager({
             </div>
 
             {/* CHAPTER RICH TEXT EDITOR */}
-            <div className="space-y-1" id={`chapter_content_${ch.id}`}>
-              <label className="text-xs font-bold text-jp-ink">
-                Uraian Isi Bab {idx + 1} <span className="text-red-500">*</span>
-              </label>
+            <div className="space-y-1.5" id={`chapter_content_${ch.id}`}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label className="text-xs font-bold text-jp-ink">
+                  Uraian Isi Bab {idx + 1} <span className="text-red-500">*</span>
+                </label>
+
+                {/* QUICK COMPONENT INSERTERS */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const bubbleBox = `<div class="my-4 rounded-xl border border-jp-blue-200 bg-jp-blue-50/60 p-4 space-y-1"><div class="font-bold text-jp-blue-900 text-sm">Istilah Kunci : [Nama Istilah]</div><div class="text-xs text-jp-gray-700">[Tuliskan definisi atau penjelasan konsep khusus di sini...]</div></div>`;
+                      onUpdateChapter(ch.id, "content", (ch.content || "") + bubbleBox);
+                    }}
+                    className="rounded-md border border-jp-blue-200 bg-jp-blue-50/70 hover:bg-jp-blue-100 px-2 py-1 text-[11px] font-bold text-jp-blue-900 transition cursor-pointer"
+                    title="Sisipkan Kotak Istilah / Bubble Box"
+                  >
+                    + Kotak Istilah
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const studioCards = `<div class="my-5 grid gap-3 sm:grid-cols-2"><div class="rounded-xl border border-jp-gray-200 bg-white p-4 shadow-xs space-y-1"><div class="font-bold text-jp-ink text-sm">Studio / Peminatan 1</div><div class="text-xs text-jp-gray-600">[Eksplorasi media dan fokus kajian 1...]</div></div><div class="rounded-xl border border-jp-gray-200 bg-white p-4 shadow-xs space-y-1"><div class="font-bold text-jp-ink text-sm">Studio / Peminatan 2</div><div class="text-xs text-jp-gray-600">[Eksplorasi media dan fokus kajian 2...]</div></div></div>`;
+                      onUpdateChapter(ch.id, "content", (ch.content || "") + studioCards);
+                    }}
+                    className="rounded-md border border-jp-gray-200 bg-white hover:bg-jp-paper px-2 py-1 text-[11px] font-bold text-jp-ink transition cursor-pointer"
+                    title="Sisipkan Kartu Pilihan / Studio 2 Kolom"
+                  >
+                    + Kartu Pilihan (2 Kolom)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const quoteBox = `<blockquote class="my-4 border-l-4 border-jp-blue-900 bg-jp-paper p-4 rounded-r-xl italic text-jp-gray-800 text-xs md:text-sm">"[Tuliskan kutipan wacana penting atau penekanan gagasan di sini...]"</blockquote>`;
+                      onUpdateChapter(ch.id, "content", (ch.content || "") + quoteBox);
+                    }}
+                    className="rounded-md border border-jp-gray-200 bg-white hover:bg-jp-paper px-2 py-1 text-[11px] font-bold text-jp-ink transition cursor-pointer"
+                    title="Sisipkan Kutipan Wacana"
+                  >
+                    + Kutipan Wacana
+                  </button>
+                </div>
+              </div>
+
               <RichTextEditor
                 value={ch.content}
                 onChange={(val) => onUpdateChapter(ch.id, "content", val)}

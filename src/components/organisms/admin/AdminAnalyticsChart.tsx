@@ -28,8 +28,14 @@ interface DataPoint {
 
 export function AdminAnalyticsChart() {
   const [activeFilter, setActiveFilter] = useState<TimeRangeFilter>("7d");
-  const [customStartDate, setCustomStartDate] = useState("2026-08-01");
-  const [customEndDate, setCustomEndDate] = useState("2026-08-25");
+  const [customStartDate, setCustomStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split("T")[0];
+  });
+  const [customEndDate, setCustomEndDate] = useState(() => {
+    return new Date().toISOString().split("T")[0];
+  });
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -46,72 +52,103 @@ export function AdminAnalyticsChart() {
     });
   };
 
-  // Generate realistic dataset based on filter
+  // Generate dynamic calendar dataset based on filter (Initialized to 0 for real-time tracking)
   const chartData: DataPoint[] = useMemo(() => {
+    const now = new Date();
+
     switch (activeFilter) {
-      case "7d":
-        return [
-          { label: "19 Agu", fullDate: "19 Agustus 2026", readers: 480, readDurationHours: 32 },
-          { label: "20 Agu", fullDate: "20 Agustus 2026", readers: 620, readDurationHours: 41 },
-          { label: "21 Agu", fullDate: "21 Agustus 2026", readers: 540, readDurationHours: 36 },
-          { label: "22 Agu", fullDate: "22 Agustus 2026", readers: 790, readDurationHours: 58 },
-          { label: "23 Agu", fullDate: "23 Agustus 2026", readers: 920, readDurationHours: 69 },
-          { label: "24 Agu", fullDate: "24 Agustus 2026", readers: 870, readDurationHours: 64 },
-          { label: "25 Agu", fullDate: "25 Agustus 2026 (Hari Ini)", readers: 1140, readDurationHours: 85 },
-        ];
+      case "7d": {
+        const points: DataPoint[] = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - i);
+          const label = d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+          const fullDate = d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+          points.push({
+            label,
+            fullDate: i === 0 ? `${fullDate} (Hari Ini)` : fullDate,
+            readers: 0,
+            readDurationHours: 0,
+          });
+        }
+        return points;
+      }
 
-      case "30d":
-        return [
-          { label: "27 Jul", fullDate: "27 Juli 2026", readers: 320, readDurationHours: 21 },
-          { label: "30 Jul", fullDate: "30 Juli 2026", readers: 410, readDurationHours: 28 },
-          { label: "03 Agu", fullDate: "03 Agustus 2026", readers: 520, readDurationHours: 35 },
-          { label: "06 Agu", fullDate: "06 Agustus 2026", readers: 680, readDurationHours: 46 },
-          { label: "09 Agu", fullDate: "09 Agustus 2026", readers: 590, readDurationHours: 40 },
-          { label: "12 Agu", fullDate: "12 Agustus 2026", readers: 730, readDurationHours: 51 },
-          { label: "15 Agu", fullDate: "15 Agustus 2026", readers: 840, readDurationHours: 60 },
-          { label: "18 Agu", fullDate: "18 Agustus 2026", readers: 780, readDurationHours: 55 },
-          { label: "21 Agu", fullDate: "21 Agustus 2026", readers: 910, readDurationHours: 67 },
-          { label: "25 Agu", fullDate: "25 Agustus 2026", readers: 1140, readDurationHours: 85 },
-        ];
+      case "30d": {
+        const points: DataPoint[] = [];
+        for (let i = 9; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - Math.round(i * 3.3));
+          const label = d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+          const fullDate = d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+          points.push({
+            label,
+            fullDate,
+            readers: 0,
+            readDurationHours: 0,
+          });
+        }
+        return points;
+      }
 
-      case "last_month":
-        return [
-          { label: "01 Jul", fullDate: "01 Juli 2026", readers: 280, readDurationHours: 19 },
-          { label: "05 Jul", fullDate: "05 Juli 2026", readers: 340, readDurationHours: 23 },
-          { label: "10 Jul", fullDate: "10 Juli 2026", readers: 390, readDurationHours: 27 },
-          { label: "15 Jul", fullDate: "15 Juli 2026", readers: 460, readDurationHours: 32 },
-          { label: "20 Jul", fullDate: "20 Juli 2026", readers: 510, readDurationHours: 36 },
-          { label: "25 Jul", fullDate: "25 Juli 2026", readers: 580, readDurationHours: 41 },
-          { label: "31 Jul", fullDate: "31 Juli 2026", readers: 630, readDurationHours: 45 },
-        ];
+      case "last_month": {
+        const points: DataPoint[] = [];
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthName = lastMonth.toLocaleDateString("id-ID", { month: "long" });
+        const intervals = [1, 5, 10, 15, 20, 25, 28];
+        intervals.forEach((day) => {
+          const d = new Date(lastMonth.getFullYear(), lastMonth.getMonth(), day);
+          points.push({
+            label: d.toLocaleDateString("id-ID", { day: "2-digit", month: "short" }),
+            fullDate: `${day} ${lastMonthName} ${d.getFullYear()}`,
+            readers: 0,
+            readDurationHours: 0,
+          });
+        });
+        return points;
+      }
 
-      case "3m":
-        return [
-          { label: "Jun M1", fullDate: "Juni Minggu 1", readers: 1850, readDurationHours: 120 },
-          { label: "Jun M2", fullDate: "Juni Minggu 2", readers: 2100, readDurationHours: 145 },
-          { label: "Jun M3", fullDate: "Juni Minggu 3", readers: 2450, readDurationHours: 170 },
-          { label: "Jun M4", fullDate: "Juni Minggu 4", readers: 2800, readDurationHours: 195 },
-          { label: "Jul M1", fullDate: "Juli Minggu 1", readers: 3100, readDurationHours: 215 },
-          { label: "Jul M2", fullDate: "Juli Minggu 2", readers: 3400, readDurationHours: 238 },
-          { label: "Jul M3", fullDate: "Juli Minggu 3", readers: 3750, readDurationHours: 260 },
-          { label: "Jul M4", fullDate: "Juli Minggu 4", readers: 4100, readDurationHours: 290 },
-          { label: "Agu M1", fullDate: "Agustus Minggu 1", readers: 4600, readDurationHours: 325 },
-          { label: "Agu M2", fullDate: "Agustus Minggu 2", readers: 5200, readDurationHours: 370 },
-          { label: "Agu M3", fullDate: "Agustus Minggu 3", readers: 5900, readDurationHours: 420 },
-          { label: "Agu M4", fullDate: "Agustus Minggu 4", readers: 6850, readDurationHours: 490 },
-        ];
+      case "3m": {
+        const points: DataPoint[] = [];
+        for (let i = 11; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - i * 7);
+          const monthShort = d.toLocaleDateString("id-ID", { month: "short" });
+          const monthFull = d.toLocaleDateString("id-ID", { month: "long" });
+          const weekNum = Math.min(4, Math.floor(d.getDate() / 7) + 1);
+          points.push({
+            label: `${monthShort} M${weekNum}`,
+            fullDate: `${monthFull} Minggu ${weekNum} (${d.getFullYear()})`,
+            readers: 0,
+            readDurationHours: 0,
+          });
+        }
+        return points;
+      }
 
       case "custom":
-      default:
-        return [
-          { label: "01 Agu", fullDate: "01 Agustus 2026", readers: 490, readDurationHours: 34 },
-          { label: "07 Agu", fullDate: "07 Agustus 2026", readers: 620, readDurationHours: 44 },
-          { label: "14 Agu", fullDate: "14 Agustus 2026", readers: 780, readDurationHours: 56 },
-          { label: "21 Agu", fullDate: "21 Agustus 2026", readers: 940, readDurationHours: 68 },
-          { label: "25 Agu", fullDate: "25 Agustus 2026", readers: 1140, readDurationHours: 85 },
-        ];
+      default: {
+        const start = new Date(customStartDate || "2026-01-01");
+        const end = new Date(customEndDate || now);
+        const diffMs = Math.max(1000 * 60 * 60 * 24, end.getTime() - start.getTime());
+        const diffDays = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+        const steps = Math.min(diffDays, 6);
+        const points: DataPoint[] = [];
+        for (let i = 0; i <= steps; i++) {
+          const d = new Date(start.getTime() + (diffDays * (i / Math.max(1, steps))) * (1000 * 60 * 60 * 24));
+          const label = d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+          const fullDate = d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+          points.push({
+            label,
+            fullDate,
+            readers: 0,
+            readDurationHours: 0,
+          });
+        }
+        return points;
+      }
     }
-  }, [activeFilter]);
+  }, [activeFilter, customStartDate, customEndDate]);
 
   // Max value for scaling
   const maxReaders = useMemo(
@@ -305,8 +342,8 @@ export function AdminAnalyticsChart() {
             <span className="font-mono text-2xl font-extrabold text-jp-ink">
               {avgReadersPerDay.toLocaleString()}
             </span>
-            <span className="text-xs font-bold text-green-700 flex items-center">
-              <ArrowUpRight className="h-3.5 w-3.5" /> +18.4%
+            <span className="text-[11px] font-bold text-jp-gray-500 font-mono bg-jp-paper px-1.5 py-0.5 rounded border border-jp-gray-200">
+              0% (Awal Periode)
             </span>
           </div>
         </div>

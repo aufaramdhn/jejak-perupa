@@ -47,6 +47,11 @@ export default function AdminArtikelPage() {
   useEffect(() => {
     setMounted(true);
     setArticlesList(artService.getAllArticles());
+    artService.syncWithDatabase().then((res) => {
+      if (res && res.length > 0) {
+        setArticlesList(res);
+      }
+    });
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 450);
@@ -142,8 +147,9 @@ export default function AdminArtikelPage() {
     });
 
     if (confirmed) {
-      artService.deleteArticle(slug);
-      setArticlesList(artService.getAllArticles());
+      await artService.deleteArticle(slug);
+      const updated = await artService.syncWithDatabase();
+      setArticlesList(updated);
       await alert({
         title: "Artikel Diarsipkan",
         message: `Artikel "${title}" telah dipindahkan ke arsip.`,

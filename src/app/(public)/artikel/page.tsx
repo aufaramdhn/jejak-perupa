@@ -7,10 +7,11 @@ import { ArticleCardSkeleton } from "@/components/molecules/article/ArticleCardS
 import { SearchBar } from "@/components/molecules/navigation/SearchBar";
 import { PeruChanTipBanner } from "@/components/organisms/peruchan/PeruChanTipBanner";
 import { artService } from "@/lib/services/artService";
+import { type ArticleFullData } from "@/lib/data/articles";
 import { cn } from "@/lib/utils";
 
 export default function ArtikelCatalogPage() {
-  const allArticles = artService.getAllArticles();
+  const [allArticles, setAllArticles] = useState<ArticleFullData[]>(() => artService.getAllArticles());
   const allCategories = artService.getAllCategories();
 
   const [selectedCategory, setSelectedCategory] = useState<string>("Semua");
@@ -19,10 +20,20 @@ export default function ArtikelCatalogPage() {
   const [isPending, startTransition] = useTransition();
 
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 450);
-    return () => clearTimeout(timer);
+    let isMounted = true;
+    artService
+      .syncWithDatabase()
+      .then((items) => {
+        if (isMounted && Array.isArray(items) && items.length > 0) {
+          setAllArticles(items);
+        }
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleCategoryChange = (catName: string) => {

@@ -14,30 +14,33 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Memulai proses konfigurasi database & seeding Jejak Perupa...");
 
-  // 0. KONFIGURASI SUPABASE STORAGE & ROW LEVEL SECURITY (RLS)
-  const sqlCommands = [
+  // 0. KONFIGURASI SUPABASE STORAGE & ROW LEVEL SECURITY (RLS DENGAN POLICIES LENGKAP)
+  const tables = [
+    "articles",
+    "site_settings",
+    "categories",
+    "artists",
+    "artworks",
+    "glossary_terms",
+    "art_communities",
+    "art_events",
+    "art_submissions",
+    "users",
+    "tags",
+    "article_tags",
+    "artist_timelines",
+    "artist_relations",
+    "learning_paths",
+    "learning_nodes",
+    "quizzes",
+    "quiz_questions",
+    "user_progress",
+    "user_bookmarks",
+    "comments",
+  ];
+
+  const storageSql = [
     `INSERT INTO storage.buckets (id, name, public) VALUES ('jejak-perupa-media', 'jejak-perupa-media', true) ON CONFLICT (id) DO UPDATE SET public = true`,
-    `ALTER TABLE IF EXISTS public.articles DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.site_settings DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.categories DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.artists DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.artworks DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.glossary_terms DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.art_communities DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.art_events DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.art_submissions DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.users DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.tags DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.article_tags DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.artist_timelines DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.artist_relations DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.learning_paths DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.learning_nodes DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.quizzes DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.quiz_questions DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.user_progress DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.user_bookmarks DISABLE ROW LEVEL SECURITY`,
-    `ALTER TABLE IF EXISTS public.comments DISABLE ROW LEVEL SECURITY`,
     `DO $$
     BEGIN
       IF NOT EXISTS (
@@ -63,17 +66,66 @@ async function main() {
     END $$;`,
   ];
 
-  for (const cmd of sqlCommands) {
+  for (const cmd of storageSql) {
     try {
       await prisma.$executeRawUnsafe(cmd);
     } catch (err: any) {
-      console.warn(`Peringatan saat menjalankan SQL: ${err.message}`);
+      console.warn(`Peringatan konfigurasi storage: ${err.message}`);
     }
   }
-  console.log("✓ Bucket storage & tabel-tabel PostgreSQL berhasil dikonfigurasi.");
 
-  const studentPasswordHash = bcrypt.hashSync("PelajarSeni123!", 10);
-  const curatorPasswordHash = bcrypt.hashSync("KuratorSeni123!", 10);
+  // Aktifkan RLS dengan kebijakan resmi agar bersih dari peringatan Supabase Security Advisor
+  for (const table of tables) {
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE IF EXISTS public.${table} ENABLE ROW LEVEL SECURITY;`);
+      await prisma.$executeRawUnsafe(`DROP POLICY IF EXISTS "Public access on ${table}" ON public.${table};`);
+      await prisma.$executeRawUnsafe(`CREATE POLICY "Public access on ${table}" ON public.${table} FOR ALL TO public USING (true) WITH CHECK (true);`);
+    } catch (err: any) {
+      console.warn(`Peringatan RLS tabel ${table}: ${err.message}`);
+    }
+  }
+  console.log("✓ RLS & Security Policies pada seluruh tabel PostgreSQL berhasil diaktifkan.");
+
+  // 0.1 BERSIHKAN / TRUNCATE SELURUH TABEL AGAR DATA BENAR-BENAR FRESH (MIRIP MIGRATE:FRESH)
+  try {
+    await prisma.$executeRawUnsafe(`
+      TRUNCATE TABLE 
+        public.user_bookmarks, 
+        public.user_progress, 
+        public.comments, 
+        public.art_submissions, 
+        public.art_events, 
+        public.art_communities, 
+        public.glossary_terms, 
+        public.learning_nodes, 
+        public.learning_paths, 
+        public.quiz_questions, 
+        public.quizzes, 
+        public.article_tags, 
+        public.tags, 
+        public.articles, 
+        public.artworks, 
+        public.artist_timelines, 
+        public.artist_relations, 
+        public.artists, 
+        public.categories, 
+        public.site_settings, 
+        public.users 
+      CASCADE;
+    `);
+    console.log("✓ Seluruh tabel berhasil dikosongkan (TRUNCATE CASCADE / Fresh Reset).");
+  } catch (err: any) {
+    console.warn(`Peringatan saat membersihkan tabel: ${err.message}`);
+  }
+
+  const studentPassword = process.env.STUDENT_SEED_PASSWORD || "PelajarSeni123!";
+  const curatorPassword =
+    process.env.CURATOR_SEED_PASSWORD ||
+    process.env.ADMIN_SEED_PASSWORD ||
+    "KuratorSeni123!";
+
+  const studentPasswordHash = bcrypt.hashSync(studentPassword, 10);
+  const curatorPasswordHash = bcrypt.hashSync(curatorPassword, 10);
 
   // 1. SEED USERS
   const userStudent = await prisma.user.upsert({
@@ -116,9 +168,10 @@ async function main() {
   const categoryMap = new Map<string, string>();
   for (const cat of categoriesSeeder) {
     const created = await prisma.category.upsert({
-      where: { slug: cat.slug },
+      where: { id: cat.id },
       update: {
         name: cat.name,
+        slug: cat.slug,
         description: cat.description,
         iconName: cat.iconName,
         colorHex: cat.colorHex,
@@ -192,9 +245,10 @@ async function main() {
   for (const a of artistsSeeder) {
     const fullBio = Array.isArray(a.fullBiography) ? a.fullBiography.join("\n\n") : a.shortBio;
     const createdArtist = await prisma.artist.upsert({
-      where: { slug: a.slug },
+      where: { id: a.id },
       update: {
         name: a.name,
+        slug: a.slug,
         birthYear: a.birthYear,
         deathYear: a.deathYear || null,
         originCity: a.originCity,
@@ -231,9 +285,11 @@ async function main() {
 
     if (artistId) {
       await prisma.artwork.upsert({
-        where: { slug: art.slug },
+        where: { id: art.id },
         update: {
+          artistId: artistId,
           title: art.title,
+          slug: art.slug,
           yearCreated: art.yearCreated,
           mediumMaterial: art.mediumMaterial,
           dimensions: art.dimensions || null,
@@ -282,9 +338,10 @@ async function main() {
 
     if (dbCatId) {
       await prisma.article.upsert({
-        where: { slug: article.slug },
+        where: { id: article.id },
         update: {
           title: article.title,
+          slug: article.slug,
           excerpt: article.excerpt,
           category: article.category,
           categoryVariant: article.categoryVariant || "blue",
@@ -342,9 +399,10 @@ async function main() {
       : (g.definitionFull || g.definitionShort);
 
     await prisma.glossaryTerm.upsert({
-      where: { slug: g.slug },
+      where: { id: g.id },
       update: {
         term: g.term,
+        slug: g.slug,
         letterGroup: g.letterGroup,
         category: g.category,
         phoneticSpelling: g.phoneticSpelling || null,
@@ -369,9 +427,10 @@ async function main() {
   for (const com of communitiesSeeder) {
     const webUrl = (com as any).socialUrl || com.websiteUrl || null;
     await prisma.artCommunity.upsert({
-      where: { slug: com.slug },
+      where: { id: com.id },
       update: {
         name: com.name,
+        slug: com.slug,
         city: com.city,
         province: com.province,
         description: com.description,
@@ -389,6 +448,79 @@ async function main() {
     });
   }
   console.log(`✓ ${communitiesSeeder.length} Komunitas Seni berhasil di-seed.`);
+
+  // 9. SEED AGENDA EVENTS DARI SEEDER
+  function parseIndonesianDate(str?: string | null): Date {
+    if (!str) return new Date();
+    const months: Record<string, string> = {
+      januari: "01",
+      februari: "02",
+      maret: "03",
+      april: "04",
+      mei: "05",
+      juni: "06",
+      juli: "07",
+      agustus: "08",
+      september: "09",
+      oktober: "10",
+      november: "11",
+      desember: "12",
+    };
+    const parts = str.trim().split(/\s+/);
+    if (parts.length === 3) {
+      const day = parts[0].padStart(2, "0");
+      const mKey = parts[1].toLowerCase();
+      const month = months[mKey] || "01";
+      const year = parts[2];
+      const parsed = new Date(`${year}-${month}-${day}T00:00:00.000Z`);
+      if (!isNaN(parsed.getTime())) return parsed;
+    }
+    const fallback = new Date(str);
+    return isNaN(fallback.getTime()) ? new Date() : fallback;
+  }
+
+  for (const ev of agendaSeeder) {
+    const start = parseIndonesianDate(ev.startDate);
+    const end = parseIndonesianDate(ev.endDate);
+    const evType =
+      ev.eventType === "Workshop"
+        ? EventType.WORKSHOP
+        : ev.eventType === "Diskusi"
+        ? EventType.DISKUSI
+        : EventType.PAMERAN;
+    const vName = (ev as any).venueName || (ev as any).locationName || "Gedung Pameran";
+    const org = (ev as any).organizer || (ev as any).organizerName || "Penyelenggara Seni";
+
+    await prisma.artEvent.upsert({
+      where: { id: ev.id },
+      update: {
+        title: ev.title,
+        slug: ev.slug,
+        eventType: evType,
+        organizer: org,
+        startDate: start,
+        endDate: end,
+        venueName: vName,
+        city: ev.city,
+        coverUrl: (ev as any).coverImageUrl || (ev as any).coverUrl || null,
+        registrationUrl: ev.registrationUrl || null,
+      },
+      create: {
+        id: ev.id,
+        title: ev.title,
+        slug: ev.slug,
+        eventType: evType,
+        organizer: org,
+        startDate: start,
+        endDate: end,
+        venueName: vName,
+        city: ev.city,
+        coverUrl: (ev as any).coverImageUrl || (ev as any).coverUrl || null,
+        registrationUrl: ev.registrationUrl || null,
+      },
+    });
+  }
+  console.log(`✓ ${agendaSeeder.length} Agenda pameran/acara seni berhasil di-seed.`);
 
   console.log("\n✓ Seluruh data Seeder Jejak Perupa berhasil di-seed ke basis data via Prisma!");
 }

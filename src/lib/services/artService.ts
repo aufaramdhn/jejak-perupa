@@ -42,12 +42,12 @@ function mapDBToArticle(row: any): ArticleFullData {
 
 function mapArticleToDB(art: ArticleFullData) {
   return {
-    id: art.id,
+    id: art.id && art.id.trim() !== "" ? art.id : `art-${Date.now()}`,
     title: art.title,
     slug: art.slug,
     excerpt: art.excerpt,
     category: art.category,
-    category_id: art.categoryId,
+    category_id: art.categoryId && art.categoryId.trim() !== "" ? art.categoryId : null,
     category_variant: art.categoryVariant || "blue",
     read_time: art.readTime,
     read_time_minutes: art.readTimeMinutes || 5,
@@ -55,6 +55,7 @@ function mapArticleToDB(art: ArticleFullData) {
     author_name: art.authorName,
     cover_image_url: art.coverImageUrl || null,
     header_bg_image_url: art.headerBgImageUrl || null,
+    header_bg_color: art.headerBgColor || null,
     header_gradient_opacity: art.headerGradientOpacity ?? 85,
     header_gradient_height: art.headerGradientHeight ?? 80,
     featured_artist_slug: art.featuredArtistSlug || null,
@@ -64,6 +65,12 @@ function mapArticleToDB(art: ArticleFullData) {
     content_sections: art.contentSections || [],
     references: art.references || [],
     related_slugs: art.relatedSlugs || [],
+    status: "PUBLISHED",
+    content_markdown: art.contentSections
+      ? art.contentSections
+          .map((s) => `## ${s.heading}\n\n${(s.paragraphs || []).join("\n\n")}`)
+          .join("\n\n---\n\n")
+      : "",
     updated_at: new Date().toISOString(),
   };
 }
@@ -121,7 +128,7 @@ export const artService = {
         return getStoredArticles();
       }
 
-      if (data && data.length > 0) {
+      if (data) {
         const remoteArticles = data.map(mapDBToArticle);
         saveStoredArticles(remoteArticles);
         return remoteArticles;
@@ -130,6 +137,46 @@ export const artService = {
       console.warn("Supabase articles sync exception:", e);
     }
     return getStoredArticles();
+  },
+
+  // SERVER-SIDE ASYNC QUERIES (DIRECT SUPABASE FIRST)
+  async getAllArticlesAsync(): Promise<ArticleFullData[]> {
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase
+          .from("articles")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          const remoteArticles = data.map(mapDBToArticle);
+          saveStoredArticles(remoteArticles);
+          return remoteArticles;
+        }
+      } catch (e) {
+        console.warn("Supabase getAllArticlesAsync exception:", e);
+      }
+    }
+    return getStoredArticles();
+  },
+
+  async getArticleBySlugAsync(slug: string): Promise<ArticleFullData | undefined> {
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase
+          .from("articles")
+          .select("*")
+          .eq("slug", slug)
+          .single();
+
+        if (!error && data) {
+          return mapDBToArticle(data);
+        }
+      } catch (e) {
+        console.warn("Supabase getArticleBySlugAsync exception:", e);
+      }
+    }
+    return getStoredArticles().find((a) => a.slug === slug);
   },
 
   // ARTIKEL (READ)
@@ -150,9 +197,57 @@ export const artService = {
     if (isSupabaseConfigured()) {
       try {
         const payload = mapArticleToDB(article);
-        const { error } = await supabase.from("articles").upsert(payload, { onConflict: "slug" });
-        if (error) {
-          console.error("Supabase addArticle error:", error.message);
+
+        // 1. If category_id exists, ensure category is present in DB first
+        if (payload.category_id) {
+          const catName = article.category || "Umum";
+          const catSlug = payload.category_id.replace(/^cat-/, "");
+          await supabase
+            .from("categories")
+            .upsert(
+              {
+                id: payload.category_id,
+                name: catName,
+                slug: catSlug,
+                description: `Kategori wacana seni rupa ${catName}.`,
+                order_index: 0,
+              },
+              { onConflict: "id" }
+            );
+        }
+
+        // 2. Resilient Upsert Article with dynamic fallback
+        let currentPayload: any = { ...payload };
+        let lastError: any = null;
+
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const { error } = await supabase.from("articles").upsert(currentPayload, { onConflict: "slug" });
+          if (!error) {
+            lastError = null;
+            break;
+          }
+
+          lastError = error;
+          const msg = error.message || "";
+
+          // Check if error is due to missing column in Supabase schema cache
+          const matchCol = msg.match(/Could not find the '([^']+)' column/i);
+          if (matchCol && matchCol[1]) {
+            delete currentPayload[matchCol[1]];
+            continue;
+          }
+
+          // Check if error is due to foreign key constraint
+          if (msg.includes("foreign key") || error.code === "23503" || msg.includes("category_id")) {
+            currentPayload.category_id = null;
+            continue;
+          }
+
+          break;
+        }
+
+        if (lastError) {
+          console.warn("Supabase addArticle warning:", lastError.message);
         }
       } catch (e) {
         console.warn("Supabase insert error:", e);
@@ -171,12 +266,61 @@ export const artService = {
       if (isSupabaseConfigured()) {
         try {
           const payload = mapArticleToDB(updatedArticle);
-          const { error } = await supabase
-            .from("articles")
-            .update(payload)
-            .eq("slug", slug);
-          if (error) {
-            console.error("Supabase updateArticle error:", error.message);
+
+          // 1. If category_id exists, ensure category is present in DB first
+          if (payload.category_id) {
+            const catName = updatedArticle.category || "Umum";
+            const catSlug = payload.category_id.replace(/^cat-/, "");
+            await supabase
+              .from("categories")
+              .upsert(
+                {
+                  id: payload.category_id,
+                  name: catName,
+                  slug: catSlug,
+                  description: `Kategori wacana seni rupa ${catName}.`,
+                  order_index: 0,
+                },
+                { onConflict: "id" }
+              );
+          }
+
+          // 2. Resilient Update Article with dynamic fallback
+          let currentPayload: any = { ...payload };
+          let lastError: any = null;
+
+          for (let attempt = 0; attempt < 3; attempt++) {
+            const { error } = await supabase
+              .from("articles")
+              .update(currentPayload)
+              .eq("slug", slug);
+
+            if (!error) {
+              lastError = null;
+              break;
+            }
+
+            lastError = error;
+            const msg = error.message || "";
+
+            // Check if error is due to missing column in Supabase schema cache
+            const matchCol = msg.match(/Could not find the '([^']+)' column/i);
+            if (matchCol && matchCol[1]) {
+              delete currentPayload[matchCol[1]];
+              continue;
+            }
+
+            // Check if error is due to foreign key constraint
+            if (msg.includes("foreign key") || error.code === "23503" || msg.includes("category_id")) {
+              currentPayload.category_id = null;
+              continue;
+            }
+
+            break;
+          }
+
+          if (lastError) {
+            console.warn("Supabase updateArticle warning:", lastError.message);
           }
         } catch (e) {
           console.warn("Supabase update error:", e);
@@ -238,6 +382,35 @@ export const artService = {
     return artistsData;
   },
 
+  async getAllArtistsAsync(): Promise<ArtistData[]> {
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.from("artists").select("*").order("name", { ascending: true });
+        if (!error && data) {
+          return data.map((row: any) => ({
+            id: row.id,
+            name: row.name,
+            slug: row.slug,
+            birthYear: row.birth_year,
+            deathYear: row.death_year,
+            originCity: row.origin_city,
+            artMovement: row.art_movement,
+            studioDiscipline: row.studio_discipline,
+            shortBio: row.short_bio,
+            fullBiography: row.full_biography_markdown
+              ? row.full_biography_markdown.split("\n\n").filter(Boolean)
+              : [row.short_bio || ""],
+            photoUrl: row.photo_url || undefined,
+            isFeatured: row.is_featured || false,
+            timelines: [],
+            relatedArtists: [],
+          }));
+        }
+      } catch (e) {}
+    }
+    return artistsData;
+  },
+
   getFeaturedArtists(): ArtistData[] {
     return artistsData.filter((a) => a.isFeatured);
   },
@@ -246,8 +419,72 @@ export const artService = {
     return artistsData.find((a) => a.slug === slug);
   },
 
+  async getArtistBySlugAsync(slug: string): Promise<ArtistData | undefined> {
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.from("artists").select("*, artist_timelines(*)").eq("slug", slug).single();
+        if (!error && data) {
+          return {
+            id: data.id,
+            name: data.name,
+            slug: data.slug,
+            birthYear: data.birth_year,
+            deathYear: data.death_year,
+            originCity: data.origin_city,
+            artMovement: data.art_movement,
+            studioDiscipline: data.studio_discipline,
+            shortBio: data.short_bio,
+            fullBiography: data.full_biography_markdown
+              ? data.full_biography_markdown.split("\n\n").filter(Boolean)
+              : [data.short_bio || ""],
+            photoUrl: data.photo_url || undefined,
+            isFeatured: data.is_featured || false,
+            timelines: Array.isArray(data.artist_timelines)
+              ? data.artist_timelines.map((t: any) => ({
+                  year: t.year,
+                  title: t.title,
+                  description: t.description,
+                  imageUrl: t.image_url || undefined,
+                }))
+              : [],
+            relatedArtists: [],
+          };
+        }
+      } catch (e) {}
+    }
+    return artistsData.find((a) => a.slug === slug);
+  },
+
   // KARYA SENI
   getAllArtworks(): ArtworkData[] {
+    return artworksData;
+  },
+
+  async getAllArtworksAsync(): Promise<ArtworkData[]> {
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.from("artworks").select("*");
+        if (!error && data) {
+          return data.map((row: any) => ({
+            id: row.id,
+            artistId: row.artist_id,
+            artistName: "Maestro Seni",
+            title: row.title,
+            slug: row.slug,
+            yearCreated: row.year_created,
+            mediumMaterial: row.medium_material,
+            dimensions: row.dimensions || "",
+            currentLocation: row.current_location,
+            highResImageUrl: row.high_res_image_url,
+            thumbnailUrl: row.thumbnail_url || row.high_res_image_url,
+            isFeatured: row.is_featured || false,
+            description: row.medium_material || "",
+            colorPalette: [],
+            focalPoints: [],
+          }));
+        }
+      } catch (e) {}
+    }
     return artworksData;
   },
 
@@ -261,6 +498,29 @@ export const artService = {
 
   // GLOSARIUM
   getAllGlossaryTerms(): GlossaryData[] {
+    return glossaryData.sort((a, b) => a.term.localeCompare(b.term));
+  },
+
+  async getAllGlossaryTermsAsync(): Promise<GlossaryData[]> {
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.from("glossary_terms").select("*").order("term", { ascending: true });
+        if (!error && data) {
+          return data.map((row: any) => ({
+            id: row.id,
+            term: row.term,
+            slug: row.slug,
+            phoneticSpelling: row.phonetic_spelling || "",
+            letterGroup: row.letter_group,
+            category: row.category,
+            definitionShort: row.definition_short,
+            definitionFull: row.definition_full_markdown
+              ? row.definition_full_markdown.split("\n\n").filter(Boolean)
+              : [row.definition_short || ""],
+          }));
+        }
+      } catch (e) {}
+    }
     return glossaryData.sort((a, b) => a.term.localeCompare(b.term));
   },
 

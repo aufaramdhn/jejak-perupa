@@ -70,7 +70,7 @@ export default async function DynamicArticleDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const article = artService.getArticleBySlug(slug);
+  const article = await artService.getArticleBySlugAsync(slug);
 
   const articleSchema = article
     ? {
@@ -128,10 +128,17 @@ export default async function DynamicArticleDetailPage({
     ],
   };
 
+  const related = article ? artService.getRelatedArticles(slug) : [];
+
   return (
     <>
       <JsonLd data={([articleSchema, breadcrumbSchema].filter(Boolean) as unknown as Record<string, unknown>[])} />
-      <ArticleDetailView slug={slug} initialArticle={article} siteUrl={siteUrl} />
+      <ArticleDetailView
+        slug={slug}
+        initialArticle={article}
+        initialRelatedArticles={related}
+        siteUrl={siteUrl}
+      />
     </>
   );
 }

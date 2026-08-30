@@ -134,6 +134,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
+      data-scroll-behavior="smooth"
       className={`${newsreader.variable} ${lora.variable} ${inter.variable} ${jetbrainsMono.variable} scroll-smooth`}
     >
       <head>

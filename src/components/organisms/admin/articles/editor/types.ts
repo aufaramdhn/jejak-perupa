@@ -19,6 +19,7 @@ export interface ArticleEditorFormData {
   excerpt: string;
   coverImageUrl?: string;
   headerBgImageUrl?: string;
+  headerBgColor?: string;
   headerGradientOpacity?: number;
   headerGradientHeight?: number;
   chapters: ChapterItem[];

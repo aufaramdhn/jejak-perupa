@@ -8,6 +8,7 @@ import { Button } from "@/components/atoms/form/Button";
 import { useCategories } from "@/lib/categoryContext";
 import { useModal } from "@/lib/modalContext";
 import { FolderPlus, Sparkles, X, Check } from "lucide-react";
+import { ColorPicker } from "@/components/atoms/form/ColorPicker";
 import { cn } from "@/lib/utils";
 
 export interface QuickAddCategoryModalProps {
@@ -30,15 +31,6 @@ export function QuickAddCategoryModal({
   const [description, setDescription] = useState("");
   const [selectedColor, setSelectedColor] = useState("#182C4A");
   const [error, setError] = useState("");
-
-  const colorOptions = [
-    { hex: "#182C4A", label: "Navy Kuratorial" },
-    { hex: "#3D2A20", label: "Cokelat Tanah" },
-    { hex: "#C9E64A", label: "Lime Studio" },
-    { hex: "#2A7B55", label: "Hijau Emerald" },
-    { hex: "#A63D40", label: "Crimson Terracotta" },
-    { hex: "#5E4B8B", label: "Ungu Indigo" },
-  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,34 +138,12 @@ export function QuickAddCategoryModal({
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-jp-ink">
-              Pilih Warna Aksen Tag
-            </label>
-            <div className="flex flex-wrap gap-2 pt-1">
-              {colorOptions.map((col) => (
-                <button
-                  key={col.hex}
-                  type="button"
-                  onClick={() => setSelectedColor(col.hex)}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer",
-                    selectedColor === col.hex
-                      ? "border-jp-ink bg-jp-paper shadow-2xs text-jp-ink font-bold"
-                      : "border-jp-gray-200 bg-white text-jp-gray-600 hover:bg-jp-paper"
-                  )}
-                >
-                  <span
-                    className="h-3 w-3 rounded-full shrink-0"
-                    style={{ backgroundColor: col.hex }}
-                  />
-                  <span>{col.label}</span>
-                  {selectedColor === col.hex && (
-                    <Check className="h-3 w-3 ml-1 text-jp-ink" />
-                  )}
-                </button>
-              ))}
-            </div>
+          <div className="space-y-1.5 pt-1">
+            <ColorPicker
+              label="Pilihan Aksen Warna (Kuratorial & Kustom)"
+              value={selectedColor}
+              onChange={setSelectedColor}
+            />
           </div>
         </div>
 

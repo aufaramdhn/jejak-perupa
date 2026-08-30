@@ -13,28 +13,46 @@ import { StudioCard } from "@/components/molecules/article/StudioCard";
 import { Heading1, Heading2, LeadText, Paragraph, SectionLabel } from "@/components/atoms/typography/Typography";
 import { Button } from "@/components/atoms/form/Button";
 import { BookmarkButton } from "@/components/molecules/article/BookmarkButton";
+import { ShareModal } from "@/components/molecules/modals/ShareModal";
 import { ArrowLeft, BookOpen, Share2, HelpCircle, FileQuestion } from "lucide-react";
 import { artService } from "@/lib/services/artService";
+import { useFeatureFlags } from "@/lib/featureFlagsContext";
 import { type ArticleFullData } from "@/lib/data/articles";
 
 export interface ArticleDetailViewProps {
   slug: string;
   initialArticle?: ArticleFullData;
+  initialRelatedArticles?: ArticleFullData[];
   siteUrl?: string;
 }
 
 export function ArticleDetailView({
   slug,
   initialArticle,
+  initialRelatedArticles,
+  siteUrl,
 }: ArticleDetailViewProps) {
+  const { isFeatureEnabled } = useFeatureFlags();
   const [article, setArticle] = useState<ArticleFullData | undefined>(initialArticle);
+  const [relatedArticles, setRelatedArticles] = useState<ArticleFullData[]>(
+    () => initialRelatedArticles || []
+  );
   const [isLoading, setIsLoading] = useState(!initialArticle);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => {
     if (!initialArticle && slug) {
       const found = artService.getArticleBySlug(slug);
       setArticle(found);
+      if (found) {
+        setRelatedArticles(artService.getRelatedArticles(found.slug));
+      }
       setIsLoading(false);
+    } else if (slug) {
+      const related = artService.getRelatedArticles(slug);
+      if (related && related.length > 0) {
+        setRelatedArticles(related);
+      }
     }
   }, [slug, initialArticle]);
 
@@ -78,8 +96,27 @@ export function ArticleDetailView({
     );
   }
 
-  const relatedArticles = artService.getRelatedArticles(article.slug);
   const quiz = artService.getQuizByArticleSlug(article.slug);
+
+  const handleShareClick = async () => {
+    const currentUrl = typeof window !== "undefined"
+      ? window.location.href
+      : `${siteUrl || "https://jejak-perupa.vercel.app"}/artikel/${article.slug}`;
+
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({
+          title: `${article.title} : Jejak Perupa`,
+          text: article.excerpt,
+          url: currentUrl,
+        });
+        return;
+      } catch (e) {
+        // User cancelled or share failed, open modal fallback
+      }
+    }
+    setIsShareModalOpen(true);
+  };
 
   const headerContent = (
     <div>
@@ -210,8 +247,8 @@ export function ArticleDetailView({
         </section>
       )}
 
-      {/* QUIZ EVALUATION CTA (IF AVAILABLE) */}
-      {quiz && (
+      {/* QUIZ EVALUATION CTA (IF AVAILABLE & ENABLED) */}
+      {quiz && isFeatureEnabled("quiz_interaktif") && (
         <div className="rounded-3xl border-2 border-jp-blue-100 bg-jp-blue-50/70 p-8 flex flex-col sm:flex-row items-center justify-between gap-6 font-sans">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-jp-blue-700">
@@ -264,7 +301,13 @@ export function ArticleDetailView({
 
         <div className="flex items-center gap-2 pt-2 border-t border-jp-gray-100">
           <BookmarkButton itemId={article.id} className="flex-1" />
-          <Button variant="outline" size="sm" className="flex-1">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleShareClick}
+            className="flex-1 cursor-pointer"
+          >
             <Share2 className="h-3.5 w-3.5 mr-1 text-jp-blue-700" />
             Bagikan
           </Button>
@@ -291,14 +334,30 @@ export function ArticleDetailView({
     </div>
   );
 
+  const currentArticleUrl = typeof window !== "undefined"
+    ? window.location.href
+    : `${siteUrl || "https://jejak-perupa.vercel.app"}/artikel/${article.slug}`;
+
   return (
-    <ArticleDetailTemplate
-      header={headerContent}
-      content={mainContent}
-      sidebar={sidebarContent}
-      headerBgImageUrl={article.headerBgImageUrl}
-      headerGradientOpacity={article.headerGradientOpacity}
-      headerGradientHeight={article.headerGradientHeight}
-    />
+    <>
+      <ArticleDetailTemplate
+        header={headerContent}
+        content={mainContent}
+        sidebar={sidebarContent}
+        headerBgImageUrl={article.headerBgImageUrl}
+        headerBgColor={article.headerBgColor}
+        headerGradientOpacity={article.headerGradientOpacity}
+        headerGradientHeight={article.headerGradientHeight}
+      />
+
+      {/* SHARE MODAL DIALOG */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={article.title}
+        url={currentArticleUrl}
+        excerpt={article.excerpt}
+      />
+    </>
   );
 }

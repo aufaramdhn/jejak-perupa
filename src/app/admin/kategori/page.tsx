@@ -26,6 +26,7 @@ import {
   FileText,
   RotateCcw,
 } from "lucide-react";
+import { ColorPicker } from "@/components/atoms/form/ColorPicker";
 import { cn } from "@/lib/utils";
 
 export default function AdminKategoriPage() {
@@ -444,21 +445,12 @@ export default function AdminKategoriPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-jp-gray-700 mb-1">
-                Warna Aksen Kuratorial
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={editColor}
-                  onChange={(e) => setEditColor(e.target.value)}
-                  className="h-10 w-10 cursor-pointer rounded border border-jp-gray-300 p-1"
-                />
-                <span className="font-mono text-xs font-bold text-jp-ink">
-                  {editColor}
-                </span>
-              </div>
+            <div className="space-y-1.5 pt-1">
+              <ColorPicker
+                label="Pilihan Aksen Warna (Kuratorial & Kustom)"
+                value={editColor}
+                onChange={setEditColor}
+              />
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-jp-gray-200">

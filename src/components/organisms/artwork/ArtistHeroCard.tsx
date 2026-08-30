@@ -52,15 +52,14 @@ export function ArtistHeroCard({
 
       <div className="mt-8 grid gap-8 md:grid-cols-[320px_1fr]">
         {/* FOTO */}
-        <div className="relative overflow-hidden rounded-xl bg-jp-brown-100/70 border border-jp-gray-300 shadow-2xs min-h-[300px]">
+        <div className="relative overflow-hidden rounded-xl bg-jp-brown-100/70 border border-jp-gray-300 shadow-2xs min-h-[300px] h-full w-full">
           {photoUrl && !imageError ? (
             <Image
               src={photoUrl}
               alt={artistName}
-              width={320}
-              height={400}
+              fill
               sizes="(max-width: 768px) 100vw, 320px"
-              className="h-full min-h-[300px] w-full object-cover"
+              className="object-cover"
               onError={() => setImageError(true)}
             />
           ) : (

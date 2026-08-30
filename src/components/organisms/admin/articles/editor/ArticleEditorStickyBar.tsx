@@ -91,8 +91,8 @@ export function ArticleEditorStickyBar({
           </button>
         </div>
 
-        {/* ACTION BUTTONS */}
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-jp-gray-200 pt-2.5 sm:pt-0 sm:pl-3">
+        {/* ACTION BUTTONS: DEV & RESET ONLY */}
+        <div className="flex items-center gap-2.5 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-jp-gray-200 pt-2.5 sm:pt-0 sm:pl-3">
           {/* AUTO-FILL DRAFT BUTTON (DEV TESTING) */}
           <button
             type="button"
@@ -113,30 +113,6 @@ export function ArticleEditorStickyBar({
           >
             <RotateCcw className="h-3.5 w-3.5 mr-1" />
             Reset
-          </Button>
-
-          {mode !== "public-contribute" && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onSubmit(true)}
-              className="flex-1 sm:flex-initial rounded-lg text-xs justify-center py-2 sm:py-1.5 h-9 font-semibold cursor-pointer"
-            >
-              <Save className="h-3.5 w-3.5 mr-1" />
-              Simpan Draf
-            </Button>
-          )}
-
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={() => onSubmit(false)}
-            className="w-full sm:w-auto rounded-lg text-xs font-bold justify-center py-2 sm:py-1.5 h-9 shadow-xs cursor-pointer"
-          >
-            <Send className="h-3.5 w-3.5 mr-1.5" />
-            {mode === "public-contribute" ? "Kirim Naskah" : "Terbitkan Artikel"}
           </Button>
         </div>
       </div>

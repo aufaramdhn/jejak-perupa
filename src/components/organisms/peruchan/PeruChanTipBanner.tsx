@@ -117,19 +117,21 @@ export function PeruChanTipBanner({
           {/* CENTER CONTENT: MASCOT + QUOTE */}
           <div className="flex-1 min-w-0 grid items-center gap-4 sm:gap-6 sm:grid-cols-[90px_1fr]">
             {/* MASCOT IMAGE */}
-            <div className="flex justify-center shrink-0">
+            <div className="flex justify-center items-center shrink-0">
               {currentQuote.imageSrc && !imageError ? (
-                <Image
-                  src={currentQuote.imageSrc}
-                  alt="Peru-Chan"
-                  width={90}
-                  height={90}
-                  className={cn(
-                    "max-h-20 sm:max-h-24 w-auto object-contain transition-all duration-300 transform",
-                    isAnimating ? "scale-95 opacity-50" : "scale-100 opacity-100"
-                  )}
-                  onError={() => setImageError(true)}
-                />
+                <div className="relative h-20 sm:h-24 w-20 sm:w-24">
+                  <Image
+                    src={currentQuote.imageSrc}
+                    alt="Peru-Chan"
+                    fill
+                    sizes="(max-width: 640px) 80px, 96px"
+                    className={cn(
+                      "object-contain transition-all duration-300 transform",
+                      isAnimating ? "scale-95 opacity-50" : "scale-100 opacity-100"
+                    )}
+                    onError={() => setImageError(true)}
+                  />
+                </div>
               ) : (
                 <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-white text-jp-blue-900 border border-jp-blue-200 shadow-2xs">
                   <Sparkles className="h-7 w-7 text-jp-blue-700" />

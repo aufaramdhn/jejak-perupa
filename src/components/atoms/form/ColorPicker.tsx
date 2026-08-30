@@ -19,18 +19,44 @@ export interface ColorPreset {
 }
 
 export const ART_COLOR_PRESETS: ColorPreset[] = [
-  { id: "blue", name: "Biru Indigo", hex: "#182C4A" },
-  { id: "brown", name: "Cokelat Tanah", hex: "#8C4A2F" },
-  { id: "lime", name: "Hijau Zaitun", hex: "#849324" },
-  { id: "amber", name: "Kuning Emas", hex: "#D97706" },
-  { id: "crimson", name: "Merah Marun", hex: "#DC2626" },
-  { id: "teal", name: "Biru Pirus", hex: "#0D9488" },
-  { id: "purple", name: "Ungu Lembayung", hex: "#7C3AED" },
-  { id: "rose", name: "Merah Mawar", hex: "#E11D48" },
-  { id: "emerald", name: "Hijau Zamrud", hex: "#059669" },
-  { id: "ochre", name: "Kuning Oker", hex: "#B45309" },
-  { id: "slate", name: "Abu Arang", hex: "#475569" },
+  // Blues & Indigos
   { id: "navy", name: "Biru Samudra", hex: "#0F172A" },
+  { id: "blue", name: "Biru Indigo", hex: "#182C4A" },
+  { id: "cobalt", name: "Biru Kobalt", hex: "#1E3A8A" },
+  { id: "ultramarine", name: "Biru Ultramarine", hex: "#2563EB" },
+  { id: "sky", name: "Biru Langit", hex: "#0284C7" },
+  { id: "teal", name: "Biru Pirus", hex: "#0D9488" },
+  // Greens & Olives
+  { id: "pine", name: "Hijau Pinus", hex: "#064E3B" },
+  { id: "emerald", name: "Hijau Zamrud", hex: "#059669" },
+  { id: "forest", name: "Hijau Rimba", hex: "#2A7B55" },
+  { id: "leaf", name: "Hijau Daun", hex: "#4D7C0F" },
+  { id: "lime", name: "Hijau Zaitun", hex: "#849324" },
+  { id: "studio_lime", name: "Lime Studio", hex: "#C9E64A" },
+  // Earth, Ochre & Ambers
+  { id: "dark_wood", name: "Cokelat Tua", hex: "#3D2A20" },
+  { id: "umber", name: "Cokelat Umber", hex: "#593A27" },
+  { id: "sienna", name: "Siena Bakar", hex: "#8C4A2F" },
+  { id: "ochre", name: "Kuning Oker", hex: "#B45309" },
+  { id: "amber", name: "Kuning Emas", hex: "#D97706" },
+  { id: "orange", name: "Oranye Jingga", hex: "#EA580C" },
+  // Crimsons, Terracottas & Roses
+  { id: "blood", name: "Merah Pekat", hex: "#7F1D1D" },
+  { id: "brick", name: "Merah Bata", hex: "#991B1B" },
+  { id: "terracotta", name: "Terracotta", hex: "#A63D40" },
+  { id: "crimson", name: "Merah Marun", hex: "#DC2626" },
+  { id: "rose", name: "Merah Mawar", hex: "#E11D48" },
+  { id: "coral", name: "Merah Koral", hex: "#F43F5E" },
+  // Purples, Violets & Magentas
+  { id: "deep_purple", name: "Ungu Pekat", hex: "#4C1D95" },
+  { id: "indigo_purple", name: "Ungu Indigo", hex: "#5E4B8B" },
+  { id: "purple", name: "Ungu Lembayung", hex: "#7C3AED" },
+  { id: "lavender", name: "Ungu Lavender", hex: "#A855F7" },
+  { id: "magenta", name: "Magenta Rupa", hex: "#C026D3" },
+  // Charcoals & Neutrals
+  { id: "black_ink", name: "Hitam Tinta", hex: "#09090B" },
+  { id: "slate_dark", name: "Abu Arang Pekat", hex: "#1E293B" },
+  { id: "slate", name: "Abu Arang Slate", hex: "#475569" },
 ];
 
 // Helper: Normalize value to hex code
@@ -291,7 +317,7 @@ export function ColorPicker({
               <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-jp-gray-500">
                 Pilihan Palet Standar Seni Rupa
               </div>
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-8 gap-1.5 sm:gap-2">
                 {ART_COLOR_PRESETS.map((preset) => {
                   const isSelected = currentHex.toLowerCase() === preset.hex.toLowerCase();
                   return (
@@ -308,9 +334,9 @@ export function ColorPicker({
                       }}
                       title={`${preset.name} (${preset.hex})`}
                       className={cn(
-                        "relative h-7 w-full rounded-lg transition-transform cursor-pointer flex items-center justify-center shadow-2xs",
+                        "relative h-7 sm:h-8 w-full rounded-lg transition-transform cursor-pointer flex items-center justify-center shadow-2xs border border-black/10",
                         isSelected
-                          ? "ring-2 ring-jp-blue-900 ring-offset-2 scale-105"
+                          ? "ring-2 ring-jp-blue-900 ring-offset-2 scale-110 z-10"
                           : "hover:scale-105"
                       )}
                       style={{ backgroundColor: preset.hex }}

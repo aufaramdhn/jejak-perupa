@@ -8,6 +8,7 @@ export interface SubmissionItem {
   excerpt: string;
   chapters: { title: string; content: string }[];
   references: string[];
+  coverImageUrl?: string;
   peruChanTip?: string;
   peruChanTheme?: "blue" | "brown" | "lime";
 }

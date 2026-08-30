@@ -6,8 +6,10 @@ import { QuickAddCategoryModal } from "@/components/molecules/modals/QuickAddCat
 import { useCategories } from "@/lib/categoryContext";
 import { useModal } from "@/lib/modalContext";
 import { useAuth } from "@/lib/auth";
-import { History } from "lucide-react";
+import { History, Save, Send } from "lucide-react";
+import { Button } from "@/components/atoms/form/Button";
 import { artService } from "@/lib/services/artService";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { type ArticleFullData } from "@/lib/data/articles";
 
 import {
@@ -127,6 +129,7 @@ export function ArticleEditorForm({
   const [excerpt, setExcerpt] = useState(initialData?.excerpt || "");
   const [coverImageUrl, setCoverImageUrl] = useState(initialData?.coverImageUrl || "");
   const [headerBgImageUrl, setHeaderBgImageUrl] = useState(initialData?.headerBgImageUrl || "");
+  const [headerBgColor, setHeaderBgColor] = useState(initialData?.headerBgColor || "#182C4A");
   const [headerGradientOpacity, setHeaderGradientOpacity] = useState<number>(
     initialData?.headerGradientOpacity ?? 85
   );
@@ -192,6 +195,7 @@ export function ArticleEditorForm({
             excerpt,
             coverImageUrl,
             headerBgImageUrl,
+            headerBgColor,
             headerGradientOpacity,
             headerGradientHeight,
             chapters,
@@ -219,6 +223,7 @@ export function ArticleEditorForm({
     excerpt,
     coverImageUrl,
     headerBgImageUrl,
+    headerBgColor,
     headerGradientOpacity,
     headerGradientHeight,
     chapters,
@@ -240,6 +245,7 @@ export function ArticleEditorForm({
         if (parsed.excerpt) setExcerpt(parsed.excerpt);
         if (parsed.coverImageUrl) setCoverImageUrl(parsed.coverImageUrl);
         if (parsed.headerBgImageUrl) setHeaderBgImageUrl(parsed.headerBgImageUrl);
+        if (parsed.headerBgColor) setHeaderBgColor(parsed.headerBgColor);
         if (parsed.headerGradientOpacity !== undefined) setHeaderGradientOpacity(parsed.headerGradientOpacity);
         if (parsed.headerGradientHeight !== undefined) setHeaderGradientHeight(parsed.headerGradientHeight);
         if (parsed.chapters) setChapters(parsed.chapters);
@@ -478,6 +484,14 @@ export function ArticleEditorForm({
         .replace(/[^a-z0-9\s-]/g, "")
         .replace(/\s+/g, "-") || `artikel-${Date.now()}`;
 
+    const selectedCatObj = categories.find(
+      (c) =>
+        c.name.toLowerCase() === category.toLowerCase() ||
+        c.slug.toLowerCase() === category.toLowerCase() ||
+        c.id.toLowerCase() === category.toLowerCase()
+    );
+    const resolvedCategoryId = selectedCatObj ? selectedCatObj.id : (categories[0]?.id || "cat-pendidikan");
+
     const newArticleData: ArticleFullData = {
       id: initialData?.title
         ? artService.getArticleBySlug(slug)?.id || `art-${Date.now()}`
@@ -485,8 +499,8 @@ export function ArticleEditorForm({
       title,
       slug,
       excerpt,
-      category,
-      categoryId: `cat-${category.toLowerCase().replace(/\s+/g, "-")}`,
+      category: selectedCatObj ? selectedCatObj.name : category,
+      categoryId: resolvedCategoryId,
       categoryVariant: "lime",
       readTime,
       readTimeMinutes: parseInt(readTime) || 7,
@@ -498,6 +512,7 @@ export function ArticleEditorForm({
       authorName: authorName || (currentUser?.name ? `${currentUser.name}` : "Kurator Jejak Perupa"),
       coverImageUrl,
       headerBgImageUrl,
+      headerBgColor,
       headerGradientOpacity,
       headerGradientHeight,
       peruChanTip,
@@ -528,8 +543,59 @@ export function ArticleEditorForm({
       relatedSlugs: [],
     };
 
-    if (mode === "admin-create") {
+    if (mode === "admin-create" || mode === "public-contribute") {
       await artService.addArticle(newArticleData);
+
+      // Cloud submission sync: Insert into Supabase art_submissions
+      if (isSupabaseConfigured() && mode === "public-contribute") {
+        try {
+          await supabase.from("art_submissions").upsert(
+            {
+              id: newArticleData.id,
+              contributor_name: newArticleData.authorName || "Kontributor Seni",
+              contributor_email: "kontributor@jejakperupa.id",
+              title: newArticleData.title,
+              content_markdown:
+                newArticleData.contentSections
+                  ?.map(
+                    (s) =>
+                      `## ${s.heading}\n\n${(s.paragraphs || []).join("\n\n")}`
+                  )
+                  .join("\n\n") || newArticleData.excerpt,
+              status: isDraft ? "PENDING" : "PENDING",
+            },
+            { onConflict: "id" }
+          );
+        } catch (e) {
+          console.warn("Supabase art_submissions insert exception:", e);
+        }
+      }
+
+      // Track into user's personal articles list
+      try {
+        const storedMyArticles = localStorage.getItem("jejak_perupa_my_articles");
+        const list = storedMyArticles ? JSON.parse(storedMyArticles) : [];
+        const newRecord = {
+          id: newArticleData.id,
+          slug: newArticleData.slug,
+          title: newArticleData.title,
+          category: newArticleData.category,
+          categoryVariant: newArticleData.categoryVariant,
+          excerpt: newArticleData.excerpt,
+          readTime: newArticleData.readTime,
+          publishedDate: newArticleData.publishedDate,
+          authorName: newArticleData.authorName,
+          coverImageUrl: newArticleData.coverImageUrl,
+          headerBgColor: newArticleData.headerBgColor,
+          status: isDraft ? "DRAFT" : mode === "public-contribute" ? "SUBMITTED" : "PUBLISHED",
+          createdAt: new Date().toISOString(),
+        };
+        const updatedList = [
+          newRecord,
+          ...list.filter((item: any) => item.slug !== newArticleData.slug && item.id !== newArticleData.id),
+        ];
+        localStorage.setItem("jejak_perupa_my_articles", JSON.stringify(updatedList));
+      } catch (e) {}
     } else if (mode === "admin-edit") {
       await artService.updateArticle(slug, newArticleData);
     }
@@ -542,6 +608,7 @@ export function ArticleEditorForm({
       excerpt,
       coverImageUrl,
       headerBgImageUrl,
+      headerBgColor,
       headerGradientOpacity,
       headerGradientHeight,
       chapters,
@@ -658,6 +725,8 @@ export function ArticleEditorForm({
             setCoverImageUrl={setCoverImageUrl}
             headerBgImageUrl={headerBgImageUrl}
             setHeaderBgImageUrl={setHeaderBgImageUrl}
+            headerBgColor={headerBgColor}
+            setHeaderBgColor={setHeaderBgColor}
             headerGradientOpacity={headerGradientOpacity}
             setHeaderGradientOpacity={setHeaderGradientOpacity}
             headerGradientHeight={headerGradientHeight}
@@ -692,6 +761,7 @@ export function ArticleEditorForm({
           readTime={readTime}
           excerpt={excerpt}
           headerBgImageUrl={headerBgImageUrl}
+          headerBgColor={headerBgColor}
           headerGradientOpacity={headerGradientOpacity}
           headerGradientHeight={headerGradientHeight}
           chapters={chapters}
@@ -700,6 +770,41 @@ export function ArticleEditorForm({
           peruChanTheme={peruChanTheme}
         />
       )}
+
+      {/* BOTTOM ACTION & SUBMISSION BAR */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-jp-gray-300 bg-white p-6 shadow-2xs font-sans">
+        <div className="text-xs text-jp-gray-600 font-prose text-center sm:text-left">
+          {mode === "public-contribute"
+            ? "Pastikan seluruh bagian naskah opini seni telah Anda isi dengan teliti sebelum dikirimkan ke meja kurasi redaksi."
+            : "Naskah yang diterbitkan akan langsung dapat diakses publik pada katalog wacana dan arsip seni rupa."}
+        </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          {mode !== "public-contribute" && (
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={() => handleSubmit(true)}
+              disabled={isSubmitting}
+              className="rounded-lg text-xs font-semibold cursor-pointer w-full sm:w-auto"
+            >
+              <Save className="h-4 w-4 mr-1.5" />
+              Simpan Draf
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="primary"
+            size="md"
+            onClick={() => handleSubmit(false)}
+            disabled={isSubmitting}
+            className="rounded-lg text-xs font-bold shadow-xs cursor-pointer w-full sm:w-auto"
+          >
+            <Send className="h-4 w-4 mr-2" />
+            {mode === "public-contribute" ? "Kirim Naskah" : "Terbitkan Artikel"}
+          </Button>
+        </div>
+      </div>
 
       {/* QUICK ADD CATEGORY MODAL */}
       <QuickAddCategoryModal

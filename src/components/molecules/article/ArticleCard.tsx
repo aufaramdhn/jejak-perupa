@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Clock } from "lucide-react";
 import { Badge } from "@/components/atoms/typography/Badge";
+import { ArticleCoverPlaceholder } from "@/components/atoms/media/ArticleCoverPlaceholder";
 import { cn } from "@/lib/utils";
 
 export interface ArticleCardProps {
@@ -54,9 +55,11 @@ export function ArticleCard({
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-jp-blue-100/60 text-jp-blue-900 font-heading font-bold text-lg">
-            Jejak Perupa
-          </div>
+          <ArticleCoverPlaceholder
+            title={title}
+            category={category}
+            size="card"
+          />
         )}
       </div>
 

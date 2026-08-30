@@ -222,52 +222,54 @@ export function NavbarHeader() {
           </Link>
 
           {/* JELAJAH FITUR DROPDOWN (FLUSH TO NAVBAR BOTTOM, NO ROUNDED, NO ICONS) */}
-          <div className="relative flex h-full items-center" ref={exploreRef}>
-            <button
-              type="button"
-              onClick={() => setExploreDropdownOpen(!exploreDropdownOpen)}
-              className={cn(
-                "relative flex h-full items-center gap-1.5 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap",
-                isJelajahActive || exploreDropdownOpen
-                  ? "text-jp-blue-900 font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:bg-jp-blue-900"
-                  : "text-jp-gray-700 hover:text-jp-blue-900"
-              )}
-            >
-              <span>Jelajah Fitur</span>
-              <ChevronDown
+          {exploreFeatures.length > 0 && (
+            <div className="relative flex h-full items-center" ref={exploreRef}>
+              <button
+                type="button"
+                onClick={() => setExploreDropdownOpen(!exploreDropdownOpen)}
                 className={cn(
-                  "h-4 w-4 transition-transform duration-200",
-                  exploreDropdownOpen ? "rotate-180 text-jp-blue-900" : "text-jp-gray-400"
+                  "relative flex h-full items-center gap-1.5 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap",
+                  isJelajahActive || exploreDropdownOpen
+                    ? "text-jp-blue-900 font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:bg-jp-blue-900"
+                    : "text-jp-gray-700 hover:text-jp-blue-900"
                 )}
-              />
-            </button>
+              >
+                <span>Jelajah Fitur</span>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 transition-transform duration-200",
+                    exploreDropdownOpen ? "rotate-180 text-jp-blue-900" : "text-jp-gray-400"
+                  )}
+                />
+              </button>
 
-            {/* DROPDOWN MENU: FLUSH AT BOTTOM OF NAVBAR, NO ROUNDED, SHARP EDITORIAL STYLE */}
-            {exploreDropdownOpen && (
-              <div className="absolute left-0 top-full w-72 border border-t-0 border-jp-gray-300 bg-white shadow-xl z-50 rounded-none animate-in fade-in duration-100 divide-y divide-jp-gray-100">
-                {exploreFeatures.map((feat) => (
-                  <Link
-                    key={feat.href}
-                    href={feat.href}
-                    onClick={() => setExploreDropdownOpen(false)}
-                    className={cn(
-                      "block px-5 py-3 transition",
-                      feat.active
-                        ? "bg-jp-blue-50/80 border-l-3 border-jp-blue-900 font-bold"
-                        : "hover:bg-jp-paper"
-                    )}
-                  >
-                    <div className="font-heading text-xs font-bold text-jp-ink">
-                      {feat.title}
-                    </div>
-                    <div className="mt-0.5 text-[11px] text-jp-gray-500 line-clamp-1">
-                      {feat.desc}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+              {/* DROPDOWN MENU: FLUSH AT BOTTOM OF NAVBAR, NO ROUNDED, SHARP EDITORIAL STYLE */}
+              {exploreDropdownOpen && (
+                <div className="absolute left-0 top-full w-72 border border-t-0 border-jp-gray-300 bg-white shadow-xl z-50 rounded-none animate-in fade-in duration-100 divide-y divide-jp-gray-100">
+                  {exploreFeatures.map((feat) => (
+                    <Link
+                      key={feat.href}
+                      href={feat.href}
+                      onClick={() => setExploreDropdownOpen(false)}
+                      className={cn(
+                        "block px-5 py-3 transition",
+                        feat.active
+                          ? "bg-jp-blue-50/80 border-l-3 border-jp-blue-900 font-bold"
+                          : "hover:bg-jp-paper"
+                      )}
+                    >
+                      <div className="font-heading text-xs font-bold text-jp-ink">
+                        {feat.title}
+                      </div>
+                      <div className="mt-0.5 text-[11px] text-jp-gray-500 line-clamp-1">
+                        {feat.desc}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* TENTANG */}
           <Link
@@ -345,21 +347,25 @@ export function NavbarHeader() {
                       Dashboard Belajar
                     </Link>
 
-                    <Link
-                      href="/jalur-belajar"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="block px-4 py-2 text-xs font-semibold text-jp-gray-700 hover:bg-jp-paper transition"
-                    >
-                      Progres Jalur Belajar
-                    </Link>
+                    {isFeatureEnabled("progress_belajar") && (
+                      <Link
+                        href="/jalur-belajar"
+                        onClick={() => setProfileDropdownOpen(false)}
+                        className="block px-4 py-2 text-xs font-semibold text-jp-gray-700 hover:bg-jp-paper transition"
+                      >
+                        Progres Jalur Belajar
+                      </Link>
+                    )}
 
-                    <Link
-                      href="/dashboard/kontribusi"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="block px-4 py-2 text-xs font-semibold text-jp-gray-700 hover:bg-jp-paper transition"
-                    >
-                      Kirim Tulisan Opini
-                    </Link>
+                    {isFeatureEnabled("submit_artikel") && (
+                      <Link
+                        href="/dashboard/kontribusi"
+                        onClick={() => setProfileDropdownOpen(false)}
+                        className="block px-4 py-2 text-xs font-semibold text-jp-gray-700 hover:bg-jp-paper transition"
+                      >
+                        Kirim Tulisan Opini
+                      </Link>
+                    )}
 
                     {currentUser.role === "ADMIN" && (
                       <Link

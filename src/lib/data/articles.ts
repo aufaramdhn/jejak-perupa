@@ -20,6 +20,7 @@ export interface ArticleFullData {
   authorName: string;
   coverImageUrl?: string;
   headerBgImageUrl?: string;
+  headerBgColor?: string;
   headerGradientOpacity?: number;
   headerGradientHeight?: number;
   featuredArtistSlug?: string;

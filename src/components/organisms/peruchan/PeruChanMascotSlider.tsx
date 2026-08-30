@@ -169,11 +169,10 @@ export function PeruChanMascotSlider({
               <Image
                 src={currentSlide.imageUrl}
                 alt={currentSlide.title}
-                width={320}
-                height={220}
+                fill
                 priority={currentIndex === 0}
                 sizes="(max-width: 640px) 280px, 320px"
-                className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-102"
+                className="object-contain transition-transform duration-300 group-hover:scale-102"
               />
             </div>
           ) : (

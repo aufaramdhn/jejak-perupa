@@ -15,7 +15,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="id">
+    <html lang="id" data-scroll-behavior="smooth">
       <body className="min-h-screen flex items-center justify-center bg-[#FAFAF7] text-[#191918] p-6 text-center font-sans">
         <div className="max-w-md w-full space-y-6">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#DCEBFF] text-[#173B63]">

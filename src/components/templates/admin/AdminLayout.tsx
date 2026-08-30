@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useModal } from "@/lib/modalContext";
 import { useSiteSettings } from "@/lib/siteContext";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { Avatar } from "@/components/atoms/typography/Avatar";
 import { Badge } from "@/components/atoms/typography/Badge";
 import { Button } from "@/components/atoms/form/Button";
@@ -65,6 +66,33 @@ export function AdminLayout({
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [pendingCurationCount, setPendingCurationCount] = useState<number | null>(null);
+
+  // Dynamic Pending Curation Count from Supabase / localStorage
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      supabase
+        .from("art_submissions")
+        .select("id", { count: "exact" })
+        .eq("status", "PENDING")
+        .then(({ count, error }) => {
+          if (!error && count !== null && count !== undefined) {
+            setPendingCurationCount(count);
+          }
+        });
+    } else {
+      try {
+        const stored = localStorage.getItem("jejak_perupa_admin_curation_submissions_v1");
+        if (stored) {
+          const list = JSON.parse(stored);
+          if (Array.isArray(list)) {
+            const pending = list.filter((i: any) => i.status === "Menunggu Kurasi" || i.status === "PENDING").length;
+            setPendingCurationCount(pending);
+          }
+        }
+      } catch (e) {}
+    }
+  }, [pathname]);
 
   // Security Auth Guard: Redirect unauthenticated or non-admin users to /masuk
   useEffect(() => {
@@ -124,7 +152,10 @@ export function AdminLayout({
           label: "Meja Kurasi Naskah",
           href: "/admin/kurasi",
           icon: <Eye className="h-4 w-4 shrink-0" />,
-          badge: "2 Baru",
+          badge:
+            pendingCurationCount !== null && pendingCurationCount > 0
+              ? `${pendingCurationCount} Baru`
+              : undefined,
         },
       ],
     },

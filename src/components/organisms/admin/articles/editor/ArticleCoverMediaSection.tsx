@@ -1,14 +1,15 @@
-"use client";
-
 import React from "react";
 import { ImageDualInput } from "@/components/molecules/editor/ImageDualInput";
-import { Sparkles, Eye } from "lucide-react";
+import { ColorPicker } from "@/components/atoms/form/ColorPicker";
+import { Sparkles, Eye, Palette } from "lucide-react";
 
 interface ArticleCoverMediaSectionProps {
   coverImageUrl?: string;
   setCoverImageUrl: (val: string) => void;
   headerBgImageUrl?: string;
   setHeaderBgImageUrl: (val: string) => void;
+  headerBgColor?: string;
+  setHeaderBgColor?: (val: string) => void;
   headerGradientOpacity: number;
   setHeaderGradientOpacity: (val: number) => void;
   headerGradientHeight: number;
@@ -20,6 +21,8 @@ export function ArticleCoverMediaSection({
   setCoverImageUrl,
   headerBgImageUrl,
   setHeaderBgImageUrl,
+  headerBgColor,
+  setHeaderBgColor,
   headerGradientOpacity,
   setHeaderGradientOpacity,
   headerGradientHeight,
@@ -73,7 +76,21 @@ export function ArticleCoverMediaSection({
             previewClassName="h-20 w-44"
           />
 
-          {headerBgImageUrl && (
+          {/* CUSTOM HEADER COLOR PICKER */}
+          {setHeaderBgColor && (
+            <div className="pt-2">
+              <ColorPicker
+                label="Pilihan Aksen Warna Header (Kuratorial & Kustom)"
+                value={headerBgColor || "#182C4A"}
+                onChange={setHeaderBgColor}
+              />
+              <p className="text-[11px] text-jp-gray-500 font-prose mt-1">
+                Warna ini akan menjadi aksen dasar atau latar belakang header artikel jika foto tidak diunggah atau berlatar transparan.
+              </p>
+            </div>
+          )}
+
+          {(headerBgImageUrl || headerBgColor) && (
             <div className="grid gap-6 sm:grid-cols-2 pt-3 border-t border-jp-gray-200">
               {/* SLIDE BAR 1: OPACITY */}
               <div className="space-y-2">
@@ -95,7 +112,7 @@ export function ArticleCoverMediaSection({
                   className="w-full accent-jp-blue-900 cursor-pointer h-2 bg-jp-gray-300 rounded-lg"
                 />
                 <p className="text-[11px] text-jp-gray-500 font-prose">
-                  Semakin tinggi nilai persentase, semakin pekat lapisan putih pelindung teks di atas gambar.
+                  Semakin tinggi nilai persentase, semakin pekat lapisan putih pelindung teks di atas gambar atau warna.
                 </p>
               </div>
 
@@ -119,7 +136,7 @@ export function ArticleCoverMediaSection({
                   className="w-full accent-jp-blue-900 cursor-pointer h-2 bg-jp-gray-300 rounded-lg"
                 />
                 <p className="text-[11px] text-jp-gray-500 font-prose">
-                  Mengatur ketinggian titik peralihan kabut gradasi putih dari bawah menuju foto asli di atas.
+                  Mengatur ketinggian titik peralihan kabut gradasi putih dari bawah menuju area latar di atas.
                 </p>
               </div>
 
@@ -129,22 +146,34 @@ export function ArticleCoverMediaSection({
                   <Eye className="h-3.5 w-3.5" />
                   Pratinjau Langsung Efek Gradasi Header
                 </div>
-                <div className="relative rounded-xl border border-jp-gray-300 overflow-hidden shadow-xs bg-jp-paper">
+                <div
+                  className="relative rounded-xl border border-jp-gray-300 overflow-hidden shadow-xs"
+                  style={{ backgroundColor: headerBgColor || "#182C4A" }}
+                >
                   {/* IMAGE BACKDROP */}
-                  <div
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-300"
-                    style={{ backgroundImage: `url(${headerBgImageUrl})` }}
-                  />
+                  {headerBgImageUrl && (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-300"
+                      style={{ backgroundImage: `url(${headerBgImageUrl})` }}
+                    />
+                  )}
+                  {/* COLOR TINT ON TOP OF IMAGE */}
+                  {headerBgImageUrl && headerBgColor && (
+                    <div
+                      className="absolute inset-0 pointer-events-none transition-all duration-300 mix-blend-multiply opacity-60"
+                      style={{ backgroundColor: headerBgColor }}
+                    />
+                  )}
                   {/* GRADIENT OVERLAY */}
                   <div
                     className="absolute inset-0 pointer-events-none transition-all duration-300"
                     style={{
-                      background: `linear-gradient(to top, #FAFAF7 0%, rgba(250, 250, 247, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, rgba(238, 245, 255, 0.45) 100%)`,
+                      background: `linear-gradient(to top, #FAFAF7 0%, rgba(250, 250, 247, ${headerGradientOpacity / 100}) ${headerGradientHeight}%, transparent 100%)`,
                     }}
                   />
                   {/* SAMPLE CONTENT */}
                   <div className="relative z-10 p-6 md:p-8 space-y-3">
-                    <span className="font-mono text-[10px] font-bold text-jp-blue-900 bg-jp-blue-100/80 px-2 py-0.5 rounded">
+                    <span className="font-mono text-[10px] font-bold text-jp-blue-900 bg-white/90 shadow-2xs px-2 py-0.5 rounded border border-jp-gray-200">
                       CONTOH TAMPILAN HEADER
                     </span>
                     <h4 className="font-heading text-lg md:text-xl font-bold text-jp-ink">
