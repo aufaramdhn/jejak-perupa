@@ -217,7 +217,7 @@ export const artService = {
         }
 
         // 2. Resilient Upsert Article with dynamic fallback
-        let currentPayload: any = { ...payload };
+        const currentPayload: any = { ...payload };
         let lastError: any = null;
 
         for (let attempt = 0; attempt < 3; attempt++) {
@@ -286,7 +286,7 @@ export const artService = {
           }
 
           // 2. Resilient Update Article with dynamic fallback
-          let currentPayload: any = { ...payload };
+          const currentPayload: any = { ...payload };
           let lastError: any = null;
 
           for (let attempt = 0; attempt < 3; attempt++) {
