@@ -227,6 +227,9 @@ export function NavbarHeader() {
               <button
                 type="button"
                 onClick={() => setExploreDropdownOpen(!exploreDropdownOpen)}
+                aria-expanded={exploreDropdownOpen}
+                aria-haspopup="true"
+                aria-label="Menu Jelajah Fitur"
                 className={cn(
                   "relative flex h-full items-center gap-1.5 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap",
                   isJelajahActive || exploreDropdownOpen
@@ -306,8 +309,10 @@ export function NavbarHeader() {
               <button
                 type="button"
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                aria-expanded={profileDropdownOpen}
+                aria-haspopup="true"
+                aria-label="Menu profil pengguna"
                 className="group flex items-center gap-2 rounded-full p-0.5 transition hover:ring-2 hover:ring-jp-blue-700 focus:outline-none cursor-pointer"
-                aria-label="Buka menu profil"
               >
                 <Avatar
                   src={currentUser.avatarUrl || undefined}
@@ -405,8 +410,9 @@ export function NavbarHeader() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-jp-gray-300 text-jp-ink transition hover:border-jp-blue-700 md:hidden"
-            aria-label="Buka menu"
           >
             {mobileMenuOpen ? (
               <X className="h-5 w-5" />

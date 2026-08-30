@@ -23,6 +23,7 @@ import {
   ArticleEditorStickyBar,
   ArticleEditorPreview,
 } from "./articles/editor";
+import { SeoAssistantPanel } from "@/components/molecules/editor/SeoAssistantPanel";
 
 export type { ChapterItem, ReferenceItem, ArticleEditorFormData };
 
@@ -155,6 +156,7 @@ export function ArticleEditorForm({
 
   const [peruChanTip, setPeruChanTip] = useState(initialData?.peruChanTip || "");
   const [peruChanTheme, setPeruChanTheme] = useState<"blue" | "brown" | "lime">("blue");
+  const [focusKeyword, setFocusKeyword] = useState(initialData?.focusKeyword || "");
 
   // 2. Draft Autosave & Recovery
   const [lastAutoSaveTime, setLastAutoSaveTime] = useState<string | null>(null);
@@ -200,6 +202,7 @@ export function ArticleEditorForm({
             headerGradientHeight,
             chapters,
             references,
+            focusKeyword,
             peruChanTip,
             peruChanTheme,
             savedAt: now,
@@ -228,6 +231,7 @@ export function ArticleEditorForm({
     headerGradientHeight,
     chapters,
     references,
+    focusKeyword,
     peruChanTip,
     peruChanTheme,
     storageKey,
@@ -250,6 +254,7 @@ export function ArticleEditorForm({
         if (parsed.headerGradientHeight !== undefined) setHeaderGradientHeight(parsed.headerGradientHeight);
         if (parsed.chapters) setChapters(parsed.chapters);
         if (parsed.references) setReferences(parsed.references);
+        if (parsed.focusKeyword) setFocusKeyword(parsed.focusKeyword);
         if (parsed.peruChanTip) setPeruChanTip(parsed.peruChanTip);
         if (parsed.peruChanTheme) setPeruChanTheme(parsed.peruChanTheme);
 
@@ -284,6 +289,7 @@ export function ArticleEditorForm({
     setHeaderBgImageUrl(randomTopic.headerBgImageUrl);
     setHeaderGradientOpacity(85);
     setHeaderGradientHeight(80);
+    setFocusKeyword(randomTopic.title.split(":")[0].toLowerCase().trim());
     setPeruChanTip(randomTopic.peruChanTip);
     setPeruChanTheme(randomTopic.peruChanTheme);
 
@@ -335,6 +341,7 @@ export function ArticleEditorForm({
       ]);
       setReferences([]);
       setPeruChanTip("");
+      setFocusKeyword("");
       setErrors({});
     }
   };
@@ -613,6 +620,7 @@ export function ArticleEditorForm({
       headerGradientHeight,
       chapters,
       references: references.filter((r) => r.citation.trim().length > 0),
+      focusKeyword,
       peruChanTip,
       peruChanTheme,
     };
@@ -731,6 +739,19 @@ export function ArticleEditorForm({
             setHeaderGradientOpacity={setHeaderGradientOpacity}
             headerGradientHeight={headerGradientHeight}
             setHeaderGradientHeight={setHeaderGradientHeight}
+          />
+
+          {/* ASISTEN SEO & KATA KUNCI */}
+          <SeoAssistantPanel
+            title={title}
+            excerpt={excerpt}
+            category={category}
+            authorName={authorName}
+            coverImageUrl={coverImageUrl}
+            chapters={chapters}
+            references={references}
+            focusKeyword={focusKeyword}
+            setFocusKeyword={setFocusKeyword}
           />
 
           <ArticleChaptersManager

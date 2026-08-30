@@ -171,7 +171,7 @@ export function PeruChanMascotSlider({
                 alt={currentSlide.title}
                 fill
                 priority={currentIndex === 0}
-                sizes="(max-width: 640px) 280px, 320px"
+                sizes="(max-width: 640px) 280px, (max-width: 1024px) 340px, 380px"
                 className="object-contain transition-transform duration-300 group-hover:scale-102"
               />
             </div>
@@ -203,14 +203,16 @@ export function PeruChanMascotSlider({
       {/* FOOTER NAVIGATION: DOTS & ARROW BUTTONS */}
       <div className="relative z-10 flex items-center justify-between pt-2 border-t border-jp-gray-200/80 font-sans">
         {/* DOT INDICATORS (RESPONSIVE TOUCH TARGETS) */}
-        <div className="flex items-center -ml-1 sm:-ml-2">
+        <div className="flex items-center -ml-1 sm:-ml-2" role="tablist" aria-label="Pilihan pose maskot Peru-Chan">
           {slides.map((slide, idx) => (
             <button
               key={slide.id}
               type="button"
+              role="tab"
+              aria-selected={idx === currentIndex}
               onClick={() => setCurrentIndex(idx)}
-              aria-label={`Buka slide ${idx + 1}: ${slide.title}`}
-              className="flex min-h-[36px] min-w-[26px] sm:min-w-[34px] items-center justify-center p-1 sm:p-2 focus:outline-none cursor-pointer group/dot"
+              aria-label={`Buka slide pose ${idx + 1}: ${slide.title}`}
+              className="flex min-h-[44px] min-w-[34px] items-center justify-center p-1 sm:p-2 focus:outline-none cursor-pointer group/dot"
             >
               <span
                 className={cn(
@@ -229,16 +231,18 @@ export function PeruChanMascotSlider({
           <button
             type="button"
             onClick={handlePrev}
-            aria-label="Pose sebelumnya"
-            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-jp-gray-300 bg-white text-jp-gray-700 shadow-2xs hover:border-jp-blue-900 hover:text-jp-blue-900 transition cursor-pointer focus:outline-none"
+            aria-label="Tampilkan pose maskot sebelumnya"
+            title="Pose Sebelumnya"
+            className="flex min-h-[44px] min-w-[44px] sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-jp-gray-300 bg-white text-jp-gray-700 shadow-2xs hover:border-jp-blue-900 hover:text-jp-blue-900 transition cursor-pointer focus:outline-none"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             type="button"
             onClick={handleNext}
-            aria-label="Pose berikutnya"
-            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-jp-gray-300 bg-white text-jp-gray-700 shadow-2xs hover:border-jp-blue-900 hover:text-jp-blue-900 transition cursor-pointer focus:outline-none"
+            aria-label="Tampilkan pose maskot berikutnya"
+            title="Pose Berikutnya"
+            className="flex min-h-[44px] min-w-[44px] sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-jp-gray-300 bg-white text-jp-gray-700 shadow-2xs hover:border-jp-blue-900 hover:text-jp-blue-900 transition cursor-pointer focus:outline-none"
           >
             <ChevronRight className="h-4 w-4" />
           </button>

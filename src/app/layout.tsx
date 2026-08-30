@@ -24,7 +24,7 @@ const lora = Lora({
   weight: ["400", "600"],
   style: ["normal", "italic"],
   display: "swap",
-  preload: true,
+  preload: false,
 });
 
 const inter = Inter({
@@ -40,7 +40,7 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "600"],
   display: "swap",
-  preload: true,
+  preload: false,
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://jejak-perupa.vercel.app";

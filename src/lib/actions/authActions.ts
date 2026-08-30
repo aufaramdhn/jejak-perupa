@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { Role } from "@prisma/client";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export interface RegisterInput {
   name: string;
@@ -33,12 +34,21 @@ export interface AuthResponse {
 }
 
 /**
- * Server Action: Register a new user with bcrypt password hashing
+ * Server Action: Register a new user with bcrypt password hashing and rate limiting
  */
 export async function registerUserAction(input: RegisterInput): Promise<AuthResponse> {
   try {
     const trimmedEmail = input.email.trim().toLowerCase();
     const trimmedName = input.name.trim();
+
+    // Proteksi Rate Limiting (Maksimal 5 pendaftaran per menit per email)
+    const rateLimit = checkRateLimit(`register:${trimmedEmail || "global"}`, 5, 60000);
+    if (!rateLimit.allowed) {
+      return {
+        success: false,
+        error: `Terlalu banyak percobaan pendaftaran. Silakan coba kembali dalam ${rateLimit.resetInSeconds} detik.`,
+      };
+    }
 
     if (!trimmedName || !trimmedEmail || !input.password) {
       return { success: false, error: "Nama, email, dan kata sandi wajib diisi." };
@@ -93,11 +103,20 @@ export async function registerUserAction(input: RegisterInput): Promise<AuthResp
 }
 
 /**
- * Server Action: Authenticate user with bcrypt verification
+ * Server Action: Authenticate user with bcrypt verification and brute-force protection
  */
 export async function loginUserAction(input: LoginInput): Promise<AuthResponse> {
   try {
     const trimmedEmail = input.email.trim().toLowerCase();
+
+    // Proteksi Brute-force Rate Limiting (Maksimal 5 percobaan masuk per menit)
+    const rateLimit = checkRateLimit(`login:${trimmedEmail || "global"}`, 5, 60000);
+    if (!rateLimit.allowed) {
+      return {
+        success: false,
+        error: `Terlalu banyak percobaan masuk yang gagal. Demi keamanan akun Anda, silakan coba kembali dalam ${rateLimit.resetInSeconds} detik.`,
+      };
+    }
 
     if (!trimmedEmail || !input.password) {
       return { success: false, error: "Email dan kata sandi wajib diisi." };
