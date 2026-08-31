@@ -80,7 +80,7 @@ html {
 body {
   background-color: var(--jp-paper);
   color: var(--jp-ink);
-  font-family: var(--font-prose);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -92,7 +92,7 @@ h1, h2, h3, h4, .font-heading {
   font-family: var(--font-heading);
 }
 
-p, article, .font-prose {
+article, .font-prose {
   font-family: var(--font-prose);
 }
 

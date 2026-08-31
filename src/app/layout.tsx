@@ -12,8 +12,6 @@ import "./globals.css";
 const newsreader = Newsreader({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["600", "700"],
-  style: ["normal", "italic"],
   display: "swap",
   preload: true,
 });
@@ -21,16 +19,13 @@ const newsreader = Newsreader({
 const lora = Lora({
   variable: "--font-prose",
   subsets: ["latin"],
-  weight: ["400", "600"],
-  style: ["normal", "italic"],
   display: "swap",
-  preload: false,
+  preload: true,
 });
 
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
   display: "swap",
   preload: true,
 });
@@ -38,7 +33,6 @@ const inter = Inter({
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
-  weight: ["400", "600"],
   display: "swap",
   preload: false,
 });
@@ -140,7 +134,7 @@ export default function RootLayout({
       <head>
         <JsonLd data={websiteSchema} />
       </head>
-      <body className="min-h-screen flex flex-col bg-jp-paper text-jp-ink font-prose antialiased">
+      <body className="min-h-screen flex flex-col bg-jp-paper text-jp-ink font-sans antialiased">
         <SiteProvider>
           <DynamicFavicon />
           <CategoryProvider>
