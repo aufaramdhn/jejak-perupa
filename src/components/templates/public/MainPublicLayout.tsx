@@ -5,20 +5,7 @@ import { FooterSection } from "@/components/organisms/layout/FooterSection";
 import { ScrollToTopFab } from "@/components/molecules/navigation/ScrollToTopFab";
 import { cn } from "@/lib/utils";
 
-// Code-split heavy interactive dialogs to reduce initial JS payload on mobile
-const AuthModal = dynamic(
-  () =>
-    import("@/components/organisms/exploration/AuthModal").then(
-      (mod) => mod.AuthModal
-    )
-);
-
-const SearchModal = dynamic(
-  () =>
-    import("@/components/organisms/exploration/SearchModal").then(
-      (mod) => mod.SearchModal
-    )
-);
+import { GlobalModalsContainer } from "@/components/organisms/exploration/GlobalModalsContainer";
 
 export interface MainPublicLayoutProps {
   children: React.ReactNode;
@@ -34,8 +21,7 @@ export function MainPublicLayout({
       <NavbarHeader />
       <main className={cn("flex-1 w-full max-w-full", className)}>{children}</main>
       <FooterSection />
-      <AuthModal />
-      <SearchModal />
+      <GlobalModalsContainer />
       <ScrollToTopFab />
     </div>
   );

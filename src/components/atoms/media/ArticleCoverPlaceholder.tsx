@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { BookOpen, Palette, Feather, Landmark, Sparkles } from "lucide-react";
@@ -125,9 +125,9 @@ export function ArticleCoverPlaceholder({
           <Icon className="h-6 w-6 text-white" />
         </div>
         {title && (
-          <h4 className="font-heading font-bold text-white text-base sm:text-lg line-clamp-2 leading-snug drop-shadow-xs">
+          <div className="font-heading font-bold text-white text-base sm:text-lg line-clamp-2 leading-snug drop-shadow-xs">
             {title}
-          </h4>
+          </div>
         )}
       </div>
 

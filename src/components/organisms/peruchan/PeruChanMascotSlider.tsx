@@ -172,6 +172,7 @@ export function PeruChanMascotSlider({
                 fill
                 priority={currentIndex === 0}
                 loading={currentIndex === 0 ? "eager" : "lazy"}
+                fetchPriority={currentIndex === 0 ? "high" : "auto"}
                 sizes="(max-width: 640px) 280px, (max-width: 1024px) 340px, 380px"
                 className="object-contain transition-transform duration-300 group-hover:scale-102"
               />

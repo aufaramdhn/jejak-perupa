@@ -116,9 +116,9 @@ export function ShareModal({
           <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-jp-blue-700">
             Artikel Pilihan
           </span>
-          <h4 className="font-heading font-bold text-jp-ink text-sm leading-snug line-clamp-2">
+          <div className="font-heading font-bold text-jp-ink text-sm leading-snug line-clamp-2">
             {title}
-          </h4>
+          </div>
           <p className="text-xs text-jp-gray-500 font-mono truncate pt-0.5">{url}</p>
         </div>
 
