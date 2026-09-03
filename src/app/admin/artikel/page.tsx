@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 
 import { articlesData, type ArticleFullData } from "@/lib/data/articles";
+import { renderInlineFormatting, cleanCardExcerpt } from "@/components/molecules/article/RichContentRenderer";
 
 export default function AdminArtikelPage() {
   const { confirm, alert } = useModal();
@@ -340,7 +341,7 @@ export default function AdminArtikelPage() {
                           {art.title}
                         </h3>
                         <p className="mt-1 text-xs text-jp-gray-600 font-prose line-clamp-2 leading-relaxed">
-                          {art.excerpt}
+                          {renderInlineFormatting(cleanCardExcerpt(art.excerpt))}
                         </p>
                       </div>
 
@@ -416,7 +417,7 @@ export default function AdminArtikelPage() {
                               {art.title}
                             </div>
                             <p className="mt-0.5 text-xs text-jp-gray-500 font-prose line-clamp-1 max-w-xl">
-                              {art.excerpt}
+                              {renderInlineFormatting(cleanCardExcerpt(art.excerpt))}
                             </p>
                           </td>
 

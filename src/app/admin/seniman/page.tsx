@@ -10,8 +10,10 @@ import { Input } from "@/components/atoms/form/Input";
 import { Select } from "@/components/atoms/form/Select";
 import { TablePagination } from "@/components/molecules/navigation/TablePagination";
 import { AdminTableSkeleton } from "@/components/organisms/admin/AdminTableSkeleton";
+import { ArtistEditorModal } from "@/components/organisms/admin/artists/ArtistEditorModal";
 import { artService } from "@/lib/services/artService";
 import { useModal } from "@/lib/modalContext";
+import { ArtistData } from "@/lib/data/artists";
 import {
   Users,
   Search,
@@ -25,10 +27,8 @@ import {
 } from "lucide-react";
 
 export default function AdminSenimanPage() {
-  const { alert } = useModal();
-  const initialArtists = artService.getAllArtists();
-
-  const [artistsList, setArtistsList] = useState(initialArtists);
+  const { alert, confirm } = useModal();
+  const [artistsList, setArtistsList] = useState<ArtistData[]>(() => artService.getAllArtists());
   const [searchQuery, setSearchQuery] = useState("");
   const [movementFilter, setMovementFilter] = useState("ALL");
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -36,10 +36,14 @@ export default function AdminSenimanPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
 
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingArtist, setEditingArtist] = useState<ArtistData | null>(null);
+
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 450);
+    }, 350);
     return () => clearTimeout(timer);
   }, []);
 
@@ -63,6 +67,59 @@ export default function AdminSenimanPage() {
       setMovementFilter("ALL");
       setCurrentPage(1);
     });
+  };
+
+  const handleOpenAdd = () => {
+    setEditingArtist(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (art: ArtistData) => {
+    setEditingArtist(art);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveArtist = (artistPayload: ArtistData) => {
+    if (editingArtist) {
+      artService.updateArtist(editingArtist.slug, artistPayload);
+      setArtistsList((prev) =>
+        prev.map((a) => (a.slug === editingArtist.slug ? artistPayload : a))
+      );
+      alert({
+        title: "Profil Maestro Diperbarui",
+        message: `Data biografi dan profil untuk ${artistPayload.name} berhasil disimpan.`,
+        type: "success",
+      });
+    } else {
+      artService.addArtist(artistPayload);
+      setArtistsList((prev) => [artistPayload, ...prev.filter((a) => a.slug !== artistPayload.slug)]);
+      alert({
+        title: "Maestro Berhasil Ditambahkan",
+        message: `Profil baru untuk ${artistPayload.name} telah terdaftar di direktori resmi.`,
+        type: "success",
+      });
+    }
+  };
+
+  const handleDeleteArtist = async (art: ArtistData) => {
+    const confirmed = await confirm({
+      title: "Hapus Data Maestro?",
+      message: `Profil "${art.name}" akan dihapus dari direktori. Tindakan ini tidak dapat dibatalkan.`,
+      confirmLabel: "Hapus",
+      cancelLabel: "Batal",
+      variant: "danger",
+      iconType: "trash",
+    });
+
+    if (confirmed) {
+      artService.deleteArtist(art.slug);
+      setArtistsList((prev) => prev.filter((a) => a.slug !== art.slug));
+      alert({
+        title: "Maestro Dihapus",
+        message: `Profil ${art.name} telah berhasil dihapus.`,
+        type: "info",
+      });
+    }
   };
 
   const isFiltered = searchQuery.trim() !== "" || movementFilter !== "ALL";
@@ -103,13 +160,7 @@ export default function AdminSenimanPage() {
         <Button
           variant="primary"
           size="md"
-          onClick={() =>
-            alert({
-              title: "Tambah Maestro Baru",
-              message: "Formulir pendaftaran entri maestro baru sedang dalam pengembangan kuratorial.",
-              type: "info",
-            })
-          }
+          onClick={handleOpenAdd}
           className="rounded-lg text-xs sm:text-sm font-bold w-full sm:w-auto py-2.5 px-4 h-10 shadow-xs cursor-pointer"
         >
           <Plus className="h-4 w-4 mr-1.5" />
@@ -181,21 +232,17 @@ export default function AdminSenimanPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* MOBILE & TABLET CARD VIEW (<= 768px) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
-              {paginatedArtists.map((art, idx) => {
-                const globalIdx = (currentPage - 1) * pageSize + idx;
+            {/* MOBILE CARD VIEW (< 768px) */}
+            <div className="grid gap-3.5 md:hidden">
+              {paginatedArtists.map((art) => {
                 return (
                   <div
                     key={art.id}
-                    className="flex flex-col justify-between rounded-xl border border-jp-gray-300 bg-white p-4 shadow-2xs hover:border-jp-brown-700 transition"
+                    className="rounded-xl border border-jp-gray-300 bg-white p-4 shadow-2xs space-y-3"
                   >
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="font-mono text-xs font-bold text-jp-gray-400 bg-jp-paper px-2 py-0.5 rounded border border-jp-gray-200">
-                          #{globalIdx + 1}
-                        </span>
-                        <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <Badge variant="brown" size="sm">
                             {art.artMovement}
                           </Badge>
@@ -236,17 +283,19 @@ export default function AdminSenimanPage() {
                         </Link>
                         <button
                           type="button"
-                          onClick={() =>
-                            alert({
-                              title: "Sunting Profil Maestro",
-                              message: `Fitur penyuntingan langsung untuk ${art.name} sedang dalam penyelarasan arsip.`,
-                              type: "info",
-                            })
-                          }
+                          onClick={() => handleOpenEdit(art)}
                           title="Sunting Data"
                           className="flex h-8 w-8 items-center justify-center rounded-lg border border-jp-gray-200 bg-white text-jp-gray-600 hover:text-jp-blue-900 hover:border-jp-blue-700 transition cursor-pointer"
                         >
                           <Edit2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteArtist(art)}
+                          title="Hapus Profil"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 transition cursor-pointer"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     </div>
@@ -266,7 +315,7 @@ export default function AdminSenimanPage() {
                       <th className="py-3.5 px-4 min-w-[200px] w-56">Gaya / Aliran</th>
                       <th className="py-3.5 px-4 w-36">Disiplin</th>
                       <th className="py-3.5 px-4 w-28 text-center">Status</th>
-                      <th className="py-3.5 px-4 w-28 text-right">Aksi</th>
+                      <th className="py-3.5 px-4 w-32 text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-jp-gray-200 text-xs">
@@ -319,17 +368,19 @@ export default function AdminSenimanPage() {
                               </Link>
                               <button
                                 type="button"
-                                onClick={() =>
-                                  alert({
-                                    title: "Sunting Profil Maestro",
-                                    message: `Fitur penyuntingan langsung untuk ${art.name} sedang dalam penyelarasan arsip.`,
-                                    type: "info",
-                                  })
-                                }
+                                onClick={() => handleOpenEdit(art)}
                                 title="Sunting Data"
                                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-jp-gray-200 bg-white text-jp-gray-600 hover:text-jp-blue-900 hover:border-jp-blue-700 transition cursor-pointer"
                               >
                                 <Edit2 className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteArtist(art)}
+                                title="Hapus Profil"
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 transition cursor-pointer"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           </td>
@@ -341,21 +392,30 @@ export default function AdminSenimanPage() {
               </div>
             </div>
 
-            {/* UNIFIED RESPONSIVE PAGINATION */}
-            <TablePagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              pageSize={pageSize}
-              totalItems={filteredArtists.length}
-              onPageChange={setCurrentPage}
-              onPageSizeChange={(newSize) => {
-                setPageSize(newSize);
-                setCurrentPage(1);
-              }}
-              itemName="maestro"
-            />
+            {/* PAGINATION */}
+            <div className="pt-2">
+              <TablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={filteredArtists.length}
+                onPageChange={(p) => setCurrentPage(p)}
+                onPageSizeChange={(sz) => {
+                  setPageSize(sz);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
           </div>
         )}
+
+        {/* MODAL SUNTING & TAMBAH SENIMAN */}
+        <ArtistEditorModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          artist={editingArtist}
+          onSave={handleSaveArtist}
+        />
       </div>
     </AdminLayout>
   );

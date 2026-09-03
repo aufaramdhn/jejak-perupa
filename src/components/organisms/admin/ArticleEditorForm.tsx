@@ -49,19 +49,19 @@ const DUMMY_ARTICLES_POOL = [
     chapters: [
       {
         title: "Prolog: Jejak Awal Bahasa Rupa Nusantara",
-        content: "<p>Seni rupa modern di Indonesia tidak lahir dari ruang hampa, melainkan bertumpu pada sedimentasi visual tradisi yang kaya. Dari ornamen candi hingga seni wayang, prinsip komposisi ruang selalu mencerminkan kosmologi masyarakat pemiliknya.</p><p>Perjumpaan dengan teknik akademis Barat pada abad ke-19 memantik dialektika baru yang mempertemukan sensibilitas lokal dengan perspektif linier.</p>",
+        content: "Seni rupa modern di Indonesia tidak lahir dari ruang hampa, melainkan bertumpu pada **sedimentasi visual tradisi** yang kaya. Dari ornamen relief candi hingga seni wayang kulit, prinsip komposisi ruang selalu mencerminkan kosmologi masyarakat pemiliknya.\n\nPerjumpaan dengan teknik akademis Barat pada abad ke-19 memantik dialektika baru yang mempertemukan *sensibilitas lokal* dengan perspektif linier rasional.",
         peruChanTip: "Cermati bagaimana seniman nusantara menggabungkan bidang datar dekoratif dengan ilusi kedalaman ruang tiga dimensi!",
         peruChanTheme: "blue" as const,
       },
       {
-        title: "Gerakan Romantisisme & Raden Saleh",
-        content: "<p>Raden Saleh Syarif Bustaman menjadi figur perintis yang mengintegrasikan teknik cat minyak akademis Eropa dengan jiwa perlawanan Timur. Sapuan kuasnya yang dramatis dalam lukisan perburuan dan peristiwa sejarah menjadi tonggak emansipasi visual.</p><p>Melalui kepekaan pencahayaan chiaroscuro dan dinamika komposisi diagonal, karya-karyanya melampaui sekadar representasi realisme visual.</p>",
-        peruChanTip: "Perhatikan ketebalan impasto dan kontras cahaya chiaroscuro pada bagian figur utama untuk menangkap letupan emosi karya!",
+        title: "Tabel Analisis Karakteristik Gerakan Rupa Nusantara",
+        content: "Berikut adalah perbandingan unsur rupa, medium ekspresi, dan wacana simbolik dari tiga tonggak sejarah seni lukis modern Indonesia:\n\n| Periode Gerakan | Tokoh Pelopor | Karakteristik Bahasa Rupa | Wacana & Emansipasi |\n| :--- | :--- | :--- | :--- |\n| **Romantisisme Kritis** | Raden Saleh | Dramatisasi `chiaroscuro`, sapuan cat minyak akademis | Perlawanan terselubung atas hegemoni kolonial Hindia Belanda |\n| **Persagi (Jiwa Ketok)** | S. Sudjojono, Agus Djaya | Garis tegas, warna mentah ekspresif, realitas jelata | Menolak lukisan pemandangan molek eksotis (*Mooi Indie*) |\n| **Seni Kontemporer GSRB** | Jim Supangkat, FX Harsono | Seni instalasi, medium bebas, kritik sosial tajam | Mendekonstruksi batas elitis seni tinggi demi dialog publik |",
+        peruChanTip: "Perhatikan bagaimana setiap era seni rupa lahir sebagai respons kritis terhadap era sebelumnya!",
         peruChanTheme: "brown" as const,
       },
       {
         title: "Epilog: Menemukan Kembali Identitas Visual",
-        content: "<p>Memasuki era kontemporer, tantangan perupa muda adalah bagaimana mendefinisikan kembali identitas lokal tanpa terjebak dalam eksotisme semu. Eksplorasi medium baru, instalasi spasial, dan keterlibatan komunitas membuka horizon baru pembelajaran seni.</p>",
+        content: "Memasuki era kontemporer, tantangan perupa muda adalah bagaimana mendefinisikan kembali identitas lokal tanpa terjebak dalam eksotisme semu. Eksplorasi medium baru, instalasi spasial, dan keterlibatan komunitas membuka horizon baru pembelajaran seni.",
         peruChanTip: "Selalu berani bereksperimen dengan percampuran medium dan jangan takut membuat sapuan kuas pertama yang ekspresif!",
         peruChanTheme: "lime" as const,
       },
@@ -85,13 +85,19 @@ const DUMMY_ARTICLES_POOL = [
     chapters: [
       {
         title: "Karakter Garis dan Tubuh yang Menyatu",
-        content: "<p>Bagi Affandi, proses melukis adalah kerja kinetik yang melibatkan seluruh energi raga. Menggantikan kuas dengan telapak tangan dan remasan jemari langsung di atas kanvas basah menghasilkan tekstur impasto bergelombang yang khas.</p><p>Garis-garis meliuk yang tercipta bukan sekadar kontur visual, melainkan jejak getaran emosi sang pelukis saat berhadapan langsung dengan objek hidup.</p>",
+        content: "Bagi Affandi, proses melukis adalah kerja kinetik yang melibatkan seluruh energi raga. Menggantikan kuas dengan **telapak tangan dan remasan jemari langsung di atas kanvas basah** menghasilkan tekstur `impasto bergelombang` yang khas.\n\nGaris-garis meliuk yang tercipta bukan sekadar kontur visual, melainkan jejak getaran emosi sang pelukis saat berhadapan langsung dengan objek hidup.",
         peruChanTip: "Gunakan pasta tekstur atau cat akrilik tebal jika ingin melatih teknik impasto tanpa merusak kuas halus!",
         peruChanTheme: "brown" as const,
       },
       {
-        title: "Simbol Matahari, Kaki, dan Tangan",
-        content: "<p>Dalam repertoar visual Affandi, matahari menjadi personifikasi daya hidup semesta, tangan melambangkan daya cipta berkarya, dan kaki merefleksikan pijakan kerakyatan yang kokoh.</p><p>Trinitas simbolik ini berulang kali hadir dalam potret diri maupun pemandangan alam perdesaan nusantara.</p>",
+        title: "Tabel Matriks Teknik Aplikasi Cat Lukis",
+        content: "Berikut adalah perbandingan teknik sapuan cat tebal vs tipis dalam studi seni lukis ekspresif:\n\n| Teknik Melukis | Karakter Tekstur | Ketebalan Cat | Efek Visual & Kejiwaan |\n| :--- | :--- | :--- | :--- |\n| **Plototan Impasto** | Sangat timbul, bergelombang tajam | Cat murni langsung dari tube | Menimbulkan sensasi kinetik, drama visual, dan letupan emosi |\n| **Glazing Transparan** | Sangat tipis, licin, bening | Lapisan cat minyak diencerkan medium | Memberikan kedalaman warna luminesen (*radiant depth*) |\n| **Scumbling Kering** | Kasar, pecah-pecah bertekstur | Kuas semi-kering di atas lapisan gelap | Menciptakan ilusi kabut cahaya, debu atmosfer, dan kilau objek |",
+        peruChanTip: "Kembangkan simbol personal dalam karya seni Anda sebagai penanda narasi autentik perjalanan berkarya!",
+        peruChanTheme: "lime" as const,
+      },
+      {
+        title: "Simbolisme Trinitas: Matahari, Kaki, dan Tangan",
+        content: "Dalam repertoar visual Affandi, **matahari** menjadi personifikasi daya hidup semesta, **tangan** melambangkan daya cipta berkarya, dan **kaki** merefleksikan pijakan kerakyatan yang kokoh.\n\nTrinitas simbolik ini berulang kali hadir dalam potret diri maupun pemandangan alam perdesaan nusantara.",
         peruChanTip: "Kembangkan simbol personal dalam karya seni Anda sebagai penanda narasi autentik perjalanan berkarya!",
         peruChanTheme: "lime" as const,
       },
@@ -145,7 +151,7 @@ export function ArticleEditorForm({
           {
             id: "chap-init-1",
             title: "Pengantar & Latar Belakang",
-            content: "<p>Tuliskan pengantar wacana atau pendahuluan topik di sini...</p>",
+            content: "Tuliskan pengantar wacana atau pendahuluan topik di sini...",
           },
         ]
   );
@@ -336,7 +342,7 @@ export function ArticleEditorForm({
         {
           id: `chap-${Date.now()}-1`,
           title: "Pengantar & Latar Belakang",
-          content: "<p>Tuliskan pengantar naskah...</p>",
+          content: "Tuliskan pengantar naskah...",
         },
       ]);
       setReferences([]);
@@ -354,7 +360,7 @@ export function ArticleEditorForm({
       {
         id: `chap-${Date.now()}-${newIdx}`,
         title: `Bab ${newIdx}: Subjudul Pembahasan`,
-        content: "<p>Tuliskan uraian pembahasan bab ini di sini...</p>",
+        content: "Tuliskan uraian pembahasan bab ini di sini...",
       },
     ]);
   };
@@ -484,12 +490,18 @@ export function ArticleEditorForm({
 
     setIsSubmitting(true);
 
-    const slug =
+    const generatedSlug =
       title
         .toLowerCase()
         .trim()
         .replace(/[^a-z0-9\s-]/g, "")
         .replace(/\s+/g, "-") || `artikel-${Date.now()}`;
+
+    const targetSlug = initialData?.originalSlug || generatedSlug;
+    const resolvedId =
+      initialData?.articleId ||
+      (initialData?.originalSlug ? artService.getArticleBySlug(initialData.originalSlug)?.id : undefined) ||
+      `art-${Date.now()}`;
 
     const selectedCatObj = categories.find(
       (c) =>
@@ -500,11 +512,9 @@ export function ArticleEditorForm({
     const resolvedCategoryId = selectedCatObj ? selectedCatObj.id : (categories[0]?.id || "cat-pendidikan");
 
     const newArticleData: ArticleFullData = {
-      id: initialData?.title
-        ? artService.getArticleBySlug(slug)?.id || `art-${Date.now()}`
-        : `art-${Date.now()}`,
+      id: resolvedId,
       title,
-      slug,
+      slug: targetSlug,
       excerpt,
       category: selectedCatObj ? selectedCatObj.name : category,
       categoryId: resolvedCategoryId,
@@ -534,9 +544,8 @@ export function ArticleEditorForm({
         number: (idx + 1).toString().padStart(2, "0"),
         heading: ch.title,
         paragraphs: ch.content
-          .replace(/<p>/g, "")
-          .split("</p>")
-          .map((p) => p.replace(/<[^>]*>/g, "").trim())
+          .split(/\n\s*\n|<\/p>/gi)
+          .map((p) => p.replace(/^<p>/i, "").trim())
           .filter((p) => p.length > 0),
         peruChanTip: ch.peruChanTip,
         peruChanTheme: ch.peruChanTheme,
@@ -604,7 +613,7 @@ export function ArticleEditorForm({
         localStorage.setItem("jejak_perupa_my_articles", JSON.stringify(updatedList));
       } catch (e) {}
     } else if (mode === "admin-edit") {
-      await artService.updateArticle(slug, newArticleData);
+      await artService.updateArticle(targetSlug, newArticleData);
     }
 
     const formData: ArticleEditorFormData = {

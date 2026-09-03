@@ -14,6 +14,7 @@ import { useCategories } from "@/lib/categoryContext";
 import { useModal } from "@/lib/modalContext";
 import { submissionsSeeder, type SubmissionItem } from "@/lib/data/seeders/submissionsSeeder";
 import { type ArticleFullData } from "@/lib/data/articles";
+import { RichContentRenderer } from "@/components/molecules/article/RichContentRenderer";
 import {
   ArrowLeft,
   CheckCircle,
@@ -45,11 +46,6 @@ function parseContentToChapters(
   existingChapters?: { title: string; content: string; peruChanTip?: string; peruChanTheme?: "blue" | "brown" | "lime" }[]
 ): ChapterReviewItem[] {
   if (existingChapters && existingChapters.length > 0) {
-    // Check if the single chapter contains markdown headings (##)
-    if (existingChapters.length === 1 && existingChapters[0].content.includes("## ")) {
-      return splitMarkdownHeadings(existingChapters[0].content);
-    }
-
     return existingChapters.map((ch, idx) => ({
       id: `chap-${idx + 1}`,
       title: ch.title || `Bab ${idx + 1}`,
@@ -70,11 +66,11 @@ function splitMarkdownHeadings(markdown: string): ChapterReviewItem[] {
   // Split by markdown ## heading while preserving sections
   const sections = markdown.split(/\n(?=##\s+)/g).filter((s) => s.trim().length > 0);
 
-  if (sections.length > 1) {
+  if (sections.length > 0) {
     return sections.map((sec, idx) => {
-      const match = sec.match(/^##\s+(.+)$/m);
-      const title = match ? match[1].trim() : `Bab ${idx + 1}`;
-      const content = sec.replace(/^##\s+.+$/m, "").trim();
+      const match = sec.match(/^##\s+([^\n]+)/m);
+      const title = match ? match[1].trim() : idx === 0 ? "Pembahasan Utama" : `Bab ${idx + 1}`;
+      const content = sec.replace(/^##\s+[^\n]+/m, "").trim();
       return {
         id: `chap-${idx + 1}`,
         title,
@@ -89,7 +85,7 @@ function splitMarkdownHeadings(markdown: string): ChapterReviewItem[] {
     {
       id: "chap-1",
       title: "Pembahasan Utama",
-      content: markdown.replace(/^##\s+.+$/m, "").trim(),
+      content: markdown.replace(/^##\s+[^\n]+/m, "").trim(),
       peruChanTip: "",
       peruChanTheme: "blue" as const,
     },
@@ -150,7 +146,14 @@ export default function AdminCurationDetailPage() {
                   : data.status === "REJECTED"
                   ? "Perlu Revisi"
                   : "Menunggu Kurasi",
-              excerpt: (data.content_markdown || "").slice(0, 200),
+              excerpt:
+                (data.content_markdown || "")
+                  .replace(/^##\s+[^\n]+/gm, "")
+                  .replace(/^\|.*\|$/gm, "")
+                  .replace(/\|\s*:?---.*$/gm, "")
+                  .replace(/[\n\r]+/g, " ")
+                  .trim()
+                  .slice(0, 220) || "Wacana telaah seni rupa pilihan.",
               coverImageUrl: data.cover_image_url || undefined,
               chapters: rawChapters,
               references: [],
@@ -577,7 +580,7 @@ export default function AdminCurationDetailPage() {
           </div>
 
           <div className="border-l-2 border-jp-blue-900 bg-jp-paper p-3 rounded-r-md text-xs sm:text-sm text-jp-gray-700 font-prose italic leading-relaxed">
-            &ldquo;{submission.excerpt}&rdquo;
+            <RichContentRenderer content={submission.excerpt} />
           </div>
         </div>
 
@@ -631,8 +634,8 @@ export default function AdminCurationDetailPage() {
                   </div>
 
                   {/* CHAPTER PROSE CONTENT */}
-                  <div className="text-sm text-jp-gray-800 font-prose leading-[1.8] whitespace-pre-line space-y-3">
-                    {chap.content}
+                  <div className="text-sm text-jp-gray-800 font-prose leading-[1.8]">
+                    <RichContentRenderer content={chap.content} />
                   </div>
 
                   {/* INLINE PERU-CHAN EDITOR BOX (INSIDE THIS SPECIFIC CHAPTER) */}

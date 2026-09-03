@@ -24,6 +24,8 @@ export interface ArticleEditorFormData {
   headerGradientHeight?: number;
   chapters: ChapterItem[];
   references: ReferenceItem[];
+  originalSlug?: string;
+  articleId?: string;
   focusKeyword?: string;
   peruChanTip?: string;
   peruChanTheme?: "blue" | "brown" | "lime";

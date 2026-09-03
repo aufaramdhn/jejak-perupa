@@ -95,7 +95,7 @@ export default function AdminEditArtikelPage() {
     article.contentSections?.map((sec, idx) => ({
       id: sec.id || `sec-${idx}`,
       title: sec.heading,
-      content: sec.paragraphs?.map((p) => `<p>${p}</p>`).join("") || "",
+      content: sec.paragraphs?.join("\n\n") || "",
       peruChanTip: sec.peruChanTip || "",
       peruChanTheme: sec.peruChanTheme || "blue",
     })) || [{ id: "chap-1", title: "", content: "" }];
@@ -119,6 +119,8 @@ export default function AdminEditArtikelPage() {
     headerGradientHeight: article.headerGradientHeight,
     chapters: initialChapters,
     references: initialReferences,
+    originalSlug: slug,
+    articleId: article.id,
     peruChanTip: article.peruChanTip,
     peruChanTheme: article.categoryVariant === "brown" ? ("brown" as const) : ("blue" as const),
   };

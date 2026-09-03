@@ -50,7 +50,7 @@ export function Heading3({ className, children, ...props }: TypographyProps) {
 
 export function LeadText({ className, children, ...props }: TypographyProps) {
   return (
-    <p
+    <div
       className={cn(
         "max-w-2xl font-prose text-base md:text-lg leading-[1.75] text-jp-gray-700",
         className
@@ -58,7 +58,7 @@ export function LeadText({ className, children, ...props }: TypographyProps) {
       {...props}
     >
       {children}
-    </p>
+    </div>
   );
 }
 

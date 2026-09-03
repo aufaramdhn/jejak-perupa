@@ -3,6 +3,7 @@
 import React from "react";
 import { Button } from "@/components/atoms/form/Button";
 import { SubmissionItem } from "@/lib/data/seeders/submissionsSeeder";
+import { RichContentRenderer } from "@/components/molecules/article/RichContentRenderer";
 import { X, Sparkles, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -73,9 +74,9 @@ export function CurationReviewModal({
                     {ch.title}
                   </span>
                 </div>
-                <p className="text-xs text-jp-gray-700 font-prose leading-relaxed whitespace-pre-line">
-                  {ch.content}
-                </p>
+                <div className="text-xs text-jp-gray-700 font-prose leading-relaxed">
+                  <RichContentRenderer content={ch.content} />
+                </div>
               </div>
             ))}
           </div>

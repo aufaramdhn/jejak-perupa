@@ -4,6 +4,11 @@ import React from "react";
 import { Badge } from "@/components/atoms/typography/Badge";
 import { PeruChanCallout } from "@/components/molecules/peruchan/PeruChanCallout";
 import { ChapterItem, ReferenceItem } from "./types";
+import {
+  RichContentRenderer,
+  renderInlineFormatting,
+  cleanCardExcerpt,
+} from "@/components/molecules/article/RichContentRenderer";
 
 interface ArticleEditorPreviewProps {
   title: string;
@@ -85,9 +90,9 @@ export function ArticleEditorPreview({
           </div>
 
           {excerpt && (
-            <p className="font-heading text-base md:text-lg italic text-jp-gray-700 leading-relaxed border-l-4 border-jp-blue-900 pl-4 py-1">
-              {excerpt}
-            </p>
+            <div className="font-heading text-base md:text-lg italic text-jp-gray-700 leading-relaxed border-l-4 border-jp-blue-900 pl-4 py-1">
+              {renderInlineFormatting(cleanCardExcerpt(excerpt))}
+            </div>
           )}
         </div>
       </div>
@@ -99,14 +104,13 @@ export function ArticleEditorPreview({
             <h2 className="font-heading text-xl md:text-2xl font-bold text-jp-ink">
               {idx + 1}. {ch.title || `Bab ${idx + 1}`}
             </h2>
-            <div
-              className="font-prose text-sm md:text-base leading-relaxed text-jp-gray-800 space-y-3"
-              dangerouslySetInnerHTML={{
-                __html:
-                  ch.content ||
-                  "<p class='italic text-jp-gray-400'>Isi uraian bab akan tampil di sini...</p>",
-              }}
-            />
+            {ch.content ? (
+              <RichContentRenderer content={ch.content} />
+            ) : (
+              <p className="italic text-jp-gray-400 font-prose">
+                Isi uraian bab akan tampil di sini...
+              </p>
+            )}
 
             {/* PER-CHAPTER PERU-CHAN CALLOUT */}
             {ch.peruChanTip && (

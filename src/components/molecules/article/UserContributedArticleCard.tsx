@@ -7,6 +7,7 @@ import { Badge } from "@/components/atoms/typography/Badge";
 import { Button } from "@/components/atoms/form/Button";
 import { Clock, Eye, Edit3, CheckCircle2, AlertCircle, FileText, Trash2 } from "lucide-react";
 import { ArticleCoverPlaceholder } from "@/components/atoms/media/ArticleCoverPlaceholder";
+import { renderInlineFormatting, cleanCardExcerpt } from "@/components/molecules/article/RichContentRenderer";
 import { cn } from "@/lib/utils";
 
 export interface UserArticleItem {
@@ -121,7 +122,7 @@ export function UserContributedArticleCard({
           </h3>
 
           <p className="text-xs text-jp-gray-600 font-prose line-clamp-1 hidden sm:block">
-            {article.excerpt}
+            {renderInlineFormatting(cleanCardExcerpt(article.excerpt))}
           </p>
 
           <div className="flex items-center gap-2 pt-0.5 text-[11px] text-jp-gray-500 font-sans">

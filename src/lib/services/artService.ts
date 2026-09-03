@@ -75,6 +75,8 @@ function mapArticleToDB(art: ArticleFullData) {
   };
 }
 
+const ARTICLES_STORAGE_KEY = "jejak_perupa_custom_articles_v2";
+
 function getStoredArticles(): ArticleFullData[] {
   if (typeof window === "undefined") return inMemoryArticles;
 
@@ -87,12 +89,30 @@ function getStoredArticles(): ArticleFullData[] {
   }
 
   try {
-    const saved = localStorage.getItem("jejak_perupa_custom_articles_v1");
+    // Purge old v1 cache if present
+    if (localStorage.getItem("jejak_perupa_custom_articles_v1")) {
+      localStorage.removeItem("jejak_perupa_custom_articles_v1");
+    }
+
+    const saved = localStorage.getItem(ARTICLES_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        inMemoryArticles = parsed;
-        return parsed;
+        // Merge user-created custom articles with latest static seeders
+        const seederSlugs = new Set(articlesData.map((a) => a.slug));
+        const customUserArticles = parsed.filter((a: ArticleFullData) => !seederSlugs.has(a.slug));
+        
+        // For seeder articles, use parsed if it was updated by user in this session, otherwise use latest articlesData
+        const merged = [
+          ...articlesData.map((seedArt) => {
+            const userEdited = parsed.find((p: ArticleFullData) => p.slug === seedArt.slug);
+            return userEdited || seedArt;
+          }),
+          ...customUserArticles,
+        ];
+
+        inMemoryArticles = merged;
+        return merged;
       }
     }
   } catch (e) {
@@ -105,7 +125,7 @@ function saveStoredArticles(articles: ArticleFullData[]) {
   inMemoryArticles = articles;
   if (typeof window !== "undefined") {
     try {
-      localStorage.setItem("jejak_perupa_custom_articles_v1", JSON.stringify(articles));
+      localStorage.setItem(ARTICLES_STORAGE_KEY, JSON.stringify(articles));
     } catch (e) {
       console.warn("Failed to save articles to storage", e);
     }
@@ -257,11 +277,19 @@ export const artService = {
 
   async updateArticle(slug: string, updatedData: Partial<ArticleFullData>): Promise<void> {
     const list = getStoredArticles();
-    const index = list.findIndex((a) => a.slug === slug);
+    let index = list.findIndex(
+      (a) => a.slug === slug || (updatedData.id && a.id === updatedData.id)
+    );
+
+    let updatedArticle: ArticleFullData;
     if (index !== -1) {
-      const updatedArticle = { ...list[index], ...updatedData };
+      updatedArticle = { ...list[index], ...updatedData };
       list[index] = updatedArticle;
-      saveStoredArticles([...list]);
+    } else {
+      updatedArticle = updatedData as ArticleFullData;
+      list.unshift(updatedArticle);
+    }
+    saveStoredArticles([...list]);
 
       if (isSupabaseConfigured()) {
         try {
@@ -326,7 +354,6 @@ export const artService = {
           console.warn("Supabase update error:", e);
         }
       }
-    }
   },
 
   async deleteArticle(slug: string): Promise<void> {
@@ -379,7 +406,58 @@ export const artService = {
 
   // SENIMAN
   getAllArtists(): ArtistData[] {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("jejak_perupa_custom_artists_v1");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch (e) {}
+    }
     return artistsData;
+  },
+
+  addArtist(artist: ArtistData): void {
+    const list = this.getAllArtists();
+    const existingIndex = list.findIndex((a) => a.id === artist.id || a.slug === artist.slug);
+    let updated: ArtistData[];
+    if (existingIndex !== -1) {
+      list[existingIndex] = artist;
+      updated = [...list];
+    } else {
+      updated = [artist, ...list];
+    }
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("jejak_perupa_custom_artists_v1", JSON.stringify(updated));
+      } catch (e) {}
+    }
+  },
+
+  updateArtist(slug: string, updatedData: Partial<ArtistData>): void {
+    const list = this.getAllArtists();
+    const index = list.findIndex((a) => a.slug === slug || (updatedData.id && a.id === updatedData.id));
+    if (index !== -1) {
+      list[index] = { ...list[index], ...updatedData };
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("jejak_perupa_custom_artists_v1", JSON.stringify(list));
+        } catch (e) {}
+      }
+    }
+  },
+
+  deleteArtist(slug: string): void {
+    const list = this.getAllArtists();
+    const updated = list.filter((a) => a.slug !== slug);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("jejak_perupa_custom_artists_v1", JSON.stringify(updated));
+      } catch (e) {}
+    }
   },
 
   async getAllArtistsAsync(): Promise<ArtistData[]> {

@@ -22,7 +22,11 @@ import {
   HelpCircle,
   Clock,
   FileText,
+  Eye,
+  Edit3,
+  Columns,
 } from "lucide-react";
+import { RichContentRenderer } from "@/components/molecules/article/RichContentRenderer";
 import { cn } from "@/lib/utils";
 
 export interface RichTextEditorProps {
@@ -229,20 +233,35 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
+  const [viewMode, setViewMode] = useState<"write" | "preview" | "split">("write");
 
   const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0;
   const charCount = value.length;
   const estimatedReadMinutes = Math.max(1, Math.ceil(wordCount / 180));
 
-  const insertFormat = (prefix: string, suffix: string = "", defaultText: string = "teks") => {
+  const insertFormat = (prefix: string, suffix: string = "", defaultText: string = "") => {
+    // If user is in preview mode, switch back to write mode first so they can see and edit
+    if (viewMode === "preview") {
+      setViewMode("write");
+    }
+
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {
+      onChange(value + prefix + defaultText + suffix);
+      return;
+    }
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = value.substring(start, end);
     const textToInsert = selectedText || defaultText;
-    const replacement = prefix + textToInsert + suffix;
+
+    const prefixAdjusted =
+      prefix.startsWith("\n") && start > 0 && !value.substring(0, start).endsWith("\n")
+        ? "\n" + prefix
+        : prefix;
+
+    const replacement = prefixAdjusted + textToInsert + suffix;
 
     const newValue =
       value.substring(0, start) + replacement + value.substring(end);
@@ -289,35 +308,86 @@ export function RichTextEditor({
         className
       )}
     >
-      {/* EXPANDED RICH TEXT TOOLBAR */}
-      <div className="flex flex-wrap items-center gap-1 border-b border-jp-gray-200 bg-jp-paper/90 px-3 py-2 text-jp-gray-700">
-        {TOOLBAR_GROUPS.map((group, gIdx) => (
-          <React.Fragment key={group.name}>
-            {gIdx > 0 && (
-              <div className="h-4 w-px bg-jp-gray-300 mx-1 shrink-0" aria-hidden="true" />
-            )}
-            <div className="flex items-center gap-0.5">
-              {group.actions.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    title={item.shortcut ? `${item.label} (${item.shortcut})` : item.label}
-                    aria-label={item.label}
-                    onClick={() => insertFormat(item.prefix, item.suffix || "", item.placeholder || "teks")}
-                    className="flex h-7 w-7 items-center justify-center rounded-md text-jp-gray-600 hover:bg-white hover:text-jp-blue-900 hover:shadow-2xs transition-colors cursor-pointer"
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                  </button>
-                );
-              })}
-            </div>
-          </React.Fragment>
-        ))}
+      {/* EXPANDED RICH TEXT TOOLBAR WITH VIEW MODE TOGGLE */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-jp-gray-200 bg-jp-paper/90 px-3 py-2 text-jp-gray-700">
+        <div className="flex flex-wrap items-center gap-1">
+          {TOOLBAR_GROUPS.map((group, gIdx) => (
+            <React.Fragment key={group.name}>
+              {gIdx > 0 && (
+                <div className="h-4 w-px bg-jp-gray-300 mx-1 shrink-0" aria-hidden="true" />
+              )}
+              <div className="flex items-center gap-0.5">
+                {group.actions.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      title={item.shortcut ? `${item.label} (${item.shortcut})` : item.label}
+                      aria-label={item.label}
+                      onClick={() => insertFormat(item.prefix, item.suffix || "", item.placeholder || "teks")}
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-jp-gray-600 hover:bg-white hover:text-jp-blue-900 hover:shadow-2xs transition-colors cursor-pointer"
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                    </button>
+                  );
+                })}
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
 
-        {/* CHEAT SHEET TOGGLE */}
-        <div className="ml-auto flex items-center">
+        {/* RIGHT CONTROLS: VIEW MODE SWITCHER & CHEATSHEET */}
+        <div className="flex items-center gap-2">
+          {/* VIEW MODE TOGGLE (TULIS vs VISUAL vs SPLIT) */}
+          <div className="flex items-center gap-1 rounded-lg bg-jp-gray-200/80 p-0.5 border border-jp-gray-300/70 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setViewMode("write")}
+              title="Mode Tulis Kode Markdown"
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded transition cursor-pointer font-sans",
+                viewMode === "write"
+                  ? "bg-white text-jp-blue-900 shadow-2xs"
+                  : "text-jp-gray-600 hover:text-jp-ink"
+              )}
+            >
+              <Edit3 className="h-3 w-3" />
+              <span>Tulis</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode("preview")}
+              title="Lihat Tampilan Visual & Tabel Terformat"
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded transition cursor-pointer font-sans",
+                viewMode === "preview"
+                  ? "bg-white text-jp-blue-900 shadow-2xs"
+                  : "text-jp-gray-600 hover:text-jp-ink"
+              )}
+            >
+              <Eye className="h-3 w-3" />
+              <span>Visual</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode("split")}
+              title="Mode Berdampingan (Editor di Kiri, Visual di Kanan)"
+              className={cn(
+                "hidden sm:flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded transition cursor-pointer font-sans",
+                viewMode === "split"
+                  ? "bg-white text-jp-blue-900 shadow-2xs"
+                  : "text-jp-gray-600 hover:text-jp-ink"
+              )}
+            >
+              <Columns className="h-3 w-3" />
+              <span>Split</span>
+            </button>
+          </div>
+
+          {/* CHEAT SHEET TOGGLE */}
           <button
             type="button"
             onClick={() => setShowCheatSheet(!showCheatSheet)}
@@ -330,7 +400,7 @@ export function RichTextEditor({
             )}
           >
             <HelpCircle className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Panduan Format</span>
+            <span className="hidden lg:inline">Panduan</span>
           </button>
         </div>
       </div>
@@ -349,6 +419,7 @@ export function RichTextEditor({
               <span className="font-bold text-jp-ink font-sans block">Format Teks:</span>
               <p>**tebal** → <strong>tebal</strong></p>
               <p>*miring* → <em>miring</em></p>
+              <p>~~coret~~ → <del>coret</del></p>
               <p>`istilah` → kode glosarium</p>
               <p>&lt;mark&gt;sorot&lt;/mark&gt; → teks highlight</p>
             </div>
@@ -370,16 +441,65 @@ export function RichTextEditor({
         </div>
       )}
 
-      {/* TEXTAREA INPUT */}
-      <textarea
-        ref={textareaRef}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        rows={rows}
-        placeholder={placeholder}
-        className="w-full p-4 text-xs md:text-sm font-prose text-jp-ink placeholder:text-jp-gray-400 focus:outline-none resize-y leading-relaxed"
-      />
+      {/* EDITOR & LIVE RENDERED VIEW AREA */}
+      {viewMode === "write" && (
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          rows={rows}
+          placeholder={placeholder}
+          className="w-full p-4 text-xs md:text-sm font-prose text-jp-ink placeholder:text-jp-gray-400 focus:outline-none resize-y leading-relaxed bg-white"
+        />
+      )}
+
+      {viewMode === "preview" && (
+        <div className="w-full p-4 md:p-6 min-h-[180px] bg-white overflow-y-auto max-h-[500px]">
+          {value.trim() ? (
+            <RichContentRenderer content={value} />
+          ) : (
+            <div className="py-8 text-center text-xs text-jp-gray-400 font-prose italic">
+              Belum ada teks yang ditulis. Beralih ke tab <strong>Tulis</strong> untuk mulai menyusun naskah.
+            </div>
+          )}
+        </div>
+      )}
+
+      {viewMode === "split" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-jp-gray-200 bg-white">
+          <div className="flex flex-col">
+            <div className="bg-jp-paper/60 px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-jp-gray-500 border-b border-jp-gray-200">
+              Editor Markdown
+            </div>
+            <textarea
+              ref={textareaRef}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              rows={rows}
+              placeholder={placeholder}
+              className="w-full p-4 text-xs md:text-sm font-prose text-jp-ink placeholder:text-jp-gray-400 focus:outline-none resize-y leading-relaxed flex-1"
+            />
+          </div>
+
+          <div className="flex flex-col bg-jp-paper/20">
+            <div className="bg-jp-blue-50/60 px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-jp-blue-800 border-b border-jp-blue-100 flex items-center justify-between">
+              <span>Hasil Visual Langsung</span>
+              <span className="text-[10px] text-green-700 font-sans font-semibold">● Sinkron Real-time</span>
+            </div>
+            <div className="p-4 md:p-5 overflow-y-auto max-h-[420px] flex-1">
+              {value.trim() ? (
+                <RichContentRenderer content={value} />
+              ) : (
+                <div className="py-8 text-center text-xs text-jp-gray-400 font-prose italic">
+                  Pratinjau visual akan tampil secara langsung saat Anda mengetik...
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* FOOTER METRICS BAR */}
       <div className="flex items-center justify-between border-t border-jp-gray-100 bg-jp-paper/40 px-4 py-2 text-[11px] font-mono text-jp-gray-500">
@@ -395,10 +515,11 @@ export function RichTextEditor({
           </span>
         </div>
 
-        <span className="text-jp-gray-400">
-          Mendukung Sintaks Markdown Lengkap
+        <span className="text-jp-gray-400 hidden sm:inline">
+          Mode {viewMode === "write" ? "Tulis Markdown" : viewMode === "preview" ? "Visual Rendered" : "Split Live Preview"} Aktif
         </span>
       </div>
     </div>
   );
 }
+

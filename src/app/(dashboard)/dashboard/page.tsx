@@ -108,7 +108,14 @@ export default function UserDashboardOverviewPage() {
                   title: sub.title,
                   category: "Wacana Seni",
                   categoryVariant: "blue",
-                  excerpt: (sub.content_markdown || "").slice(0, 150),
+                  excerpt:
+                    (sub.content_markdown || "")
+                      .replace(/^##\s+[^\n]+/gm, "")
+                      .replace(/^\|.*\|$/gm, "")
+                      .replace(/\|\s*:?---.*$/gm, "")
+                      .replace(/[\n\r]+/g, " ")
+                      .trim()
+                      .slice(0, 150) + "...",
                   readTime: "5 menit membaca",
                   publishedDate: new Date(sub.created_at).toLocaleDateString("id-ID"),
                   authorName: sub.contributor_name,

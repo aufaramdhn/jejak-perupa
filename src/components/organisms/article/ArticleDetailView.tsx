@@ -8,8 +8,8 @@ import { Badge } from "@/components/atoms/typography/Badge";
 import { AuthorMeta } from "@/components/molecules/article/AuthorMeta";
 import { TableOfContents } from "@/components/molecules/article/TableOfContents";
 import { PeruChanCallout } from "@/components/molecules/peruchan/PeruChanCallout";
+import { RichContentRenderer } from "@/components/molecules/article/RichContentRenderer";
 import { ArticleCard } from "@/components/molecules/article/ArticleCard";
-import { StudioCard } from "@/components/molecules/article/StudioCard";
 import { Heading1, Heading2, LeadText, Paragraph, SectionLabel } from "@/components/atoms/typography/Typography";
 import { Button } from "@/components/atoms/form/Button";
 import { BookmarkButton } from "@/components/molecules/article/BookmarkButton";
@@ -41,18 +41,13 @@ export function ArticleDetailView({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => {
-    if (!initialArticle && slug) {
-      const found = artService.getArticleBySlug(slug);
-      setArticle(found);
+    if (slug) {
+      const found = artService.getArticleBySlug(slug) || initialArticle;
       if (found) {
+        setArticle(found);
         setRelatedArticles(artService.getRelatedArticles(found.slug));
       }
       setIsLoading(false);
-    } else if (slug) {
-      const related = artService.getRelatedArticles(slug);
-      if (related && related.length > 0) {
-        setRelatedArticles(related);
-      }
     }
   }, [slug, initialArticle]);
 
@@ -141,7 +136,19 @@ export function ArticleDetailView({
 
       <Heading1 className="max-w-4xl text-jp-ink">{article.title}</Heading1>
 
-      <LeadText className="mt-5">{article.excerpt}</LeadText>
+      <LeadText className="mt-5">
+        <RichContentRenderer
+          content={
+            article.excerpt
+              ? article.excerpt
+                  .replace(/^##\s+[^\n]+/gm, "")
+                  .split("|")[0]
+                  .replace(/^["'“](.*)["'”]$/, "$1")
+                  .trim()
+              : ""
+          }
+        />
+      </LeadText>
 
       <div className="mt-6 border-t border-jp-gray-300/80 pt-5">
         <AuthorMeta
@@ -172,9 +179,7 @@ export function ArticleDetailView({
             </span>
           )}
           <Heading2>{sec.heading}</Heading2>
-          {sec.paragraphs.map((p, pIdx) => (
-            <Paragraph key={pIdx}>{p}</Paragraph>
-          ))}
+          <RichContentRenderer content={sec.paragraphs.join("\n\n")} />
 
           {/* PER-CHAPTER PERU-CHAN CALLOUT */}
           {sec.peruChanTip && (
@@ -186,32 +191,6 @@ export function ArticleDetailView({
               >
                 <p>{sec.peruChanTip}</p>
               </PeruChanCallout>
-            </div>
-          )}
-
-          {/* IF THIS IS STUDIO SECTION ON SENI RUPA MURNI */}
-          {sec.id === "studio" && (
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <StudioCard
-                title="Studio Seni Lukis"
-                discipline="lukis"
-                description="Eksplorasi kanvas, cat minyak, akrilik, drawing, dan bahasa rupa 2 dimensi."
-              />
-              <StudioCard
-                title="Studio Seni Patung"
-                discipline="patung"
-                description="Eksplorasi bentuk 3 dimensi, media kayu, batu, logam, resin, dan seni instalasi."
-              />
-              <StudioCard
-                title="Studio Seni Grafis"
-                discipline="grafis"
-                description="Eksplorasi teknik cetak tinggi (cukil kayu), intaglio, sablon serigrafi, dan litografi."
-              />
-              <StudioCard
-                title="Studio Seni Keramik"
-                discipline="keramik"
-                description="Eksplorasi medium lempung, pembakaran suhu tinggi, glasir, dan bentuk kriya artistik."
-              />
             </div>
           )}
         </section>

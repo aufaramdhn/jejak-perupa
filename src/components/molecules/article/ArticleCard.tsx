@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Clock } from "lucide-react";
 import { Badge } from "@/components/atoms/typography/Badge";
 import { ArticleCoverPlaceholder } from "@/components/atoms/media/ArticleCoverPlaceholder";
+import { renderInlineFormatting, cleanCardExcerpt } from "@/components/molecules/article/RichContentRenderer";
 import { cn } from "@/lib/utils";
 
 export interface ArticleCardProps {
@@ -73,7 +74,7 @@ export function ArticleCard({
         </h3>
 
         <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-jp-gray-700 flex-1 font-prose">
-          {excerpt}
+          {renderInlineFormatting(cleanCardExcerpt(excerpt))}
         </p>
 
         <div className="mt-5 flex items-center gap-1.5 pt-4 border-t border-jp-gray-100 text-xs text-jp-gray-500 font-sans">

@@ -76,7 +76,14 @@ export default function AdminKurasiPage() {
                   : row.status === "REJECTED"
                   ? "Perlu Revisi"
                   : "Menunggu Kurasi",
-              excerpt: (row.content_markdown || "").slice(0, 160) + "...",
+              excerpt:
+                (row.content_markdown || "")
+                  .replace(/^##\s+[^\n]+/gm, "")
+                  .replace(/^\|.*\|$/gm, "")
+                  .replace(/\|\s*:?---.*$/gm, "")
+                  .replace(/[\n\r]+/g, " ")
+                  .trim()
+                  .slice(0, 160) + "...",
               coverImageUrl: row.cover_image_url || undefined,
               chapters: [
                 {
@@ -365,6 +372,30 @@ export default function AdminKurasiPage() {
     }
   };
 
+  const handleLoadDemoSubmissions = async () => {
+    const confirmed = await confirm({
+      title: "Muat Contoh Naskah Uji Coba?",
+      message:
+        "3 naskah contoh kuratorial lengkap akan dimuat ke Meja Kurasi agar Anda dapat langsung menguji alur review, catatan Peru-Chan, dan publikasi.",
+      confirmLabel: "Muat Naskah Demo",
+      cancelLabel: "Batal",
+      variant: "primary",
+      iconType: "alert",
+    });
+
+    if (confirmed) {
+      const merged = [...submissionsSeeder, ...submissions.filter((s) => !submissionsSeeder.some((d) => d.id === s.id))];
+      await saveSubmissions(merged);
+      setStatusFilter("Semua");
+      setCurrentPage(1);
+      alert({
+        title: "Naskah Demo Berhasil Dimuat",
+        message: "3 naskah uji coba kini tersedia di Meja Kurasi. Anda dapat menguji alur persetujuan dan revisi.",
+        type: "success",
+      });
+    }
+  };
+
   const [statusFilter, setStatusFilter] = useState<string>("Semua");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -393,6 +424,18 @@ export default function AdminKurasiPage() {
     <AdminLayout
       title="Meja Kurasi Editorial Naskah"
       subtitle="Evaluasi naskah kiriman kontributor, telaah rujukan akademik, dan sematkan catatan kuratorial resmi Peru-Chan."
+      actionButton={
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleLoadDemoSubmissions}
+          className="rounded-lg text-xs font-bold border-jp-blue-300 text-jp-blue-900 hover:bg-jp-blue-50 cursor-pointer shadow-2xs h-9"
+        >
+          <Sparkles className="h-4 w-4 mr-1.5 text-jp-blue-700" />
+          Muat Contoh Naskah (Demo)
+        </Button>
+      }
     >
       <div className="space-y-6 font-sans">
         {/* STATUS FILTER TABS */}
@@ -541,8 +584,20 @@ export default function AdminKurasiPage() {
             />
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-jp-gray-300 bg-white p-12 text-center text-jp-gray-500">
-            Tidak ada naskah dengan status &ldquo;{statusFilter}&rdquo;.
+          <div className="rounded-xl border border-dashed border-jp-gray-300 bg-white p-12 text-center text-jp-gray-500 space-y-3">
+            <p className="font-semibold text-sm">Tidak ada naskah dengan status &ldquo;{statusFilter}&rdquo;.</p>
+            <div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleLoadDemoSubmissions}
+                className="rounded-lg text-xs font-bold border-jp-blue-300 text-jp-blue-900 hover:bg-jp-blue-50"
+              >
+                <Sparkles className="h-3.5 w-3.5 mr-1.5 text-jp-blue-700" />
+                Muat Contoh Naskah Uji Coba (Demo)
+              </Button>
+            </div>
           </div>
         )}
 

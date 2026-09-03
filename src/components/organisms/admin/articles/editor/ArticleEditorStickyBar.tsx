@@ -61,26 +61,26 @@ export function ArticleEditorStickyBar({
 
       {/* TAB TOGGLE & ACTIONS */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between sm:justify-end gap-3 w-full sm:w-auto font-sans">
-        {/* TABS (Tulis Naskah vs Pratinjau) */}
+        {/* TABS (Naskah vs Pratinjau) */}
         <div className="grid grid-cols-2 sm:flex items-center gap-1 rounded-xl bg-jp-gray-200/70 p-1 w-full sm:w-auto shadow-2xs border border-jp-gray-300/60">
           <button
             type="button"
             onClick={() => setActiveTab("write")}
             className={cn(
-              "flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer font-sans w-full",
+              "flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer font-sans w-full whitespace-nowrap",
               activeTab === "write"
                 ? "bg-white text-jp-blue-900 shadow-2xs font-bold"
                 : "text-jp-gray-600 hover:text-jp-ink"
             )}
           >
             <Edit3 className="h-3.5 w-3.5" />
-            <span>Tulis Naskah</span>
+            <span>Naskah</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("preview")}
             className={cn(
-              "flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer font-sans w-full",
+              "flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 text-xs font-semibold rounded-lg transition cursor-pointer font-sans w-full whitespace-nowrap",
               activeTab === "preview"
                 ? "bg-white text-jp-blue-900 shadow-2xs font-bold"
                 : "text-jp-gray-600 hover:text-jp-ink"
@@ -91,18 +91,19 @@ export function ArticleEditorStickyBar({
           </button>
         </div>
 
-        {/* ACTION BUTTONS: DEV & RESET ONLY */}
+        {/* ACTION BUTTONS: RESET ONLY OR CREATE HELPER */}
         <div className="flex items-center gap-2.5 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-jp-gray-200 pt-2.5 sm:pt-0 sm:pl-3">
-          {/* AUTO-FILL DRAFT BUTTON (DEV TESTING) */}
-          <button
-            type="button"
-            onClick={onQuickFillDev}
-            title="Isi Otomatis Data Naskah Contoh Lengkap (Fitur Dev)"
-            className="flex flex-1 sm:flex-initial items-center justify-center gap-1 rounded-lg border border-amber-300 bg-amber-50/80 px-3 py-2 sm:py-1.5 text-xs font-bold text-amber-900 hover:bg-amber-100 hover:border-amber-400 transition cursor-pointer shadow-2xs h-9"
-          >
-            <Zap className="h-3.5 w-3.5 text-amber-600 fill-amber-500" />
-            <span>Auto-Fill (Dev)</span>
-          </button>
+          {mode === "admin-create" && (
+            <button
+              type="button"
+              onClick={onQuickFillDev}
+              title="Isi Draf Contoh Lengkap untuk Pengujian Cepat"
+              className="flex flex-1 sm:flex-initial items-center justify-center gap-1 rounded-lg border border-jp-blue-200 bg-jp-blue-50/60 px-3 py-2 sm:py-1.5 text-xs font-bold text-jp-blue-900 hover:bg-jp-blue-100 hover:border-jp-blue-300 transition cursor-pointer shadow-2xs h-9"
+            >
+              <Zap className="h-3.5 w-3.5 text-jp-blue-700" />
+              <span>Contoh Draf</span>
+            </button>
+          )}
 
           <Button
             type="button"
@@ -112,7 +113,7 @@ export function ArticleEditorStickyBar({
             className="flex-1 sm:flex-initial rounded-lg text-xs justify-center py-2 sm:py-1.5 h-9 cursor-pointer"
           >
             <RotateCcw className="h-3.5 w-3.5 mr-1" />
-            Reset
+            Reset Form
           </Button>
         </div>
       </div>

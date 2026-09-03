@@ -31,19 +31,16 @@ export function FeatureComingSoonTemplate({
           {/* BADGE HEADER */}
           <div className="flex flex-col items-center space-y-3">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-3 py-1 font-mono text-xs font-bold text-amber-900 border border-amber-300">
-                <Clock className="h-3.5 w-3.5" />
-                {phaseLabel}
-              </span>
-              <span className="font-mono text-xs text-jp-gray-500">
-                · {expectedRelease}
+              <span className="inline-flex items-center gap-1 rounded-full bg-jp-blue-50 px-3 py-1 font-mono text-xs font-bold text-jp-blue-900 border border-jp-blue-200">
+                <Clock className="h-3.5 w-3.5 text-jp-blue-700" />
+                Segera Hadir
               </span>
             </div>
 
-            <SectionLabel>Pemberitahuan Rilis Bertahap</SectionLabel>
+            <SectionLabel>Eksplorasi Kurasi</SectionLabel>
 
             <Heading1 className="text-3xl sm:text-4xl lg:text-5xl text-jp-ink leading-tight">
-              Fitur {featureName} Sedang Dipersiapkan
+              Ruang {featureName} Sedang Disiapkan
             </Heading1>
 
             <Paragraph className="text-sm md:text-base text-jp-gray-600 font-prose max-w-xl mx-auto leading-relaxed">
