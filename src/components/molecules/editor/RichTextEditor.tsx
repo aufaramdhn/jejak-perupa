@@ -155,11 +155,11 @@ const TOOLBAR_GROUPS: ToolbarGroup[] = [
     actions: [
       {
         id: "blockquote",
-        label: "Kutipan Kuratorial (Blockquote)",
+        label: "Kutipan Wacana (Quote)",
         icon: Quote,
-        prefix: "\n> ",
-        suffix: "\n",
-        placeholder: "Kutipan teori atau pernyataan kritis...",
+        prefix: "\n\n:::kutipan\nkutipan: ",
+        suffix: "\ntokoh: S. Sudjojono\n:::\n\n",
+        placeholder: "Tuliskan pernyataan wacana kritis...",
       },
       {
         id: "peruchan-tip",
@@ -184,10 +184,10 @@ const TOOLBAR_GROUPS: ToolbarGroup[] = [
       },
       {
         id: "table",
-        label: "Tabel Analisis Perbandingan",
+        label: "Tabel Analisis Komparasi",
         icon: TableIcon,
-        prefix: "\n\n| Unsur Rupa | Karakteristik Visual | Analisis Estetika |\n| :--- | :--- | :--- |\n| Garis | Dinamis & Ekspresif | Memberikan ilusi gerak |\n| Warna | Palet Kontras Primer | Menegaskan ketegangan visual |\n",
-        suffix: "\n",
+        prefix: "\n\n:::tabel\nheader: Aspek Komparasi | Studio Lukis | Studio Patung\nbaris: Medium Primer | Kanvas & Cat Minyak | Logam, Kayu & Batu\nbaris: Dimensi Rupa | 2 Dimensi (Datar) | 3 Dimensi (Spasial)\n:::\n\n",
+        suffix: "",
         placeholder: "",
       },
       {

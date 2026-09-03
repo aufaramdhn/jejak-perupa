@@ -158,6 +158,91 @@ describe("RichContentRenderer", () => {
     expect(grid?.querySelector(".card-1")?.textContent).toBe("Studio Lukis");
   });
 
+  it("renders nested multi-line HTML studio cards without leaking </div> as raw text", () => {
+    const raw = [
+      "Karya ini kini ditetapkan sebagai Cagar Budaya.",
+      '<div class="my-5 grid gap-3 sm:grid-cols-2">\n<div class="rounded-xl border border-jp-gray-200 bg-white p-4 shadow-xs space-y-1">\n<div class="font-bold text-jp-ink text-sm">Studio / Peminatan 1</div>\n<div class="text-xs text-jp-gray-600">[Eksplorasi media 1...]</div>\n</div>\n<div class="rounded-xl border border-jp-gray-200 bg-white p-4 shadow-xs space-y-1">\n<div class="font-bold text-jp-ink text-sm">Studio / Peminatan 2</div>\n<div class="text-xs text-jp-gray-600">[Eksplorasi media 2...]</div>\n</div>\n</div>',
+      "Penjelasan lanjutan setelah kartu...",
+    ].join("\n\n");
+
+    const { container } = render(<RichContentRenderer content={raw} />);
+
+    // Memastikan tidak ada teks mentah </div> atau </p> di halaman
+    expect(container.textContent).not.toContain("</div>");
+    expect(container.textContent).not.toContain("</p>");
+
+    // Memastikan kedua kartu ter-render di dalam grid
+    const grid = container.querySelector(".grid");
+    expect(grid).not.toBeNull();
+    expect(container.textContent).toContain("Studio / Peminatan 1");
+    expect(container.textContent).toContain("Studio / Peminatan 2");
+  });
+
+  it("renders human-readable custom syntax :::kartu-pilihan properly", () => {
+    const raw = [
+      "Pengantar bab studio...",
+      ":::kartu-pilihan",
+      "[kartu]",
+      "judul: Studio **Seni Lukis**",
+      "deskripsi: Eksplorasi kanvas dan teknik `impasto`.",
+      "[/kartu]",
+      "[kartu]",
+      "judul: Studio **Seni Patung**",
+      "deskripsi: Eksplorasi media kayu dan logam.",
+      "[/kartu]",
+      ":::",
+      "Penutup materi studio.",
+    ].join("\n");
+
+    const { container } = render(<RichContentRenderer content={raw} />);
+
+    expect(container.textContent).toContain("Studio Seni Lukis");
+    expect(container.textContent).toContain("Studio Seni Patung");
+    expect(container.querySelector("strong")?.textContent).toBe("Seni Lukis");
+    expect(container.querySelector("code")?.textContent).toBe("impasto");
+    expect(container.textContent).not.toContain(":::");
+    expect(container.textContent).not.toContain("[kartu]");
+  });
+
+  it("renders human-readable custom syntax :::tabel properly", () => {
+    const raw = [
+      ":::tabel",
+      "header: Aspek Komparasi | Studio Lukis | Studio Patung",
+      "baris: Medium Primer | Kanvas & Cat Minyak | Logam & Batu",
+      "baris: Dimensi Rupa | 2 Dimensi | 3 Dimensi",
+      ":::",
+    ].join("\n");
+
+    const { container } = render(<RichContentRenderer content={raw} />);
+
+    const table = container.querySelector("table");
+    expect(table).not.toBeNull();
+    expect(container.querySelectorAll("th").length).toBe(3);
+    expect(container.querySelectorAll("td").length).toBe(6);
+    expect(container.textContent).toContain("Medium Primer");
+  });
+
+  it("renders human-readable custom syntax :::istilah and :::kutipan properly", () => {
+    const raw = [
+      ":::istilah",
+      "istilah: Chiaroscuro",
+      "penjelasan: Teknik kontras pencahayaan dramatis.",
+      ":::",
+      "",
+      ":::kutipan",
+      "kutipan: Jiwa ketok adalah cerminan batin seniman.",
+      "tokoh: S. Sudjojono",
+      ":::",
+    ].join("\n");
+
+    const { container } = render(<RichContentRenderer content={raw} />);
+
+    expect(container.textContent).toContain("Istilah Kunci : Chiaroscuro");
+    expect(container.textContent).toContain("Teknik kontras pencahayaan dramatis.");
+    expect(container.textContent).toContain("Jiwa ketok adalah cerminan batin seniman.");
+    expect(container.textContent).toContain("S. Sudjojono");
+  });
+
   it("renders empty content gracefully", () => {
     const { container } = render(<RichContentRenderer content="" />);
     expect(container.firstChild).toBeNull();

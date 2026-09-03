@@ -78,6 +78,60 @@ export function RichContentRenderer({
                 {renderInlineFormatting(block.content)}
               </h4>
             );
+          case "card-grid":
+            return (
+              <div key={idx} className="my-6 grid gap-4 grid-cols-1 sm:grid-cols-2">
+                {block.cards?.map((card, cIdx) => (
+                  <div
+                    key={cIdx}
+                    className="group rounded-2xl border border-jp-gray-300 bg-white p-5 shadow-2xs hover:shadow-sm hover:border-jp-blue-400 transition-all duration-200 flex flex-col justify-between"
+                  >
+                    <div className="space-y-1.5">
+                      <h4 className="font-heading font-bold text-jp-ink text-base md:text-lg group-hover:text-jp-blue-900 transition-colors">
+                        {renderInlineFormatting(card.title)}
+                      </h4>
+                      <div className="text-xs md:text-sm text-jp-gray-600 font-sans leading-relaxed">
+                        {renderInlineFormatting(card.description)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          case "term-box":
+            return (
+              <div
+                key={idx}
+                className="my-5 rounded-2xl border border-jp-blue-200 bg-jp-blue-50/70 p-4 md:p-5 shadow-2xs space-y-1.5"
+              >
+                <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-jp-blue-900">
+                  <span className="inline-block h-2 w-2 rounded-full bg-jp-blue-600" />
+                  Istilah Kunci : {block.termData?.term ? renderInlineFormatting(block.termData.term) : "Glosarium"}
+                </div>
+                <div className="text-xs md:text-sm text-jp-gray-700 font-sans leading-relaxed">
+                  {block.termData?.explanation ? renderInlineFormatting(block.termData.explanation) : ""}
+                </div>
+              </div>
+            );
+          case "custom-quote":
+            return (
+              <blockquote
+                key={idx}
+                className="relative my-5 rounded-r-2xl border-l-4 border-jp-blue-900 bg-jp-paper p-4 md:p-6 italic text-jp-gray-800 font-heading text-base md:text-lg leading-relaxed shadow-2xs"
+              >
+                <div className="font-sans text-[11px] font-bold uppercase tracking-wider text-jp-blue-700 not-italic mb-2">
+                  Kutipan Wacana
+                </div>
+                <div className="not-italic font-heading italic text-jp-ink">
+                  &ldquo;{renderInlineFormatting(block.quoteData?.quote || block.content)}&rdquo;
+                </div>
+                {block.quoteData?.author && (
+                  <div className="mt-2 text-right font-sans text-xs font-bold text-jp-gray-600 not-italic">
+                    - {renderInlineFormatting(block.quoteData.author)}
+                  </div>
+                )}
+              </blockquote>
+            );
           case "blockquote":
             return (
               <blockquote
@@ -150,11 +204,25 @@ export function RichContentRenderer({
 
 // Interface blok Markdown
 interface ContentBlock {
-  type: "paragraph" | "h2" | "h3" | "h4" | "blockquote" | "table" | "html-block" | "list";
+  type:
+    | "paragraph"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "blockquote"
+    | "table"
+    | "html-block"
+    | "list"
+    | "card-grid"
+    | "term-box"
+    | "custom-quote";
   content: string;
   tableHeaders?: string[];
   tableRows?: string[][];
   listItems?: string[];
+  cards?: { title: string; description: string }[];
+  termData?: { term: string; explanation: string };
+  quoteData?: { quote: string; author?: string };
 }
 
 /**
@@ -167,12 +235,15 @@ function parseMarkdownBlocks(rawText: string): ContentBlock[] {
   let normalizedText = rawText
     .replace(/<\/p>\s*<p>/gi, "\n\n")
     .replace(/<\/?p>/gi, "")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/([^\n])(<(?:div|blockquote|table|ul|ol|h[1-6]|hr)\b)/gi, "$1\n\n$2")
-    .replace(/(<\/(?:div|blockquote|table|ul|ol|h[1-6])>)([^\n])/gi, "$1\n\n$2");
+    .replace(/<br\s*\/?>/gi, "\n");
+
+  // Pisahkan heading markdown atau garis pembatas yang menempel setelah teks biasa
+  normalizedText = normalizedText
+    .replace(/([^\r\n])\s*(#{2,6}\s+[^\r\n]+)/g, "$1\n\n$2")
+    .replace(/([^\r\n])\s*(---|\*\*\*|___)\s*$/gm, "$1\n\n$2");
 
   // 2. Normalisasi tabel yang diawali teks non-tabel pada baris yang sama (misal: "Teks pengantar: | Kolom 1 | Kolom 2 |")
-  normalizedText = normalizedText.replace(/^([^|\r\n]+?)[ \t]*(\|[ \t]*[A-Za-z0-9_*`~<])/gm, "$1\n\n$2");
+  normalizedText = normalizedText.replace(/^(?!(?:header|baris|row|kolom):)([^|\r\n]+?)[ \t]*(\|[ \t]*[A-Za-z0-9_*`~<])/gim, "$1\n\n$2");
 
   // 3. Pisahkan baris tabel yang bersambung langsung (||) atau bersambung spasi (| |)
   normalizedText = normalizedText
@@ -196,29 +267,188 @@ function parseMarkdownBlocks(rawText: string): ContentBlock[] {
       continue;
     }
 
-    // 2. Blok HTML mentah kompleks (misal <div ...>...</div> atau <table>...</table>)
+    // 2. Blok HTML mentah kompleks (misal <div ...>...</div> atau <table>...</table> atau <blockquote>...</blockquote>)
     if (
       (trimmed.startsWith("<div") && !trimmed.startsWith("<div class=\"inline")) ||
       trimmed.startsWith("<table") ||
       (trimmed.startsWith("<blockquote") && !trimmed.startsWith(">"))
     ) {
-      let htmlContent = line;
-      const closingTag = trimmed.startsWith("<div")
-        ? "</div>"
+      const tagName = trimmed.startsWith("<div")
+        ? "div"
         : trimmed.startsWith("<table")
-        ? "</table>"
-        : "</blockquote>";
+        ? "table"
+        : "blockquote";
 
-      if (!trimmed.includes(closingTag)) {
+      const openRegex = new RegExp(`<${tagName}\\b`, "gi");
+      const closeRegex = new RegExp(`</${tagName}>`, "gi");
+
+      let htmlContent = line;
+      let openCount = (line.match(openRegex) || []).length;
+      let closeCount = (line.match(closeRegex) || []).length;
+
+      while (i + 1 < lines.length && openCount > closeCount) {
         i++;
-        while (i < lines.length) {
-          htmlContent += "\n" + lines[i];
-          if (lines[i].includes(closingTag)) break;
-          i++;
-        }
+        htmlContent += "\n" + lines[i];
+        openCount += (lines[i].match(openRegex) || []).length;
+        closeCount += (lines[i].match(closeRegex) || []).length;
       }
+
       blocks.push({ type: "html-block", content: htmlContent });
       i++;
+      continue;
+    }
+
+    // 2A. Blok Kartu Pilihan (:::kartu-pilihan ... ::: atau :::kartu ... :::)
+    if (trimmed.startsWith(":::kartu-pilihan") || trimmed.startsWith(":::kartu") || trimmed.startsWith(":::cards")) {
+      const cardLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].trim().startsWith(":::")) {
+        cardLines.push(lines[i]);
+        i++;
+      }
+      if (i < lines.length && lines[i].trim().startsWith(":::")) {
+        i++;
+      }
+
+      const cardsText = cardLines.join("\n");
+      const cardChunks = cardsText.split(/\[\/?kartu\]|\[\/?card\]/i).filter((c) => c.trim().length > 0);
+      const parsedCards: { title: string; description: string }[] = [];
+
+      for (const chunk of cardChunks) {
+        const titleMatch = chunk.match(/(?:judul|title):\s*([^\r\n]+)/i);
+        const descMatch = chunk.match(/(?:deskripsi|description|isi):\s*([\s\S]+)/i);
+
+        const title = titleMatch ? titleMatch[1].trim() : "";
+        let description = descMatch ? descMatch[1].trim() : "";
+
+        if (!descMatch && titleMatch) {
+          description = chunk.replace(/(?:judul|title):\s*[^\r\n]+/i, "").trim();
+        }
+
+        if (title || description) {
+          parsedCards.push({
+            title: title || "Peminatan / Pilihan",
+            description: description || "Uraian materi...",
+          });
+        }
+      }
+
+      if (parsedCards.length > 0) {
+        blocks.push({
+          type: "card-grid",
+          content: "",
+          cards: parsedCards,
+        });
+        continue;
+      }
+    }
+
+    // 2B. Blok Tabel Bersih (:::tabel ... ::: atau :::table ... :::)
+    if (trimmed.startsWith(":::tabel") || trimmed.startsWith(":::table")) {
+      const tableBlockLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].trim().startsWith(":::")) {
+        tableBlockLines.push(lines[i]);
+        i++;
+      }
+      if (i < lines.length && lines[i].trim().startsWith(":::")) {
+        i++;
+      }
+
+      let headers: string[] = [];
+      const contentRows: string[][] = [];
+
+      for (const tLine of tableBlockLines) {
+        const lTrim = tLine.trim();
+        if (!lTrim) continue;
+
+        if (lTrim.toLowerCase().startsWith("header:")) {
+          const rawHeader = lTrim.replace(/^header:\s*/i, "");
+          headers = rawHeader.split("|").map((h) => h.trim());
+        } else if (lTrim.toLowerCase().startsWith("baris:") || lTrim.toLowerCase().startsWith("row:")) {
+          const rawRow = lTrim.replace(/^(?:baris|row):\s*/i, "");
+          const cells = rawRow.split("|").map((c) => c.trim());
+          contentRows.push(cells);
+        } else if (lTrim.startsWith("|") && lTrim.endsWith("|")) {
+          const cells = lTrim.replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+          if (headers.length === 0) {
+            headers = cells;
+          } else if (!cells.some((c) => c.includes("---"))) {
+            contentRows.push(cells);
+          }
+        }
+      }
+
+      if (headers.length > 0 || contentRows.length > 0) {
+        blocks.push({
+          type: "table",
+          content: "",
+          tableHeaders: headers,
+          tableRows: contentRows,
+        });
+        continue;
+      }
+    }
+
+    // 2C. Blok Kotak Istilah (:::istilah ... ::: atau :::kotak-istilah ... :::)
+    if (trimmed.startsWith(":::istilah") || trimmed.startsWith(":::kotak-istilah") || trimmed.startsWith(":::term")) {
+      const termLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].trim().startsWith(":::")) {
+        termLines.push(lines[i]);
+        i++;
+      }
+      if (i < lines.length && lines[i].trim().startsWith(":::")) {
+        i++;
+      }
+
+      const termText = termLines.join("\n");
+      const termMatch = termText.match(/(?:istilah|term|kunci):\s*([^\r\n]+)/i);
+      const explMatch = termText.match(/(?:penjelasan|definisi|arti|deskripsi):\s*([\s\S]+)/i);
+
+      const term = termMatch ? termMatch[1].trim() : "Istilah Kunci";
+      const explanation = explMatch
+        ? explMatch[1].trim()
+        : termText.replace(/(?:istilah|term|kunci):\s*[^\r\n]+/i, "").trim();
+
+      blocks.push({
+        type: "term-box",
+        content: "",
+        termData: {
+          term,
+          explanation: explanation || "Penjelasan konsep...",
+        },
+      });
+      continue;
+    }
+
+    // 2D. Blok Kutipan Wacana (:::kutipan ... ::: atau :::quote ... :::)
+    if (trimmed.startsWith(":::kutipan") || trimmed.startsWith(":::kutipan-wacana") || trimmed.startsWith(":::quote")) {
+      const quoteLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].trim().startsWith(":::")) {
+        quoteLines.push(lines[i]);
+        i++;
+      }
+      if (i < lines.length && lines[i].trim().startsWith(":::")) {
+        i++;
+      }
+
+      const quoteText = quoteLines.join("\n");
+      const quoteMatch = quoteText.match(/(?:kutipan|quote|isi):\s*([^\r\n]+)/i);
+      const authorMatch = quoteText.match(/(?:tokoh|penulis|author|sumber):\s*([^\r\n]+)/i);
+
+      const quote = quoteMatch ? quoteMatch[1].trim() : quoteText.replace(/(?:tokoh|penulis|author|sumber):\s*[^\r\n]+/i, "").trim();
+      const author = authorMatch ? authorMatch[1].trim() : undefined;
+
+      blocks.push({
+        type: "custom-quote",
+        content: quote,
+        quoteData: {
+          quote,
+          author,
+        },
+      });
       continue;
     }
 
@@ -332,16 +562,27 @@ function parseMarkdownBlocks(rawText: string): ContentBlock[] {
       !lines[i].trim().startsWith("#") &&
       !lines[i].trim().startsWith(">") &&
       !lines[i].trim().startsWith("|") &&
-      !lines[i].trim().startsWith("<div")
+      !lines[i].trim().startsWith(":::") &&
+      !lines[i].trim().startsWith("<div") &&
+      !lines[i].trim().startsWith("<table") &&
+      !lines[i].trim().startsWith("<blockquote")
     ) {
       paragraphText += " " + lines[i].trim();
       i++;
     }
 
-    blocks.push({
-      type: "paragraph",
-      content: paragraphText,
-    });
+    // Bersihkan tag penutup HTML liar (stray orphan closing tags seperti </div> atau </p>)
+    const sanitizedParagraph = paragraphText
+      .replace(/^(\s*<\/(?:div|p|span|blockquote|table|section)>\s*)+$/gi, "")
+      .replace(/<\/(?:div|p|span|blockquote|table|section)>/gi, "")
+      .trim();
+
+    if (sanitizedParagraph.length > 0) {
+      blocks.push({
+        type: "paragraph",
+        content: sanitizedParagraph,
+      });
+    }
   }
 
   return blocks;

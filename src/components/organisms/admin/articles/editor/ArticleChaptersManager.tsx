@@ -141,29 +141,16 @@ export function ArticleChaptersManager({
                   Uraian Isi Bab {idx + 1} <span className="text-red-500">*</span>
                 </label>
 
-                {/* QUICK COMPONENT INSERTERS */}
+                {/* QUICK COMPONENT INSERTERS WITH HUMAN-READABLE CUSTOM SYNTAX */}
                 <div className="flex flex-wrap items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => {
                       const prefix = ch.content && !ch.content.endsWith("\n") ? "\n\n" : "";
-                      const bubbleBox = `${prefix}<div class="my-4 rounded-xl border border-jp-blue-200 bg-jp-blue-50/60 p-4 space-y-1"><div class="font-bold text-jp-blue-900 text-sm">Istilah Kunci : [Nama Istilah]</div><div class="text-xs text-jp-gray-700">[Tuliskan definisi atau penjelasan konsep khusus di sini...]</div></div>\n\n`;
-                      onUpdateChapter(ch.id, "content", (ch.content || "") + bubbleBox);
+                      const cardTemplate = `${prefix}:::kartu-pilihan\n[kartu]\njudul: Studio / Peminatan 1\ndeskripsi: Tuliskan eksplorasi media dan fokus kajian 1 di sini...\n[/kartu]\n[kartu]\njudul: Studio / Peminatan 2\ndeskripsi: Tuliskan eksplorasi media dan fokus kajian 2 di sini...\n[/kartu]\n:::\n\n`;
+                      onUpdateChapter(ch.id, "content", (ch.content || "") + cardTemplate);
                     }}
-                    className="rounded-md border border-jp-blue-200 bg-jp-blue-50/70 hover:bg-jp-blue-100 px-2 py-1 text-[11px] font-bold text-jp-blue-900 transition cursor-pointer"
-                    title="Sisipkan Kotak Istilah / Bubble Box"
-                  >
-                    + Kotak Istilah
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const prefix = ch.content && !ch.content.endsWith("\n") ? "\n\n" : "";
-                      const studioCards = `${prefix}<div class="my-5 grid gap-3 sm:grid-cols-2"><div class="rounded-xl border border-jp-gray-200 bg-white p-4 shadow-xs space-y-1"><div class="font-bold text-jp-ink text-sm">Studio / Peminatan 1</div><div class="text-xs text-jp-gray-600">[Eksplorasi media dan fokus kajian 1...]</div></div><div class="rounded-xl border border-jp-gray-200 bg-white p-4 shadow-xs space-y-1"><div class="font-bold text-jp-ink text-sm">Studio / Peminatan 2</div><div class="text-xs text-jp-gray-600">[Eksplorasi media dan fokus kajian 2...]</div></div></div>\n\n`;
-                      onUpdateChapter(ch.id, "content", (ch.content || "") + studioCards);
-                    }}
-                    className="rounded-md border border-jp-gray-200 bg-white hover:bg-jp-paper px-2 py-1 text-[11px] font-bold text-jp-ink transition cursor-pointer"
+                    className="rounded-md border border-jp-gray-200 bg-white hover:bg-jp-paper px-2 py-1 text-[11px] font-bold text-jp-ink transition cursor-pointer shadow-2xs"
                     title="Sisipkan Kartu Pilihan / Studio 2 Kolom"
                   >
                     + Kartu Pilihan (2 Kolom)
@@ -173,10 +160,36 @@ export function ArticleChaptersManager({
                     type="button"
                     onClick={() => {
                       const prefix = ch.content && !ch.content.endsWith("\n") ? "\n\n" : "";
-                      const quoteBox = `${prefix}<blockquote class="my-4 border-l-4 border-jp-blue-900 bg-jp-paper p-4 rounded-r-xl italic text-jp-gray-800 text-xs md:text-sm">"[Tuliskan kutipan wacana penting atau penekanan gagasan di sini...]"</blockquote>\n\n`;
-                      onUpdateChapter(ch.id, "content", (ch.content || "") + quoteBox);
+                      const tableTemplate = `${prefix}:::tabel\nheader: Aspek Komparasi | Peminatan A | Peminatan B\nbaris: Medium Primer | Kanvas & Cat Minyak | Logam, Kayu & Batu\nbaris: Dimensi Rupa | 2 Dimensi (Datar) | 3 Dimensi (Spasial)\n:::\n\n`;
+                      onUpdateChapter(ch.id, "content", (ch.content || "") + tableTemplate);
                     }}
-                    className="rounded-md border border-jp-gray-200 bg-white hover:bg-jp-paper px-2 py-1 text-[11px] font-bold text-jp-ink transition cursor-pointer"
+                    className="rounded-md border border-jp-gray-200 bg-white hover:bg-jp-paper px-2 py-1 text-[11px] font-bold text-jp-ink transition cursor-pointer shadow-2xs"
+                    title="Sisipkan Tabel Komparasi Bersih"
+                  >
+                    + Tabel Komparasi
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const prefix = ch.content && !ch.content.endsWith("\n") ? "\n\n" : "";
+                      const termTemplate = `${prefix}:::istilah\nistilah: Istilah Kunci\npenjelasan: Tuliskan definisi atau penjelasan konsep khusus di sini...\n:::\n\n`;
+                      onUpdateChapter(ch.id, "content", (ch.content || "") + termTemplate);
+                    }}
+                    className="rounded-md border border-jp-blue-200 bg-jp-blue-50/70 hover:bg-jp-blue-100 px-2 py-1 text-[11px] font-bold text-jp-blue-900 transition cursor-pointer shadow-2xs"
+                    title="Sisipkan Kotak Istilah / Bubble Box"
+                  >
+                    + Kotak Istilah
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const prefix = ch.content && !ch.content.endsWith("\n") ? "\n\n" : "";
+                      const quoteTemplate = `${prefix}:::kutipan\nkutipan: Tuliskan kutipan wacana penting atau penekanan gagasan di sini...\ntokoh: Nama Tokoh / Sumber\n:::\n\n`;
+                      onUpdateChapter(ch.id, "content", (ch.content || "") + quoteTemplate);
+                    }}
+                    className="rounded-md border border-jp-gray-200 bg-white hover:bg-jp-paper px-2 py-1 text-[11px] font-bold text-jp-ink transition cursor-pointer shadow-2xs"
                     title="Sisipkan Kutipan Wacana"
                   >
                     + Kutipan Wacana
