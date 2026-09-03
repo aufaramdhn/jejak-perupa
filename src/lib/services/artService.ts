@@ -277,7 +277,7 @@ export const artService = {
 
   async updateArticle(slug: string, updatedData: Partial<ArticleFullData>): Promise<void> {
     const list = getStoredArticles();
-    let index = list.findIndex(
+    const index = list.findIndex(
       (a) => a.slug === slug || (updatedData.id && a.id === updatedData.id)
     );
 
