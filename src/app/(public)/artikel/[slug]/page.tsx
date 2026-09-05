@@ -78,20 +78,50 @@ export default async function DynamicArticleDetailPage({
         "@type": "ScholarlyArticle",
         headline: article.title,
         description: article.excerpt,
+        inLanguage: "id-ID",
+        genre: article.category,
+        articleSection: article.category,
         image: article.coverImageUrl || article.headerBgImageUrl || `${siteUrl}/images/mascot/peruchan-excited.png`,
         datePublished: article.publishedDate,
+        dateModified: new Date().toISOString().split("T")[0],
         author: {
           "@type": "Person",
           name: article.authorName,
+          jobTitle: "Kurator Redaksi Wacana Seni",
+          worksFor: {
+            "@type": "Organization",
+            name: "Jejak Perupa",
+          },
         },
         publisher: {
           "@type": "Organization",
           name: "Jejak Perupa",
+          url: siteUrl,
           logo: {
             "@type": "ImageObject",
             url: `${siteUrl}/images/mascot/peruchan-drawing.png`,
           },
         },
+        isPartOf: {
+          "@type": "Periodical",
+          name: "Jejak Perupa : Ensiklopedia & Wacana Seni Rupa Nusantara",
+          url: siteUrl,
+        },
+        citation:
+          article.references && article.references.length > 0
+            ? article.references.map((r) => r.citation)
+            : [
+                "Soedarso Sp. (2006). Trilogi Seni: Penciptaan, Eksistensi, dan Kegunaan Seni. BP ISI Yogyakarta.",
+              ],
+        about: article.featuredArtistSlug
+          ? {
+              "@type": "Person",
+              name: article.featuredArtistSlug.replace(/-/g, " "),
+            }
+          : {
+              "@type": "Thing",
+              name: article.category,
+            },
         mainEntityOfPage: {
           "@type": "WebPage",
           "@id": `${siteUrl}/artikel/${article.slug}`,

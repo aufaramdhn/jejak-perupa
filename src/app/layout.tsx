@@ -20,7 +20,7 @@ const lora = Lora({
   variable: "--font-prose",
   subsets: ["latin"],
   display: "swap",
-  preload: true,
+  preload: false,
 });
 
 const inter = Inter({
@@ -132,6 +132,24 @@ export default function RootLayout({
       className={`${newsreader.variable} ${lora.variable} ${inter.variable} ${jetbrainsMono.variable} scroll-smooth`}
     >
       <head>
+        <link
+          rel="preconnect"
+          href="https://rdiqapwjnlhwzqppiphu.supabase.co"
+          crossOrigin=""
+        />
+        <link
+          rel="dns-prefetch"
+          href="https://rdiqapwjnlhwzqppiphu.supabase.co"
+        />
+        <link
+          rel="preconnect"
+          href="https://images.unsplash.com"
+          crossOrigin=""
+        />
+        <link
+          rel="dns-prefetch"
+          href="https://images.unsplash.com"
+        />
         <JsonLd data={websiteSchema} />
       </head>
       <body className="min-h-screen flex flex-col bg-jp-paper text-jp-ink font-sans antialiased">

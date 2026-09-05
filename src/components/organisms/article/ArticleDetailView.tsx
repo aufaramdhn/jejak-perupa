@@ -10,6 +10,7 @@ import { TableOfContents } from "@/components/molecules/article/TableOfContents"
 import { PeruChanCallout } from "@/components/molecules/peruchan/PeruChanCallout";
 import { RichContentRenderer } from "@/components/molecules/article/RichContentRenderer";
 import { ArticleCard } from "@/components/molecules/article/ArticleCard";
+import { EditorialTrustBadge } from "@/components/molecules/article/EditorialTrustBadge";
 import { Heading1, Heading2, LeadText, Paragraph, SectionLabel } from "@/components/atoms/typography/Typography";
 import { Button } from "@/components/atoms/form/Button";
 import { BookmarkButton } from "@/components/molecules/article/BookmarkButton";
@@ -207,19 +208,24 @@ export function ArticleDetailView({
         </PeruChanCallout>
       )}
 
-      {/* ACADEMIC REFERENCES */}
+      {/* EDITORIAL TRUST & VERIFICATION BADGE (E-E-A-T) */}
+      <EditorialTrustBadge authorName={article.authorName} />
+
+      {/* ACADEMIC REFERENCES (E-E-A-T) */}
       {article.references.length > 0 && (
-        <section className="rounded-2xl border border-jp-gray-300 bg-white p-6 md:p-8 space-y-4 font-sans">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-jp-blue-700">
-            <BookOpen className="h-4 w-4" />
-            Daftar Pustaka & Rujukan Akademik
+        <section className="rounded-2xl border border-jp-gray-300 bg-white p-6 md:p-8 space-y-4 font-sans shadow-2xs">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-jp-blue-900">
+            <BookOpen className="h-4 w-4 text-jp-blue-700" />
+            Daftar Pustaka &amp; Rujukan Akademik
           </div>
 
-          <ul className="space-y-2 text-xs md:text-sm text-jp-gray-700">
+          <ul className="space-y-3 text-xs md:text-sm text-jp-gray-700 divide-y divide-jp-gray-100">
             {article.references.map((ref, idx) => (
-              <li key={idx} className="border-b border-jp-gray-100 pb-2 last:border-0 last:pb-0">
-                <span className="font-semibold text-jp-ink">[{ref.sourceType}] </span>
-                {ref.citation}
+              <li key={idx} className="pt-2.5 first:pt-0 flex items-start gap-2.5">
+                <span className="inline-flex items-center rounded-md bg-jp-blue-50 border border-jp-blue-200 px-2 py-0.5 font-mono text-[10px] font-bold text-jp-blue-900 shrink-0 mt-0.5">
+                  {ref.sourceType}
+                </span>
+                <span className="leading-relaxed font-prose text-jp-ink">{ref.citation}</span>
               </li>
             ))}
           </ul>

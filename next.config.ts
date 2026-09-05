@@ -46,7 +46,13 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   experimental: {
-    optimizePackageImports: ["lucide-react", "@prisma/client", "leaflet"],
+    optimizePackageImports: [
+      "lucide-react",
+      "@prisma/client",
+      "leaflet",
+      "clsx",
+      "tailwind-merge",
+    ],
   },
   images: {
     formats: ["image/avif", "image/webp"],

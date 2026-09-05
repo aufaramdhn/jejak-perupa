@@ -218,15 +218,27 @@ export default async function ArtistProfilePage({
   // Structured Data Schema (Person / VisualArtist & Breadcrumbs)
   const artistSchema = {
     "@context": "https://schema.org",
-    "@type": "Person",
+    "@type": ["Person", "VisualArtist"],
     name: artist.name,
     jobTitle: "Maestro Seni Rupa Indonesia",
     description: artist.shortBio,
     image: artist.photoUrl || `${siteUrl}/images/mascot/peruchan-investigate.png`,
-    birthDate: artist.birthYear,
-    deathDate: artist.deathYear,
-    birthPlace: artist.originCity,
-    nationality: "Indonesian",
+    birthDate: String(artist.birthYear),
+    deathDate: artist.deathYear ? String(artist.deathYear) : undefined,
+    birthPlace: {
+      "@type": "Place",
+      "name": artist.originCity,
+    },
+    nationality: {
+      "@type": "Country",
+      "name": "Indonesia",
+    },
+    knowsAbout: [
+      artist.artMovement,
+      artist.studioDiscipline,
+      "Seni Rupa Modern Indonesia",
+      "Sejarah Seni Rupa Nusantara",
+    ],
     url: `${siteUrl}/seniman/${artist.slug}`,
   };
 
