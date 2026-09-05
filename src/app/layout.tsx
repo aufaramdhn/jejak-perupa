@@ -101,6 +101,9 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  },
 };
 
 export default function RootLayout({
@@ -125,6 +128,10 @@ export default function RootLayout({
     },
   };
 
+  const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin
+    : "https://rdiqapwjnlhwzqppiphu.supabase.co";
+
   return (
     <html
       lang="id"
@@ -134,12 +141,12 @@ export default function RootLayout({
       <head>
         <link
           rel="preconnect"
-          href="https://rdiqapwjnlhwzqppiphu.supabase.co"
+          href={supabaseOrigin}
           crossOrigin=""
         />
         <link
           rel="dns-prefetch"
-          href="https://rdiqapwjnlhwzqppiphu.supabase.co"
+          href={supabaseOrigin}
         />
         <link
           rel="preconnect"
